@@ -1,0 +1,75 @@
+API
+///////////////////////////////
+
+Public api functions:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-Start
+-Stop
+-Get
+-Create Cert
+-Endorse
+-Validate ???
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Listener
+///////////////////////////////
+Start
+Stop
+recieve -- spawns thread to handle RPC
+
+Speaker
+///////////////////////////////
+Send
+
+
+RPC Handler
+///////////////////////////////
+selector -- figures out what is to be done
+
+
+
+RPC Builder
+///////////////////////////////
+generate 
+respond
+
+
+Router
+///////////////////////////////
+???
+???
+
+
+Parser
+///////////////////////////////
+unserialize
+passon
+
+
+Certificate Builder
+///////////////////////////////
+createANDPUT
+
+
+Storage Logic -- Has Address Table
+///////////////////////////////
+update
+needToStore
+getKeysore?
+store
+
+Storage handler??
+///////////////////////////////
+putEndorse
+putCert
+putEndorseTable
+
+
+UI Handler
+///////////////////////////////
+handleCMD
+outputtoconsole
+
+
