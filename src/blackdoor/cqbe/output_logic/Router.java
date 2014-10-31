@@ -2,6 +2,11 @@ package blackdoor.cqbe.output_logic;
 
 import blackdoor.cqbe.addressing.*;
 
+/**
+ * Handles routing through the overlay network, resolution of overlay addresses, sending RPCs and resolving replies
+ * @author nfischer3
+ *
+ */
 public class Router {
 
 	/**
@@ -21,9 +26,9 @@ public class Router {
 	/**
 	 * Create a new router that will contact bootstrapNode for an address table to use for routing.
 	 * @param bootstrapNode Any node in the network. Should be a trusted node.
-	 * @param bootstrapIP The IP address on which bootstrapNode is listening.
+	 * @param bootstrapPort The port on which bootstrapNode is listening.
 	 */
-	public Router(String bootstrapNode, int bootstrapIP){
+	public Router(String bootstrapNode, int bootstrapPort){
 		
 	}
 	/**
@@ -36,13 +41,28 @@ public class Router {
 	}
 	
 	/**
-	 * Route RPC to its destination, but call it on nodes along the way. 
+	 * Route RPC to its destination, but also try to make call on each node along the way.
 	 * @param RPC 
 	 * @return the consensus reply to RPC
 	 */
-	public void routeWithCalls(int RPC){
+	public void routeWithCalls(Object RPC){
+		
+	}
+	/**
+	 * Send a RPC to destination and return the reply
+	 * @param destination
+	 */
+	public static void call(Address destination, Object RPC){
 		
 	}
 	
+	/**
+	 * Send an RPC to all nodes in an AddressTable and return the consensus response.
+	 * @param destinations
+	 * @return the consensus reply to the RPC
+	 */
+	public static void call(AddressTable destinations, Object RPC){
+		
+	}
 
 }
