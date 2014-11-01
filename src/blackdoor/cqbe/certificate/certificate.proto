@@ -1,0 +1,47 @@
+syntax = "proto2";
+
+option java_outer_classname="CertificateProtos";
+
+message Certificate{
+	required string subject_unique_id = 1;
+	required PublicKeyInfo subject_key_info = 2;
+	optional Revocation revocation_info = 3;
+	optional uint32 version = 4 [default = 0];
+	optional uint32 protocol_version = 5;
+	optional TimeFrame validity = 6;
+	optional string serial_number = 7;
+	optional string subject_common_name = 8;
+	required bytes signature = 9;
+	repeated Extension certificate_extensions = 10;
+}
+message Revocation{
+	required uint32 revocation_date = 1;
+	optional uint32 revocation_reason = 2;
+
+}
+message PublicKeyInfo{
+	required string signing_algorithm = 1;
+	required string hash_algorithm = 2;
+	required bytes public_key = 3;
+}
+message TimeFrame{
+
+}
+message Extension{
+	required string name = 1;
+	extensions 100 to max;
+}
+
+message Endorsement{
+	required string issuer_unique_id = 1;
+	optional string issuer_system = 2;
+	required string subject_unique_id = 3;
+	required PublicKeyInfo subject_key_info = 4;
+	optional TimeFrame validity = 5;
+	optional Revocation revocation_info = 6;
+	optional uint32 protocol_version = 7;
+	optional string issuer_common_name = 68;
+	optional string subject_common_name = 97;
+	repeated Extension endorsement_extensions = 810;
+	required bytes signature = 119;
+}

@@ -6,4 +6,10 @@ public class CertificateBuilder implements Builder {
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
+	public Object Build() throws BuilderException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
