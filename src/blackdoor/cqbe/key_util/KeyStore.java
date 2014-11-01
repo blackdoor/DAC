@@ -19,7 +19,8 @@ public class KeyStore {
 	/**
 	 * Prepares Keystore for operation.
 	 * 
-	 * <p> Called perhaps in the constructor. If a keystore does not already exist,
+	 * <p>
+	 * Called perhaps in the constructor. If a keystore does not already exist,
 	 * it will initialize with. The main function of this is to prepare an
 	 * algorithm to be used to either decrypt or encrypt. This might also be
 	 * done in the constructor???
@@ -31,7 +32,8 @@ public class KeyStore {
 	 * Encrypts Keystore and saves it to disk at the default or configured
 	 * location.
 	 * 
-	 * <p>Takes a list of keys and alias held in this class and formats them into a
+	 * <p>
+	 * Takes a list of keys and alias held in this class and formats them into a
 	 * readable file for later. Encrypts it with a user entered password,
 	 * 
 	 * TODO need to figure out where and how the user password comes from
@@ -59,7 +61,7 @@ public class KeyStore {
 	 */
 	public void getPrivateKey(String alias) {
 	}
-
+	public void isMine(){}
 	/**
 	 * Returns a Private Key from the KeyStore.
 	 * 
