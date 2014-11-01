@@ -24,10 +24,35 @@ public class ConfigurationFileManager {
 	}
 
 	/**
+	 * Grabs the configurations from the default config location
+	 * <p>
 	 * 
 	 */
 	public void parseConfig() {
 
 	}
+
+	/**
+	 * Grabs the configurations from the default config location
+	 * <p>
+	 * 
+	 */
+	public void makeConfig() {
+
+	}
+
+	/**
+	 * Checks the values of the configurations, confirms that they are valid.
+	 * <p>
+	 * 
+	 * @return Boolean
+	 */
+	public void isValidConfigurations() {
+
+	}
+
+	/*
+	 * GETTERS and SETTERS need to be defined
+	 */
 
 }

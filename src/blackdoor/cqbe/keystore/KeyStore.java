@@ -1,4 +1,4 @@
-package blackdoor.cqbe.key_util;
+package blackdoor.cqbe.keystore;
 
 /**
  * 
@@ -29,28 +29,36 @@ public class KeyStore {
 	}
 
 	/**
-	 * Encrypts Keystore and saves it to disk at the default or configured
-	 * location.
+	 * Reads from configured location, and decrypts the keystore with the given
+	 * password.
 	 * 
 	 * <p>
 	 * Takes a list of keys and alias held in this class and formats them into a
 	 * readable file for later. Encrypts it with a user entered password,
 	 * 
-	 * TODO need to figure out where and how the user password comes from
+	 * @param Password
+	 *            Likely is a byte array. So that will need to be handled
 	 * 
 	 */
-	public void load() { // maybe rename to "open"
+	public void load() {
 	}
 
 	/**
-	 * Using a user entered password, grab the keystore and unecrypt it. Load it
-	 * into this this classes map of keys and private keys
+	 * Encrypts the keystore, and writes it to disk in the configured location.
+	 * 
+	 * <p>
+	 * Takes a list of keys and alias held in this class and formats them into a
+	 * readable file for later. Encrypts it with a user entered password,
+	 * 
+	 * @param Password
+	 *            Likely is a byte array. So that will need to be handled s
 	 */
-	public void store() { // maybe rename to "close"
+	public void store() {
 	}
 
 	/**
 	 * Returns a Private Key from the KeyStore.
+	 * <p>
 	 * 
 	 * @param Alias
 	 *            Is the name of the user for the private key. Or the subject
@@ -61,21 +69,22 @@ public class KeyStore {
 	 */
 	public void getPrivateKey(String alias) {
 	}
-	public void isMine(){}
+
 	/**
 	 * Returns a Private Key from the KeyStore.
+	 * <p>
 	 * 
 	 * @param Alias
 	 *            The subject name or alias of a certificate that was created.
 	 * @return Boolean Returns true or false depending on whether or not the
 	 *         alias exists in the keystore
-	 * 
 	 */
 	public void containsAlias() {
 	}
 
 	/**
 	 * Creates a new entry into the keystore for the use
+	 * <p>
 	 * 
 	 * @param Alias
 	 *            The subject name or alias of a certificate that was created.
@@ -91,24 +100,44 @@ public class KeyStore {
 	}
 
 	/**
+	 * Deletes an entry from the keystore.
+	 * <p>
 	 * 
+	 * @param Alias
+	 *            The subject name or alias of a certificate that was created.
 	 */
 	public void deleteEntry() {
 	}
 
 	/**
+	 * Deletes an entry from the keystore.
+	 * <p>
+	 * Might need to overload this for different kind of updating.
 	 * 
+	 * @param Alias
+	 *            The subject name or alias of a certificate that was created.
+	 * @param PrivateKey
+	 * @param DATE
 	 */
 	public void updateEntry() {
 	}
 
 	/**
+	 * Returns the entry date for an alias.
+	 * <p>
 	 * 
+	 * @param Alias
+	 *            The subject name or alias of a certificate that was created.
+	 * @return The date an entry was added/date on the certificate.
 	 */
 	public void getEntryDate() {
 	}
 
 	/**
+	 * Returns the number of entries in the keystore.
+	 * <p>
+	 * 
+	 * @return integer as the number of certificates in the keystore.
 	 */
 	public void size() {
 	}
