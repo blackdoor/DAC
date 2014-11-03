@@ -11,6 +11,10 @@ public class NodeBuilder {
 		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * 
+	 * @param table
+	 */
 	public NodeBuilder(AddressTable table) {
 		
 	}
@@ -38,6 +42,21 @@ public class NodeBuilder {
 	 * @return the currently set AddressTable
 	 */
 	public AddressTable getAddressTable(){
+		return null;
+	}
+	
+	/**
+	 * Spawns a ConfigurationFileManager to set a storage location for the new node
+	 */
+	public void setStorage(){
+		
+	}
+	
+	/**
+	 * Returns the address with which the node will be created on
+	 * @return The address with which the node will be created with
+	 */
+	public String viewAddress(){
 		return null;
 	}
 	

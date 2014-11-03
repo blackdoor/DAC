@@ -1,5 +1,8 @@
 package blackdoor.cqbe.certificate;
 
+import java.security.KeyException;
+import java.security.PrivateKey;
+
 /**
  * 
  * A factory for certificates or endorsements. 
@@ -13,6 +16,6 @@ public interface Builder {
 	 * @return a built endorsement or certificate.
 	 * @throws Exception if not all settings for this builder are present or valid.
 	 */
-	public Object Build() throws BuilderException;
+	public Object build(PrivateKey privateKey) throws BuilderException, KeyException;
 	
 }

@@ -1,5 +1,7 @@
 package blackdoor.cqbe.node;
 
+import blackdoor.cqbe.addressing.AddressTable;
+
 public class Node {
 	/**
 	 * @author - Cyril Van Dyke
@@ -18,4 +20,24 @@ public class Node {
 		return null;
 	}
 
+	/**
+	 * Prints a brief status of node
+	 */
+	public void statusCheck(){
+	}
+	
+	/**
+	 * Lists the current status of the node's storage including space used, etc.
+	 */
+	public void checkStorage(){
+		
+	}
+	
+	/**
+	 * Returns the address table of the node
+	 * @return Address Table of node
+	 */
+	public AddressTable getAddressTable(){
+		return null;
+	}
 }
