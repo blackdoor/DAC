@@ -2,7 +2,7 @@
  * 
  */
 /**
- * @author nfischer3
+ * @author Cyril Van Dyke
  *
  */
 package blackdoor.cqbe.node.server;
