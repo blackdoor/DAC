@@ -19,20 +19,20 @@ public class Server {
 	}
 	
 	/**
-	 * Accepts the response from the RPC handler, calls parser and sends request
+	 * Accepts the response from the RPC-Handler, sends to RPC-Builder
 	 */
-	public void handleResponse(){
-		
+	public void sendToBuilder(){
 	}
 	
 	/**
-	 * Parses the response and calls the proper functions
+	 * Listens for a returned RPC from builder.
+	 * Calls sendResponse() after.
 	 */
-	public void parseResponse(){
+	public void receiveBuiltRPC(){
 	}
 	
 	/**
-	 * Sends the response to the RPC builder 
+	 * Sends the built RPC given by RPC Builder
 	 */
 	public void sendResponse(){
 		
