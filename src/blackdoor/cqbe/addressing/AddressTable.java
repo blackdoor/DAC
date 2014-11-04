@@ -1,22 +1,24 @@
 package blackdoor.cqbe.addressing;
 
+import java.util.concurrent.ConcurrentSkipListMap;
+
+import blackdoor.cqbe.addressing.Address.OverlayAddress;
+
 /**
- * 
  * @author Cj Buresch
  * @version 0.0.1 11/3/2014
  */
 public class AddressTable {
 
-	// MEMBERS
+	private static ConcurrentSkipListMap<OverlayAddress, Address> table = new ConcurrentSkipListMap<OverlayAddress, Address>();;
 
 	public AddressTable() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * 
+	 * Likely redundant. But who knows.
 	 */
-	public void init() {
+	public static void init() {
 
 	}
 
@@ -27,7 +29,7 @@ public class AddressTable {
 	 * @param Address
 	 * 
 	 */
-	public void addAddress() {
+	public static void addAddress() {
 
 	}
 
@@ -38,7 +40,7 @@ public class AddressTable {
 	 * @param Address
 	 * 
 	 */
-	public void removeAddress() {
+	public static void removeAddress() {
 
 	}
 
@@ -47,9 +49,11 @@ public class AddressTable {
 	 * <p>
 	 * 
 	 * @param Address
+	 *            TODO might overload this with ones that will take a IPv6,
+	 *            OverlayAddress or whatever.
 	 * @return True or false depending on if the address table contains
 	 */
-	public void containsAddress() {
+	public static void containsAddress() {
 	}
 
 	/**
@@ -58,7 +62,20 @@ public class AddressTable {
 	 * 
 	 * @return Integer between 0 and 256.
 	 */
-	public void size() {
+	public static void size() {
+	}
+
+	/**
+	 * Checks to see if an address belongs in this table.
+	 * <p>
+	 * 
+	 * An address will be stored if the table is not full or if the new address
+	 * is closer than the furthest address in the table.
+	 * 
+	 * @return boolean. True or False if it does belong in table. TODO might
+	 *         store it as well?
+	 */
+	public static void belongsInTable() {
 	}
 
 	/**
@@ -66,8 +83,10 @@ public class AddressTable {
 	 * <p>
 	 * 
 	 */
-	public void sort() {
+	public static void sort() {
 	}
+
+	// More functions that are basically just a wrapper for the MAP
 
 	/*
 	 * GETTERS and SETTERS

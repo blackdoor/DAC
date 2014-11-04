@@ -12,14 +12,50 @@ public class RPCBuilder {
 	}
 
 	/**
-	 * Initializies an RPC request to be sent.
+	 * Initializies a GET RPC JSON request to be sent.
 	 * <p>
 	 * 
-	 * @param RPC
-	 *            Takes an RPC to generate the JSON object from the variables of
-	 *            the RPC.
-	 * @return JSON Object. This will be used to send back to whatever.
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object with relevant information.
 	 */
-	public void build() {
+	public void buildGET() {
+	}
+
+	/**
+	 * Initializies a PUT RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object.
+	 */
+	public void buildPUT() {
+	}
+
+	/**
+	 * Initializies a LOOKUP RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object with relevant information.
+	 */
+	public void buildLOOKUP() {
+	}
+
+	/**
+	 * Initializies a PING RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object with relevant information.
+	 */
+	public void buildPING() {
 	}
 }
