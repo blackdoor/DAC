@@ -14,7 +14,7 @@ public class DART {
  	* Decides what UILogic method to call
  	*
  	*/
-	public choose_ui_logic() {
+	public void choose_ui_logic() {
 	}
 
     /**
@@ -23,6 +23,6 @@ public class DART {
  	*
  	* @param  command  to get just that command’s description
  	*/
-	public help(command) {
+	public void help() {
 	}
 }

@@ -11,7 +11,7 @@ public class UILogic {
  	*
  	* @param  port the port number to use
  	*/
-	public create(port) {
+	public void create() {
 	}
 
 	/**
@@ -20,7 +20,7 @@ public class UILogic {
  	* @param  ip address  the address for the node you know
  	* @param  port the port number of the node you know
  	*/
-	public join(ip, port) {
+	public void join() {
 	}
 
 	/**
@@ -29,7 +29,7 @@ public class UILogic {
  	*
  	* @param  certid  the the cert to agree on 
  	*/
-	public agree(certid) {
+	public void agree() {
 	}
 
 	/**
@@ -39,7 +39,7 @@ public class UILogic {
  	* @param  certid or file  the the cert to sign 
  	* @param  keystore  the private-key to sighn with
  	*/
-	public sign(certid or file, keystore) {
+	public void sign() {
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class UILogic {
  	* @param  certid  the the cert to agree on 
  	* @param  keystore  the private-key to sighn with
  	*/
-	public revoke(certid, keystore) {
+	public void revoke() {
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class UILogic {
  	*
  	* @param  flags  what to get the status of
  	*/
-	public status(flags) {
+	public void status() {
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class UILogic {
  	* @param  certid  the cert to retrieve
  	* @param  location  a location on the local drive
  	*/
-	public retrieve(certid, location) {
+	public void retrieve() {
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class UILogic {
  	* @param  certid  the the cert to verify
  	* @param  options  the verifying options
  	*/
-	public verify(certid, options) {
+	public void verify() {
 	}
 
 	/**
@@ -84,13 +84,13 @@ public class UILogic {
  	* @param  cert  the cert to insert
  	* @param  options  the insert options
  	*/
-	public insert(cert, options) {
+	public void insert() {
 	}
 
 	/**
  	* Used to exit the network and to cease all DART node functions.
  	*
  	*/
-	public leave() {
+	public void leave() {
 	}
 }
