@@ -13,8 +13,70 @@ public class RPCHandler {
 	}
 
 	/**
-	 * 
+	 * Handles appropriate RPC call Only publicly-facing function
 	 */
-	public void handle() {
+	public void handleRPC() {
+
 	}
+
+	/**
+	 * Sends response to server, to be sent to the RPC builder
+	 */
+	private void sendRPC() {
+
+	}
+
+	/**
+	 * Accepts an RPC request and calls further functions to handle it
+	 */
+	private void acceptRPC() {
+
+	}
+
+	/**
+	 * Checks the validity of an RPC statement using the RPC Validator
+	 * 
+	 * @return True if valid RPC statement, False otherwise
+	 */
+	private Boolean checkValidity() {
+		return null;
+	}
+
+	/**
+	 * Returns an error-message to the server
+	 */
+	private void sendError() {
+	}
+
+	/**
+	 * Determines the nature of the request after validity
+	 */
+	private void parseRequest() {
+	}
+
+	/**
+	 * Handles a ping request
+	 */
+	private void handlePingRequest() {
+	}
+
+	/**
+	 * Handles a put request
+	 */
+	private void handlePutRequest() {
+	}
+
+	/**
+	 * Handles a get request
+	 */
+
+	private void handleGetRequest() {
+	}
+
+	/**
+	 * Handles a lookup request
+	 */
+	private void handleLookupRequest() {
+	}
+
 }
