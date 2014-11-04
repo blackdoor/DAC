@@ -49,6 +49,7 @@ public class UILogic {
 	}
 
 	/**
+	 * 
 	 * The user can choose to revoke any certificate they created.
 	 *
 	 * @param certid
@@ -90,6 +91,7 @@ public class UILogic {
 	 * @param options
 	 *            the verifying options
 	 */
+
 	public void verify() {
 	}
 
@@ -101,6 +103,7 @@ public class UILogic {
 	 * @param options
 	 *            the insert options
 	 */
+
 	public void insert() {
 	}
 
@@ -108,6 +111,7 @@ public class UILogic {
 	 * Used to exit the network and to cease all DART node functions.
 	 *
 	 */
+
 	public void leave() {
 	}
 }
