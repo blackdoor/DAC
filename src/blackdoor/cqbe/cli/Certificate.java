@@ -1,8 +1,8 @@
 package blackdoor.cqbe.cli;
 
-public class CertificateUILogic {
+public class Certificate {
 
-	public CertificateUILogic(String[] args) {
+	public Certificate(String[] args) {
 	}
 
 	/**

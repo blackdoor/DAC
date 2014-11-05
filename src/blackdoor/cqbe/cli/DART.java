@@ -16,7 +16,7 @@ public class DART {
     	}
     	if(args[0].equals("cert")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-    		new CertificateUILogic(args2);
+    		new Certificate(args2);
     	}
     	else if(args[0].equals("keys")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
@@ -70,6 +70,5 @@ public class DART {
  	* @param  args list of arguments
  	*/
 	public void leave(String[] args) {
->>>>>>> CrazyIvan
 	}
 }
