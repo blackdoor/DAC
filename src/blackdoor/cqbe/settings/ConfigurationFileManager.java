@@ -1,9 +1,58 @@
+/**
+ *
+ */
 package blackdoor.cqbe.settings;
 
+/**
+ * @author Cj Buresch
+ * @version 0.0.1
+ *
+ */
 public class ConfigurationFileManager {
 
+	/**
+	 * 
+	 */
 	public ConfigurationFileManager() {
-		// TODO Auto-generated constructor stub
+
 	}
+
+	/**
+	 * 
+	 */
+	public void init() {
+	}
+
+	/**
+	 * Grabs the configurations from the default config location
+	 * <p>
+	 * 
+	 */
+	public void parseConfig() {
+
+	}
+
+	/**
+	 * Grabs the configurations from the default config location
+	 * <p>
+	 * 
+	 */
+	public void makeConfig() {
+
+	}
+
+	/**
+	 * Checks the values of the configurations, confirms that they are valid.
+	 * <p>
+	 * 
+	 * @return Boolean
+	 */
+	public void isValidConfigurations() {
+
+	}
+
+	/*
+	 * GETTERS and SETTERS need to be defined
+	 */
 
 }
