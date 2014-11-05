@@ -1,6 +1,8 @@
 package blackdoor.cqbe.output_logic;
 
+import org.json.*;
 import blackdoor.cqbe.addressing.*;
+import blackdoor.cqbe.rpc.RPCException.*;
 
 /**
  * Handles routing through the overlay network, resolution of overlay addresses, sending RPCs and resolving replies
@@ -41,28 +43,85 @@ public class Router {
 	}
 	
 	/**
-	 * Route RPC to its destination, but also try to make call on each node along the way.
-	 * @param RPC 
-	 * @return the consensus reply to RPC
+	 * Route RPC to its destination, but also try to make call on each node
+	 * along the way.
+	 * 
+	 * @param RPC
+	 * @return the consensus reply to RPC. Note: this is not the RPC response,
+	 *         but rather the JSON object in the "method" field of the response.
+	 * @throws ParseException
+	 *             Invalid JSON-RPC was received by the server. An error
+	 *             occurred on the server while parsing the JSON text.
+	 * @throws InvalidRequestException
+	 *             The RPC sent is not a valid Request object.
+	 * @throws MethodNotFoundException
+	 *             The method does not exist / is not available.
+	 * @throws InvalidParameterException
+	 *             Invalid method parameter(s).
+	 * @throws InternalException
+	 *             Internal JSON-RPC error.
+	 * @throws ServerException
+	 *             Reserved for implementation-defined server-errors.
 	 */
-	public void routeWithCalls(Object RPC){
-		
-	}
-	/**
-	 * Send a RPC to destination and return the reply
-	 * @param destination
-	 */
-	public static void call(Address destination, Object RPC){
-		
-	}
-	
-	/**
-	 * Send an RPC to all nodes in an AddressTable and return the consensus response.
-	 * @param destinations
-	 * @return the consensus reply to the RPC
-	 */
-	public static void call(AddressTable destinations, Object RPC){
-		
+	public JSONObject routeWithCalls(Object RPC) throws ParseException,
+			InvalidRequestException, MethodNotFoundException,
+			InvalidParameterException, InternalException, ServerException {
+		return null;
 	}
 
+	/**
+	 * Send a RPC to destination and return the reply
+	 * 
+	 * @param destination
+	 * @return the reply from destination. Note: this is not the RPC response,
+	 *         but rather the JSON object in the "method" field of the response.
+	 * @throws ParseException
+	 *             Invalid JSON-RPC was received by the server. An error
+	 *             occurred on the server while parsing the JSON text.
+	 * @throws InvalidRequestException
+	 *             The RPC sent is not a valid Request object.
+	 * @throws MethodNotFoundException
+	 *             The method does not exist / is not available.
+	 * @throws InvalidParameterException
+	 *             Invalid method parameter(s).
+	 * @throws InternalException
+	 *             Internal JSON-RPC error.
+	 * @throws ServerException
+	 *             Reserved for implementation-defined server-errors.
+	 */
+	public static JSONObject call(Address destination, Object RPC)
+			throws ParseException, InvalidRequestException,
+			MethodNotFoundException, InvalidParameterException,
+			InternalException, ServerException {
+		return null;
+	}
+
+	/**
+	 * Send an RPC to all nodes in an AddressTable and return the consensus
+	 * response.
+	 * 
+	 * @param destinations
+	 * @return the consensus reply to the RPC. Note: this is not the RPC
+	 *         response, but rather the JSON object in the "method" field of the
+	 *         response.
+	 * @throws ParseException
+	 *             Invalid JSON-RPC was received by the server. An error
+	 *             occurred on the server while parsing the JSON text.
+	 * @throws InvalidRequestException
+	 *             The RPC sent is not a valid Request object.
+	 * @throws MethodNotFoundException
+	 *             The method does not exist / is not available.
+	 * @throws InvalidParameterException
+	 *             Invalid method parameter(s).
+	 * @throws InternalException
+	 *             Internal JSON-RPC error.
+	 * @throws ServerException
+	 *             Reserved for implementation-defined server-errors.
+	 */
+	public static JSONObject call(AddressTable destinations, Object RPC)
+			throws ParseException, InvalidRequestException,
+			MethodNotFoundException, InvalidParameterException,
+			InternalException, ServerException {
+		return null;
+	}
 }
