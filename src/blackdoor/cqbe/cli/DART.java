@@ -16,18 +16,18 @@ public class DART {
     	}
     	if(args[0].equals("cert")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-    		new CertificateUILogic(args2);
+    		CertificateUILogic.main(args2);
     	}
     	else if(args[0].equals("keys")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-    		new KeysUILogic(args2);
+    		KeysUILogic.main(args2);
     	}
     	else if(args[0].equals("help")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-    		new DART().help(args2);
+    		DART.help(args2);
     	}
 		else{
-			new DART().help(args);
+			DART.help(args);
 		}
     }
 
@@ -37,7 +37,7 @@ public class DART {
  	*
  	* @param  args list of arguments
  	*/
-	public void help(String[] args) {
+	public static void help(String[] args) {
 	}
 
 	/**

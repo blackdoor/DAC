@@ -53,6 +53,46 @@ public class NodeBuilder {
 	}
 	
 	/**
+	 * Sets the port of the node to be built, passed in from DART.Join
+	 * @param port - The port given to be set
+	 */
+	public void setPort(String port){
+	}
+	
+	/**
+	 * Sets the directory where the node should be spawned and operated from
+	 * Passed from DART.Join
+	 * @param dir - Directory to be used by created node
+	 */
+	public void setDirectory(String dir){
+		
+	}
+	
+	/**
+	 * Sets the location of a previous node to be run from
+	 * @param dir - Location where node was run previously
+	 */
+	public void setRevival(String dir){
+		
+	}
+	
+	/**
+	 * Sets whether the node spawned will be a Daemon or not
+	 * @param status - If yes, daemon
+	 */
+	public void setDaemon(Boolean status){
+		
+	}
+	
+	/**
+	 * Sets whether or not the node spawned will be the first in the network
+	 * @param status - If yes, Adam node.
+	 */
+	public void setAdam(Boolean status){
+		
+	}
+	
+	/**
 	 * Returns the address with which the node will be created on
 	 * @return The address with which the node will be created with
 	 */
