@@ -1,5 +1,7 @@
 package blackdoor.cqbe.cli;
 
+import java.util.Arrays;
+
 public class DART {
 
 	/**
@@ -8,6 +10,22 @@ public class DART {
  	* @param  args  command line args
  	*/
     public static void main(String[] args) {
+    	if(args.length == 0){
+    	    System.out.println("Proper Usage is: java DART args");
+    	    System.exit(0);
+    	}
+    	if(args[0].equals("cert")){
+    		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
+    		new CertificateUILogic(args2);
+    	}
+    	else if(args[0].equals("keys")){
+    		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
+    		new KeysUILogic(args2);
+    	}
+    	else if(args[0].equals("help")){
+    		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
+    		new DART().help(args2);
+    	}
     }
 
     /**

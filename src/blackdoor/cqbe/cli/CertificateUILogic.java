@@ -3,7 +3,6 @@ package blackdoor.cqbe.cli;
 public class CertificateUILogic {
 
 	public CertificateUILogic(String[] args) {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
