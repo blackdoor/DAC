@@ -26,6 +26,9 @@ public class DART {
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
     		new DART().help(args2);
     	}
+		else{
+			new DART().help(args);
+		}
     }
 
     /**
