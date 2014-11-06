@@ -1,6 +1,14 @@
 package blackdoor.cqbe.cli;
 
 import java.util.Arrays;
+import java.util.Map;
+
+import org.json.simple.JSONObject;
+
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.output_logic.Router;
+import blackdoor.cqbe.rpc.RPCBuilder;
+import blackdoor.util.CommandLineParser;
 
 public class DART {
 
@@ -18,27 +26,30 @@ public class DART {
 		}
 		if (args[0].equals("cert")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-			new CertificateUILogic(args2);
+			CertificateUILogic.main(args2);
 		} else if (args[0].equals("keys")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
 			Keys.main(args2);
-		} else if (args[0].equals("help")) {
+		} else if (args[0].equals("join")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-			new DART().help(args2);
+			DART.join(args2);
 		} else {
-			new DART().help(args);
+			// CommandLineParser clp = new CommandLineParser();
+			// clp.addArgument('h', "Help", "Display help menue", true, false,
+			// false);
+			// clp.addArgument('v', "version", "Displays the version", true,
+			// false, false);
+			// try {
+			// Map out = clp.parseArgs(test1);
+			// if (out.containsKey("help")) {
+			// System.out.println(clp.getHelpText());
+			// } else if (out.containsKey("version")) {
+			// System.out.println("DART 1.0");
+			// }
+			// } catch (Exception e) {
+			// System.out.println(clp.getHelpText());
+			// }
 		}
-	}
-
-	/**
-	 * Used to print a menu of commands, their descriptions and uses. Can be
-	 * used injunction with a specific command to get just that command’s
-	 * description.
-	 *
-	 * @param args
-	 *            list of arguments
-	 */
-	public void help(String[] args) {
 	}
 
 	/**
@@ -47,7 +58,7 @@ public class DART {
 	 * @param args
 	 *            list of arguments
 	 */
-	public void join(String[] args) {
+	public static void join(String[] args) {
 	}
 
 	/**
@@ -56,7 +67,33 @@ public class DART {
 	 * @param args
 	 *            list of arguments
 	 */
-	public void insert(String[] args) {
+	public static void insert(String[] args) {
+		// CommandLineParser clp = new CommandLineParser();
+		//
+		// try {
+		// clp.addArgument('h', "Help", "Display help menue", true, false,
+		// false);
+		// clp.addArgument('b', "bootstrap", "the bootstrap node Address:Port",
+		// true, false, false);
+		// Map out = clp.parseArgs(test1);
+		// if (out.containsKey("help")) {
+		// System.out.println(clp.getHelpText());
+		// } else if (out.containsKey("bootstrap")) {
+		// Address a = new Address(args[2]);
+		// RPCBuilder rpcObject = new RPCBuilder();
+		// JSONObject rpc = rpcObject.buildPUT(args[0]);
+		// Router router = new Router(a);
+		// router.routeWithCalls(rpc);
+		// } else {
+		// RPCBuilder rpcObject = new RPCBuilder();
+		// JSONObject rpc = rpcObject.buildPUT(args[0]);
+		// Router router = new Router();
+		// router.routeWithCalls(rpc);
+		// }
+		// } catch (Exception e) {
+		// System.out.println(clp.getHelpText());
+		// }
+
 	}
 
 	/**
@@ -65,7 +102,7 @@ public class DART {
 	 * @param args
 	 *            list of arguments
 	 */
-	public void retrieve(String[] args) {
+	public static void retrieve(String[] args) {
 	}
 
 	/**
@@ -74,7 +111,6 @@ public class DART {
 	 * @param args
 	 *            list of arguments
 	 */
-	public void leave(String[] args) {
-
+	public static void leave(String[] args) {
 	}
 }
