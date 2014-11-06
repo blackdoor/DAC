@@ -32,7 +32,7 @@ public class DART {
 		}
 		if (args[0].equals("cert")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-			CertificateUILogic.main(args2);
+			//CertificateUILogic.main(args2);
 		} else if (args[0].equals("keys")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
 			Keys.main(args2);
