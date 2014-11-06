@@ -6,10 +6,6 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
-*.war
-*.ear
-*.jar
 
 *.classpath
 
