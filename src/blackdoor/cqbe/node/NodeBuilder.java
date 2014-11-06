@@ -56,7 +56,7 @@ public class NodeBuilder {
 	 * Sets the port of the node to be built, passed in from DART.Join
 	 * @param port - The port given to be set
 	 */
-	public void setPort(String port){
+	public void setPort(int port){
 	}
 	
 	/**

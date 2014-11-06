@@ -2,10 +2,16 @@ package blackdoor.cqbe.cli;
 
 import java.util.Arrays;
 
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.node.NodeBuilder;
+import blackdoor.cqbe.output_logic.Router;
+import blackdoor.cqbe.rpc.RPCBuilder;
+
 public class DART {
 
 	/**
- 	* This is the main function that is called whenever the user ineracts with dart via cli
+ 	* This is the main function that is called whenever the user interacts with dart via cli
  	*
  	* @param  args  command line args
  	*/
@@ -16,11 +22,11 @@ public class DART {
     	}
     	if(args[0].equals("cert")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-    		CertificateUILogic.main(args2);
+    		//CertificateUILogic.main(args2);
     	}
     	else if(args[0].equals("keys")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-    		KeysUILogic.main(args2);
+    		//KeysUILogic.main(args2);
     	}
     	else if(args[0].equals("help")){
     		String[] args2 = Arrays.copyOfRange(args, 1, args.length);
@@ -46,6 +52,27 @@ public class DART {
  	* @param  args list of arguments
  	*/
 	public void join(String[] args) {
+		//Parse things into
+		Router r = new Router();
+		Address destination = null;
+		int port = -1;
+		Boolean adam = false;
+		String dir = "";
+		String revive = "";
+		Boolean daemon = false;
+		AddressTable neighbors = r.resolveAddress(destination);
+		
+		NodeBuilder bob = new NodeBuilder(neighbors);
+		bob.setAdam(adam);
+		bob.setDaemon(daemon);
+		if(dir != "")
+			bob.setDirectory(dir);
+		if(revive != "")
+			bob.setRevival(revive);
+		if(port != -1)
+			bob.setPort(port);
+		
+		bob.buildNode();
 	}
 
 	/**
@@ -69,7 +96,9 @@ public class DART {
  	*
  	* @param  args list of arguments
  	*/
-	public void leave(String[] args) {
->>>>>>> CrazyIvan
+	public void shutdown(String[] args) {
+		// CrazyIvan
+		//RPCBuilder r = new RPCBuilder();
+		//r.buildSHUTDOWN();
 	}
 }
