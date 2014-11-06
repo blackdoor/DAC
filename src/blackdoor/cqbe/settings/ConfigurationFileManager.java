@@ -4,9 +4,9 @@
 package blackdoor.cqbe.settings;
 
 /**
+ * 
  * @author Cj Buresch
- * @version 0.0.1
- *
+ * @version v0.0.1 - Nov 5, 2014
  */
 public class ConfigurationFileManager {
 

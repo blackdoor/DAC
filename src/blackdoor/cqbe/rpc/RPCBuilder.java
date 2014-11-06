@@ -3,7 +3,7 @@ package blackdoor.cqbe.rpc;
 /**
  * 
  * @author Cj Buresch
- * @version 0.0.1, 11/3/2014
+ * @version v0.0.1 - Nov 3, 2014
  */
 public class RPCBuilder {
 

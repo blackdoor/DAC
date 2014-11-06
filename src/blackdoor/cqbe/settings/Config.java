@@ -3,8 +3,7 @@ package blackdoor.cqbe.settings;
 /**
  * 
  * @author Cj Buresch
- * @version 0.0.1 11/1/2014
- *
+ * @version v0.0.1 - Nov 5, 2014
  */
 public class Config {
 	/**
@@ -15,7 +14,7 @@ public class Config {
 	public void edit() {
 	}
 
-	/**
+	/*
 	 * GETTERS and SETTERS to EDIT configurations on the fly!
 	 */
 }

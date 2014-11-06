@@ -1,5 +1,10 @@
 package blackdoor.cqbe.storage;
 
+/**
+ * 
+ * @author Cj Buresch
+ * @version v0.0.1 - Nov 5, 2014
+ */
 public class StorageItem {
 
 	/**

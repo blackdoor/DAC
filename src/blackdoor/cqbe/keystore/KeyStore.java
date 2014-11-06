@@ -7,7 +7,7 @@ package blackdoor.cqbe.keystore;
  * <p>
  * 
  * @author Cj Buresch
- * @version 0.0.1, 2014 Oct 31, 2014
+ * @version v0.0.1 - Nov 5, 2014
  */
 public class KeyStore {
 	/**

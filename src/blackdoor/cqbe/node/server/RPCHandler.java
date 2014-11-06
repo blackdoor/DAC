@@ -3,8 +3,7 @@ package blackdoor.cqbe.node.server;
 /**
  * 
  * @author Cj Buresch
- * @version 0.0.1 11/3/2014
- *
+ * @version v0.0.1 - Nov 5, 2014
  */
 public class RPCHandler {
 
