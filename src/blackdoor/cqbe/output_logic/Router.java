@@ -33,6 +33,9 @@ public class Router {
 	public Router(String bootstrapNode, int bootstrapPort){
 		
 	}
+	public Router(Address bootstrapNode){
+		
+	}
 	/**
 	 * Resolve the network layer addresses and ports of neighbors to destination by routing through the network.
 	 * @param destination an overlay address for which nearby layer 3 addresses should be resolved.

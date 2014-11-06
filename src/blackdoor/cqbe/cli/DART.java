@@ -32,7 +32,7 @@ public class DART {
 		}
 		if (args[0].equals("cert")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-			//CertificateUILogic.main(args2);
+			new Certificate(args2);
 		} else if (args[0].equals("keys")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
 			Keys.main(args2);
@@ -158,5 +158,6 @@ public class DART {
 		// CrazyIvan
 		// RPCBuilder r = new RPCBuilder();
 		// r.buildSHUTDOWN();
+
 	}
 }
