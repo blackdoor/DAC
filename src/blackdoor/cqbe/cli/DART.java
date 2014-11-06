@@ -10,6 +10,12 @@ import blackdoor.cqbe.output_logic.Router;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.util.CommandLineParser;
 
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.node.NodeBuilder;
+import blackdoor.cqbe.output_logic.Router;
+import blackdoor.cqbe.rpc.RPCBuilder;
+
 public class DART {
 
 	/**
@@ -33,23 +39,39 @@ public class DART {
 		} else if (args[0].equals("join")) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
 			DART.join(args2);
-		} else {
-			// CommandLineParser clp = new CommandLineParser();
-			// clp.addArgument('h', "Help", "Display help menue", true, false,
-			// false);
-			// clp.addArgument('v', "version", "Displays the version", true,
-			// false, false);
-			// try {
-			// Map out = clp.parseArgs(test1);
-			// if (out.containsKey("help")) {
-			// System.out.println(clp.getHelpText());
-			// } else if (out.containsKey("version")) {
-			// System.out.println("DART 1.0");
-			// }
-			// } catch (Exception e) {
-			// System.out.println(clp.getHelpText());
-			// }
 		}
+		// CommandLineParser clp = new CommandLineParser();
+		// clp.addArgument('h', "Help", "Display help menue", true, false,
+		// false);
+		// clp.addArgument('v', "version", "Displays the version", true,
+		// false, false);
+		// try {
+		// Map out = clp.parseArgs(test1);
+		// if (out.containsKey("help")) {
+		// System.out.println(clp.getHelpText());
+		// } else if (out.containsKey("version")) {
+		// System.out.println("DART 1.0");
+		// }
+		// } catch (Exception e) {
+		// System.out.println(clp.getHelpText());
+		// }
+		else if (args[0].equals("help")) {
+			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
+			DART.help(args2);
+		} else {
+			DART.help(args);
+		}
+	}
+
+	/**
+	 * Used to print a menu of commands, their descriptions and uses. Can be
+	 * used injunction with a specific command to get just that command’s
+	 * description.
+	 *
+	 * @param args
+	 *            list of arguments
+	 */
+	public static void help(String[] args) {
 	}
 
 	/**
@@ -59,6 +81,27 @@ public class DART {
 	 *            list of arguments
 	 */
 	public static void join(String[] args) {
+		// Parse things into
+		Router r = new Router();
+		Address destination = null;
+		int port = -1;
+		Boolean adam = false;
+		String dir = "";
+		String revive = "";
+		Boolean daemon = false;
+		AddressTable neighbors = r.resolveAddress(destination);
+
+		NodeBuilder bob = new NodeBuilder(neighbors);
+		bob.setAdam(adam);
+		bob.setDaemon(daemon);
+		if (dir != "")
+			bob.setDirectory(dir);
+		if (revive != "")
+			bob.setRevival(revive);
+		if (port != -1)
+			bob.setPort(port);
+
+		bob.buildNode();
 	}
 
 	/**
@@ -111,6 +154,9 @@ public class DART {
 	 * @param args
 	 *            list of arguments
 	 */
-	public static void leave(String[] args) {
+	public static void shutdown(String[] args) {
+		// CrazyIvan
+		// RPCBuilder r = new RPCBuilder();
+		// r.buildSHUTDOWN();
 	}
 }
