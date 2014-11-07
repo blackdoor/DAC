@@ -24,6 +24,7 @@ public class Certificate {
 		DBP.ERROR = true;
 		args = new String[]{"check"};
 		CommandLineParser parser = getParser();
+		DBP.printdebugln(args[0]);
 		//DBP.printdebugln(parser.getHelpText());
 		Map<String, Argument> parsedArgs;
 		try {
@@ -44,10 +45,7 @@ public class Certificate {
 			}
 		} catch (InvalidFormatException e) {
 			System.out.println(parser.getHelpText());
-			DBP.printerrorln(e.getMessage());
-			for(StackTraceElement elem : e.getStackTrace()){
-				DBP.printerrorln(elem);
-			}
+			DBP.printException(e);
 		}
 	}
 	
@@ -72,8 +70,7 @@ public class Certificate {
 			parser.addArgument(subcommand);
 			parser.addArgument(helpArgument);
 		} catch (DuplicateOptionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			DBP.printException(e);
 		}
 		return parser;
 	}
@@ -99,10 +96,7 @@ public class Certificate {
 		try {
 			parser.addArguments(new Argument[]{descriptor, keyFile, output});
 		} catch (DuplicateOptionException e) {
-			DBP.printerrorln(e.getMessage());
-			for(StackTraceElement elem : e.getStackTrace()){
-				DBP.printerrorln(elem);
-			}
+			DBP.printException(e);
 		}
 		return parser;
 	}
@@ -121,6 +115,7 @@ public class Certificate {
  	* @param  args list of arguments
  	*/
 	public static void create(String[] args) {
+		DBP.printdebugln("in create");
 		CommandLineParser parser = getCreateParser();
 		Map<String, Argument> parsedArgs;
 		File descriptorFile = null;
