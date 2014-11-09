@@ -5,4 +5,4 @@
  * @author nfischer3
  *
  */
-package blackdoor.cqbe.key_util;
+package blackdoor.cqbe.keystore;

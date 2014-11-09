@@ -1,5 +1,10 @@
 package blackdoor.cqbe.rpc;
 
+/**
+ * 
+ * @author Cj Buresch
+ * @version 0.0.1, 11/3/2014
+ */
 public class RPCBuilder {
 
 	public RPCBuilder() {
@@ -7,39 +12,50 @@ public class RPCBuilder {
 	}
 
 	/**
- 	* Used to build a json ping rpc
- 	*
- 	* @param  Ip and port of person to ping
- 	*/
-	public void ping() {
-
+	 * Initializies a GET RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object with relevant information.
+	 */
+	public void buildGET() {
 	}
 
 	/**
- 	* Used to build a json put rpc
- 	*
- 	* @param  file or cert
- 	*/
-	public void put() {
-
+	 * Initializies a PUT RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object.
+	 */
+	public void buildPUT() {
 	}
 
 	/**
- 	* Used to build a json get rpc
- 	*
- 	* @param  certID
- 	*/
-	public void get() {
-
+	 * Initializies a LOOKUP RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object with relevant information.
+	 */
+	public void buildLOOKUP() {
 	}
 
 	/**
- 	* Used to build a json look_up rpc
- 	*
- 	* @param  ip and port of node
- 	*/
-	public void look_up() {
-
+	 * Initializies a PING RPC JSON request to be sent.
+	 * <p>
+	 * 
+	 * @parem ?
+	 * @parem ??
+	 * @parem ???
+	 * @return JSON Object with relevant information.
+	 */
+	public void buildPING() {
 	}
-
 }
