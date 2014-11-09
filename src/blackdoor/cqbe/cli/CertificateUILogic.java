@@ -2,7 +2,7 @@ package blackdoor.cqbe.cli;
 
 public class CertificateUILogic {
 
-	public CertificateUILogic(String[] args) {
+	public static void main(String[] args) {
 	}
 
 	/**

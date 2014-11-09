@@ -2,7 +2,7 @@ package blackdoor.cqbe.cli;
 
 public class KeysUILogic {
 
-	public KeysUILogic(String[] args) {
+	public static void main(String[] args) {
 		// TODO Auto-generated constructor stub
 	}
 
