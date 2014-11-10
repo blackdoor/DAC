@@ -359,7 +359,7 @@ public class Certificate {
 
 	
 	private static CommandLineParser getSignParser(){
-		
+		return null;
 	}
 	/**
  	* sign a file
