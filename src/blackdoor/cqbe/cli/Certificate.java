@@ -19,6 +19,7 @@ import blackdoor.util.DBP;
 
 public class Certificate {
 	
+	
 	public static void main(String[] args) {
 		DBP.DEBUG = true;
 		DBP.ERROR = true;
@@ -48,18 +49,12 @@ public class Certificate {
 					System.out.println(parser.getHelpText());
 				} catch (InvalidFormatException e) {
 					System.out.println(parser.getHelpText());
-					DBP.printerrorln(e.getMessage());
-					for (StackTraceElement elem : e.getStackTrace()) {
-						DBP.printerrorln(elem);
-					}
+					DBP.printException(e);
 				}
 				break;
 			}
 		} else {
 			System.out.println(parser.getHelpText());
-
-			DBP.printException(e);
-
 		}
 
 	}
@@ -90,6 +85,26 @@ public class Certificate {
 		return parser;
 	}
 	
+	private static CommandLineParser getCheckParser(){
+		CommandLineParser parser = new CommandLineParser();
+		parser.setUsageHint("");
+		parser.setExecutableName("cqbe certificate check");
+		Argument subject = new Argument().setLongOption("subject").setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+		try {
+			parser.addArguments(new Argument[]{subject});
+		} catch (DuplicateOptionException e) {
+			DBP.printException(e);
+		}
+		return parser;
+	}
+	
+	private static void check(String[] args) {
+		
+		
+	}
+
+
+
 	private static CommandLineParser getCreateParser(){
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("");
@@ -115,15 +130,7 @@ public class Certificate {
 		}
 		return parser;
 	}
-
-	private static void check(String[] args) {
-		
-		
-	}
-
-	public Certificate(String[] args) {
-	}
-
+	
 	/**
  	* create a certificate
  	*
@@ -209,4 +216,7 @@ public class Certificate {
  	*/
 	//public void verify(String[] args) {
 	//}
+	
+	public Certificate(String[] args) {
+	}
 }
