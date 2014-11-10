@@ -59,7 +59,7 @@ public class CertificateBuilder implements Builder {
 	 * @throws BuilderException
 	 */
 	@Override
-	public Object build(PrivateKey privateKey) throws BuilderException, KeyException {
+	public byte[] build(PrivateKey privateKey) throws BuilderException, KeyException {
 		// TODO Auto-generated method stub
 		return null;
 	}

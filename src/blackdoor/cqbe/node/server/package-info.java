@@ -2,7 +2,7 @@
  * 
  */
 /**
- * @author Cyril Van Dyke
+ * @author Nathan Fischer
  *
  */
 package blackdoor.cqbe.node.server;

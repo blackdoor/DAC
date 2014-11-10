@@ -1,8 +1,16 @@
 package blackdoor.cqbe.cli;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.security.KeyException;
+import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.Map;
 
+import blackdoor.cqbe.certificate.BuilderException;
+import blackdoor.cqbe.certificate.CertificateBuilder;
 import blackdoor.util.CommandLineParser;
 import blackdoor.util.CommandLineParser.Argument;
 import blackdoor.util.CommandLineParser.DuplicateOptionException;
@@ -16,6 +24,7 @@ public class Certificate {
 		DBP.ERROR = true;
 		args = new String[]{"check"};
 		CommandLineParser parser = getParser();
+		DBP.printdebugln(args[0]);
 		//DBP.printdebugln(parser.getHelpText());
 		Map<String, Argument> parsedArgs;
 		try {
@@ -36,10 +45,7 @@ public class Certificate {
 			}
 		} catch (InvalidFormatException e) {
 			System.out.println(parser.getHelpText());
-			DBP.printerrorln(e.getMessage());
-			for(StackTraceElement elem : e.getStackTrace()){
-				DBP.printerrorln(elem);
-			}
+			DBP.printException(e);
 		}
 	}
 	
@@ -64,15 +70,15 @@ public class Certificate {
 			parser.addArgument(subcommand);
 			parser.addArgument(helpArgument);
 		} catch (DuplicateOptionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			DBP.printException(e);
 		}
 		return parser;
 	}
-
-	private static void check(String[] args) {
+	
+	private static CommandLineParser getCreateParser(){
 		CommandLineParser parser = new CommandLineParser();
-		parser.setExecutableName("cqbe certificate check");
+		parser.setUsageHint("");
+		parser.setExecutableName("cqbe certificate create");
 		Argument descriptor = new Argument().setLongOption("descriptor")
 				.setOption("d").setRequiredArg(true).setMultipleAllowed(false)
 				.setHelpText("descriptor FILE to populate certificate")
@@ -90,11 +96,14 @@ public class Certificate {
 		try {
 			parser.addArguments(new Argument[]{descriptor, keyFile, output});
 		} catch (DuplicateOptionException e) {
-			DBP.printerrorln(e.getMessage());
-			for(StackTraceElement elem : e.getStackTrace()){
-				DBP.printerrorln(elem);
-			}
+			DBP.printException(e);
 		}
+		return parser;
+	}
+
+	private static void check(String[] args) {
+		
+		
 	}
 
 	public Certificate(String[] args) {
@@ -106,6 +115,60 @@ public class Certificate {
  	* @param  args list of arguments
  	*/
 	public static void create(String[] args) {
+		DBP.printdebugln("in create");
+		CommandLineParser parser = getCreateParser();
+		Map<String, Argument> parsedArgs;
+		File descriptorFile = null;
+		File keyFile = null;
+		File outputFile;
+		CertificateBuilder builder;
+		PrivateKey key;
+		byte[] cert = null;
+		try {
+			parsedArgs = parser.parseArgs(args);
+			descriptorFile = new File(parsedArgs.get("descriptor").getValues().get(0));
+			keyFile = new File(parsedArgs.get("key-file").getValues().get(0));
+			outputFile = new File(parsedArgs.get("output").getValues().get(0));
+		} catch (InvalidFormatException e) {
+			DBP.printerrorln(e.getMessage());
+			for(StackTraceElement elem : e.getStackTrace()){
+				DBP.printerrorln(elem);
+			}
+			System.out.println(parser.getHelpText());
+			return;
+		}
+		try{
+			if(!descriptorFile.isFile() || !descriptorFile.exists()){
+				System.out.println("Invalid descriptor file.");
+				return;
+			}if (!keyFile.exists() || !keyFile.isFile()){
+				System.out.println("Invalid key file.");
+				return;
+			}
+		}catch (NullPointerException e){
+			DBP.printerrorln(e.getMessage());
+			for(StackTraceElement elem : e.getStackTrace()){
+				DBP.printerrorln(elem);
+			}
+		}
+		// all input is checked and good after this
+		key = null;//TODO need a way to get a key file to a key object
+		builder = new CertificateBuilder(descriptorFile);
+		try {
+			cert = builder.build(key);
+		} catch (KeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BuilderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Files.write(outputFile.toPath(), cert, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**

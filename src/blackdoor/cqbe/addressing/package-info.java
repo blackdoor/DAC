@@ -2,7 +2,7 @@
  * 
  */
 /**
- * @author nfischer3
+ * @author Nathan Fischer and Anna Kocer
  *
  */
 package blackdoor.cqbe.addressing;
