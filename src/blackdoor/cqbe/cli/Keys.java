@@ -3,16 +3,16 @@
  */
 package blackdoor.cqbe.cli;
 
+import java.io.Console;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
-import java.io.Console;
 
 import blackdoor.util.CommandLineParser;
-import blackdoor.util.DBP;
 import blackdoor.util.CommandLineParser.Argument;
 import blackdoor.util.CommandLineParser.DuplicateOptionException;
 import blackdoor.util.CommandLineParser.InvalidFormatException;
+import blackdoor.util.DBP;
 
 /**
  * 
@@ -26,7 +26,6 @@ public class Keys {
     DBP.ERROR = true;
 
     CommandLineParser parser = getParser();
-    Keys kl = new Keys();
     Map<String, Argument> parsedArgs;
     try {
       parsedArgs = parser.parseArgs(args);
@@ -60,7 +59,9 @@ public class Keys {
     parser.setExecutableName("cqbe keys");
     parser
         .setUsageHint("\tmandatory options to long options are mandatory for short options too.\n"
-            + "The subcommands for cqbe keys are:\n" + "\t create \n" + "\t retrieve \n"
+            + "The subcommands for cqbe keys are:\n" 
+            + "\t create \n" 
+            + "\t retrieve \n"
             + "\t remove \n");
     Argument subcommand =
         new Argument().setLongOption("subcommand").setParam(true).setMultipleAllowed(false)
@@ -78,6 +79,18 @@ public class Keys {
       e.printStackTrace();
     }
     return parser;
+  }
+  
+  private static CommandLineParser getCreateParser() {
+    return null;
+  }
+  
+  private static CommandLineParser getRetrieveParser() {
+    return null;
+  }
+  
+  private static CommandLineParser getRemoveParser() {
+    return null;
   }
 
   /**

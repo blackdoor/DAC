@@ -23,7 +23,7 @@ public class DART {
       new Certificate(args2);
     } else if (args[0].equals("keys")) {
       String[] args2 = Arrays.copyOfRange(args, 1, args.length);
-      Keys.main(args2);
+      new Keys(args2);
     } else if (args[0].equals("join")) {
       String[] args2 = Arrays.copyOfRange(args, 1, args.length);
       DART.join(args2);
