@@ -53,7 +53,10 @@ public class Keys {
       }
     }
   }
-
+  /**
+   * 
+   * @return
+   */
   private static CommandLineParser getParser() {
     CommandLineParser parser = new CommandLineParser();
     parser.setExecutableName("cqbe keys");
@@ -66,7 +69,7 @@ public class Keys {
     Argument subcommand =
         new Argument().setLongOption("subcommand").setParam(true).setMultipleAllowed(false)
             .setRequiredArg(false).setTakesValue(false)
-            .setHelpText("the subcommand of certificate to execute.");
+            .setHelpText("the subcommand of keys to execute.");
     // DBP.printdebugln(subcommand);
     Argument helpArgument =
         new Argument().setLongOption("help").setOption("h").setMultipleAllowed(false)
@@ -81,16 +84,93 @@ public class Keys {
     return parser;
   }
   
+  /**
+   * 
+   * @return
+   */
   private static CommandLineParser getCreateParser() {
-    return null;
+    CommandLineParser parser = new CommandLineParser();
+    parser.setUsageHint("");
+    parser.setExecutableName("cqbe keys create");
+    Argument alias = new Argument().setLongOption("ALIAS")
+            .setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+    Argument store = new Argument()
+            .setLongOption("store")
+            .setOption("s")
+            .setMultipleAllowed(false)
+            .setValueRequired(true)
+            .setHelpText(
+                    "a keystore that is different than the default")
+            .setValueHint("FILE");
+    Argument output = new Argument()
+    .setLongOption("output")
+    .setOption("o")
+    .setMultipleAllowed(false)
+    .setValueRequired(true)
+    .setHelpText(
+            "location of public key cryptography standards(PKCS) output")
+    .setValueHint("DIRECTORY");
+    try {
+        parser.addArguments(new Argument[]{alias, store, output});
+    } catch (DuplicateOptionException e) {
+        DBP.printException(e);
+    }
+    return parser;
   }
-  
+  /**
+   * 
+   * @return
+   */
   private static CommandLineParser getRetrieveParser() {
-    return null;
+    CommandLineParser parser = new CommandLineParser();
+    parser.setUsageHint("");
+    parser.setExecutableName("cqbe keys retrieve");
+    Argument alias = new Argument().setLongOption("ALIAS")
+            .setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+    Argument store = new Argument()
+            .setLongOption("store")
+            .setOption("s")
+            .setMultipleAllowed(false)
+            .setValueRequired(true)
+            .setHelpText(
+                    "retrieve a key of ALIAS from FILE")
+            .setValueHint("FILE");
+    Argument output = new Argument()
+    .setLongOption("output")
+    .setOption("o")
+    .setMultipleAllowed(false)
+    .setValueRequired(true)
+    .setHelpText(
+            "location that output should to be stored.")
+    .setValueHint("DIRECTORY");
+    try {
+        parser.addArguments(new Argument[]{alias, store, output});
+    } catch (DuplicateOptionException e) {
+        DBP.printException(e);
+    }
+    return parser;
   }
   
   private static CommandLineParser getRemoveParser() {
-    return null;
+    CommandLineParser parser = new CommandLineParser();
+    parser.setUsageHint("");
+    parser.setExecutableName("cqbe keys remove");
+    Argument alias = new Argument().setLongOption("ALIAS")
+            .setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+    Argument store = new Argument()
+            .setLongOption("store")
+            .setOption("s")
+            .setMultipleAllowed(false)
+            .setValueRequired(true)
+            .setHelpText(
+                    "removes key of ALIAS from FILE.")
+            .setValueHint("FILE");
+    try {
+        parser.addArguments(new Argument[]{alias, store});
+    } catch (DuplicateOptionException e) {
+        DBP.printException(e);
+    }
+    return parser;
   }
 
   /**
