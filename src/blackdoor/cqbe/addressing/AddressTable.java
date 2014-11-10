@@ -7,6 +7,7 @@ import blackdoor.cqbe.addressing.Address.OverlayAddress;
 /**
  * @author Cj Buresch
  * @version 0.0.1 11/3/2014
+ * Responsibilities - Table containing the addresses of neighbors in a system for a specific node.
  */
 public class AddressTable {
 

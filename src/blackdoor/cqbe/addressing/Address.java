@@ -6,6 +6,7 @@ import java.net.Inet6Address;
  * 
  * @author Cj Buresch
  * @version 0.0.1 11/3/2014
+ * Responsibilities - The structure for an address of a node in the server
  */
 public class Address implements Comparable<Address> {
 
