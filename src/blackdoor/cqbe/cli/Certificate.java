@@ -89,9 +89,26 @@ public class Certificate {
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("");
 		parser.setExecutableName("cqbe certificate check");
-		Argument subject = new Argument().setLongOption("subject").setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+		Argument subject = new Argument().setLongOption("subject")
+				.setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+		Argument issuer = new Argument()
+				.setLongOption("issuer")
+				.setOption("i")
+				.setMultipleAllowed(false)
+				.setValueRequired(true)
+				.setHelpText(
+						"the certificate of the issuer of an endorsement to check, endorsement must also be set")
+				.setValueHint("FILE");
+		Argument endorsement = new Argument()
+		.setLongOption("endorsement")
+		.setOption("e")
+		.setMultipleAllowed(false)
+		.setValueRequired(true)
+		.setHelpText(
+				"the endorsement file to check, issuer must also be set")
+		.setValueHint("FILE");
 		try {
-			parser.addArguments(new Argument[]{subject});
+			parser.addArguments(new Argument[]{subject, issuer, endorsement});
 		} catch (DuplicateOptionException e) {
 			DBP.printException(e);
 		}
@@ -99,7 +116,20 @@ public class Certificate {
 	}
 	
 	private static void check(String[] args) {
-		
+		CommandLineParser parser;
+		Map<String, Argument> parsedArgs;
+		parser = getCheckParser();
+		try {
+			parsedArgs = parser.parseArgs(args);
+			
+		} catch (InvalidFormatException e) {
+			DBP.printException(e);
+			System.out.println(parser.getHelpText());
+			return;
+		}
+		if((parsedArgs.containsKey("issuer") && !parsedArgs.containsKey("endorsement")) || (!parsedArgs.containsKey("issuer") && parsedArgs.containsKey("endorsement"))){
+			DBP.printdebugln("issuer present: " + parsedArgs.containsKey("issuer") + "\nendorsement present: " + parsedArgs.containsKey("endorsement"));
+		}
 		
 	}
 
