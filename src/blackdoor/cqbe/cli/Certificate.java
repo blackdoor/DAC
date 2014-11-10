@@ -19,34 +19,44 @@ import blackdoor.util.DBP;
 
 public class Certificate {
 	
-	public static void main(String[] args){
+	
+	public static void main(String[] args) {
 		DBP.DEBUG = true;
 		DBP.ERROR = true;
-		args = new String[]{"check"};
 		CommandLineParser parser = getParser();
-		DBP.printdebugln(args[0]);
-		//DBP.printdebugln(parser.getHelpText());
+
+		// DBP.printdebugln(parser.getHelpText());
+
 		Map<String, Argument> parsedArgs;
-		try {
-			parsedArgs = parser.parseArgs(args);
-			if(parsedArgs.containsKey("subcommand")){
-				switch(args[0]){
-					case "create":	create(Arrays.copyOfRange(args, 1, args.length-1));	
-									break;
-					case "endorse":	endorse(Arrays.copyOfRange(args, 1, args.length-1));	
-									break;
-					case "check":	check(Arrays.copyOfRange(args, 1, args.length));	
-									break;
-					case "sign":	sign(Arrays.copyOfRange(args, 1, args.length-1));	
-									break;
+		if (args.length > 0) {
+			switch (args[0]) {
+			case "create":
+				create(Arrays.copyOfRange(args, 1, args.length - 1));
+				break;
+			case "endorse":
+				endorse(Arrays.copyOfRange(args, 1, args.length - 1));
+				break;
+			case "check":
+				check(Arrays.copyOfRange(args, 1, args.length));
+				break;
+			case "sign":
+				sign(Arrays.copyOfRange(args, 1, args.length - 1));
+				break;
+			default:
+				try {
+					parsedArgs = parser.parseArgs(args);
+					DBP.printdebugln(parsedArgs);
+					System.out.println(parser.getHelpText());
+				} catch (InvalidFormatException e) {
+					System.out.println(parser.getHelpText());
+					DBP.printException(e);
 				}
-			}else{
-				System.out.println(parser.getHelpText());
+				break;
 			}
-		} catch (InvalidFormatException e) {
+		} else {
 			System.out.println(parser.getHelpText());
-			DBP.printException(e);
 		}
+
 	}
 	
 	private static CommandLineParser getParser(){
@@ -75,6 +85,26 @@ public class Certificate {
 		return parser;
 	}
 	
+	private static CommandLineParser getCheckParser(){
+		CommandLineParser parser = new CommandLineParser();
+		parser.setUsageHint("");
+		parser.setExecutableName("cqbe certificate check");
+		Argument subject = new Argument().setLongOption("subject").setParam(true).setMultipleAllowed(false).setRequiredArg(true);
+		try {
+			parser.addArguments(new Argument[]{subject});
+		} catch (DuplicateOptionException e) {
+			DBP.printException(e);
+		}
+		return parser;
+	}
+	
+	private static void check(String[] args) {
+		
+		
+	}
+
+
+
 	private static CommandLineParser getCreateParser(){
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("");
@@ -100,15 +130,7 @@ public class Certificate {
 		}
 		return parser;
 	}
-
-	private static void check(String[] args) {
-		
-		
-	}
-
-	public Certificate(String[] args) {
-	}
-
+	
 	/**
  	* create a certificate
  	*
@@ -194,4 +216,7 @@ public class Certificate {
  	*/
 	//public void verify(String[] args) {
 	//}
+	
+	public Certificate(String[] args) {
+	}
 }
