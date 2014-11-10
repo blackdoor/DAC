@@ -82,7 +82,7 @@ public class EndorsementBuilder implements Builder{
 	}
 
 	@Override
-	public Object build(PrivateKey privateKey) throws BuilderException, KeyException {
+	public byte[] build(PrivateKey privateKey) throws BuilderException, KeyException {
 		// TODO Auto-generated method stub
 		return null;
 	}

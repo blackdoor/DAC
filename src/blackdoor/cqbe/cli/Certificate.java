@@ -16,6 +16,7 @@ import blackdoor.cqbe.certificate.BuilderException;
 import blackdoor.cqbe.certificate.CertificateBuilder;
 import blackdoor.cqbe.certificate.CertificateProtos;
 import blackdoor.cqbe.certificate.CertificateValidator;
+import blackdoor.cqbe.certificate.EndorsementBuilder;
 import blackdoor.cqbe.certificate.EndorsementValidator;
 import blackdoor.cqbe.certificate.Validator;
 import blackdoor.util.CommandLineParser;
@@ -140,14 +141,14 @@ public class Certificate {
 		Map<String, Argument> parsedArgs;
 		parser = getCheckParser();
 		parsedArgs = parser.parseArgs(args);
-		subject = new File(parsedArgs.get("issuer").getValue());
+		
 		
 		if((parsedArgs.containsKey("issuer") && !parsedArgs.containsKey("endorsement")) || (!parsedArgs.containsKey("issuer") && parsedArgs.containsKey("endorsement"))){
 			DBP.printdebugln("issuer present: " + parsedArgs.containsKey("issuer") + "\nendorsement present: " + parsedArgs.containsKey("endorsement"));
 			System.out.println("issuer and endorsement must both be present." + parser.getHelpText());
 			return;
 		}
-		
+		subject = new File(parsedArgs.get("subject").getValue());
 		//get cert object from subject file
 		if(!existsAndReadable(subject)){
 			System.out.println("specified subject certificate file does not exist or we lack read permissions");
@@ -300,7 +301,7 @@ public class Certificate {
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("eg. \"cqbe certificate endorse mycerts/bob.cert friendcerts/alice.cert -d end.desc -k mykeys/key.pkcs -o myendorsements/bob-alice.endr\"");
 		parser.setExecutableName("cqbe certificate endorse");
-		Argument subject = new Argument().setLongOption("certificates")
+		Argument subject = new Argument().setLongOption("issuer subject")
 				.setParam(true).setMultipleAllowed(true).setRequiredArg(true)
 				.setValueRequired(true);
 		Argument descriptor = new Argument().setLongOption("descriptor")
@@ -316,7 +317,7 @@ public class Certificate {
 		Argument output = new Argument().setLongOption("output").setOption("o")
 				.setHelpText("location for endorsement to be saved")
 				.setMultipleAllowed(false).setTakesValue(true)
-				.setValueRequired(false);
+				.setValueRequired(true);
 		try {
 			parser.addArguments(new Argument[]{subject, descriptor, keyFile, output});
 		} catch (DuplicateOptionException e) {
@@ -335,8 +336,31 @@ public class Certificate {
 		CommandLineParser parser = getEndorseParser();
 		Map<String, Argument> parsedArgs;
 		parsedArgs = parser.parseArgs(args);
+		EndorsementBuilder builder;
+		File issuerFile, subjectFile, keyFile, descriptorFile, outputFile = new File("out.endrsmnt");
+		
+		if(parsedArgs.get("issuer subject").getValues().size() != 2){
+			throw new CommandLineParser.InvalidFormatException("both issuer and subject needed. found " + parsedArgs.get("certificates"));
+		}
+		issuerFile = new File(parsedArgs.get("issuer subject").getValues().get(0));
+		subjectFile = new File(parsedArgs.get("issuer subject").getValues().get(1));
+		keyFile = new File(parsedArgs.get("key-file").getValue());
+		descriptorFile = new File(parsedArgs.get("descriptor").getValue());
+		if(parsedArgs.containsKey("output")){
+			outputFile = new File(parsedArgs.get("output").getValue());
+		}
+		
+		builder = new EndorsementBuilder(issuerFile, subjectFile);
+		builder.setEndorsement(descriptorFile);
+		PrivateKey privateKey = null;//need way to get private key from file
+		Files.write(outputFile.toPath(), builder.build(privateKey), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		
 	}
 
+	
+	private static CommandLineParser getSignParser(){
+		
+	}
 	/**
  	* sign a file
  	*
