@@ -237,18 +237,14 @@ public class cqbe {
                 JSONObject rpc = rpcObject.buildGETendorsementList(out.get("subjectUID").getValue());
                 Router router = new Router();
                 JSONObject enorceListJSON = router.routeWithCalls(rpc);
-                File outputFile = new File("out.endrsmntList");
-                if(parsedArgs.containsKey("dir")){
-                    outputFile = new File(parsedArgs.get("dir").getValue());
-                }
-                Files.write(outputFile.toPath(), RPCBuilder.getBinary(enorceListJSON), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                System.out.println(enorceListJSON.toString());       
             }
             else{
                 RPCBuilder rpcObject = new RPCBuilder();
                 JSONObject rpc = rpcObject.buildGETcertificate(out.get("subjectUID").getValue());
                 Router router = new Router();
                 JSONObject certificateJSON = router.routeWithCalls(rpc);
-                File outputFile = new File("out.endrsmntList");
+                File outputFile = new File("out.certificate");
                 if(parsedArgs.containsKey("dir")){
                     outputFile = new File(parsedArgs.get("dir").getValue());
                 }
