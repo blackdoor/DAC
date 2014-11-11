@@ -190,6 +190,80 @@ public class cqbe {
 	 *            list of arguments
 	 */
 	public static void retrieve(String[] args) {
+        CommandLineParser clp = new CommandLineParser();
+        clp.setExecutableName("cqbe retrieve");
+        try {
+            clp.addArgument(new Argument().setLongOption("subjectUID")
+                .setParam(true).setMultipleAllowed(false).setRequiredArg(true));
+            clp.addArgument(new Argument().setLongOption("endorse")
+                .setOption("e").setMultipleAllowed(false).setTakesValue(false)
+                .setHelpText("item being retrieved is an endorsement."));
+            clp.addArgument(new Argument().setLongOption("issuer")
+                .setOption("i").setMultipleAllowed(false).setTakesValue(true)
+                .setHelpText("issuer unique identifier."));
+            clp.addArgument(new Argument().setLongOption("list")
+                .setOption("l").setMultipleAllowed(false).setTakesValue(true)
+                .setHelpText("list of endorsements for this subject unique identifier."));
+            clp.addArgument(new Argument().setLongOption("dir")
+                .setOption("d").setMultipleAllowed(false).setTakesValue(false)
+                .setHelpText("location for the retrieved file to be stored."));
+            clp.addArgument(new Argument().setLongOption("help")
+                .setOption("h").setMultipleAllowed(false).setTakesValue(false)
+                .setHelpText("Display help menue."));
+            Map<String, Argument> out = clp.parseArgs(args);
+            if(out.containsKey("help")){
+                System.out.println(clp.getHelpText());
+            }
+            else if (out.containsKey("endorse")){
+                if (out.containsKey("issuer")){
+
+                    RPCBuilder rpcObject = new RPCBuilder();
+                    JSONObject rpc = rpcObject.buildGETendorsement(out.get("subjectUID").getValue(), out.getValue("issuer"));
+                    Router router = new Router();
+                    JSONObject enorceJSON = router.routeWithCalls(rpc);
+                    File outputFile = new File("out.endrsmnt");
+                    if(parsedArgs.containsKey("dir")){
+                        outputFile = new File(parsedArgs.get("dir").getValue());
+                    }
+                    Files.write(outputFile.toPath(), RPCBuilder.getBinary(enorceJSON), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                }
+                else{
+                    System.out.println("a issuer unique identifier must be provided");
+                    System.out.println(clp.getHelpText());
+                }
+            }
+            else if (out.containsKey("list")){
+                RPCBuilder rpcObject = new RPCBuilder();
+                JSONObject rpc = rpcObject.buildGETendorsementList(out.get("subjectUID").getValue());
+                Router router = new Router();
+                JSONObject enorceListJSON = router.routeWithCalls(rpc);
+                File outputFile = new File("out.endrsmntList");
+                if(parsedArgs.containsKey("dir")){
+                    outputFile = new File(parsedArgs.get("dir").getValue());
+                }
+                Files.write(outputFile.toPath(), RPCBuilder.getBinary(enorceListJSON), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            }
+            else{
+                RPCBuilder rpcObject = new RPCBuilder();
+                JSONObject rpc = rpcObject.buildGETcertificate(out.get("subjectUID").getValue());
+                Router router = new Router();
+                JSONObject certificateJSON = router.routeWithCalls(rpc);
+                File outputFile = new File("out.endrsmntList");
+                if(parsedArgs.containsKey("dir")){
+                    outputFile = new File(parsedArgs.get("dir").getValue());
+                }
+                Files.write(outputFile.toPath(), RPCBuilder.getBinary(certificateJSON), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            }
+        } 
+        catch (DuplicateOptionException e) {
+            System.out.println("dups exeption");
+        }
+        catch (InvalidFormatException e) {
+            System.out.println("invalidException");
+        }
+        catch (Exception e){
+            System.out.println("all other exeptions");
+        }
 	}
 
 	/**
