@@ -1,6 +1,18 @@
 package blackdoor.cqbe.cli;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import blackdoor.util.CommandLineParser;
+import blackdoor.util.CommandLineParser.Argument;
+import blackdoor.util.CommandLineParser.DuplicateOptionException;
+import blackdoor.util.CommandLineParser.InvalidFormatException;
+import blackdoor.util.DBP;
+
+import org.json.*;
 
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressTable;
@@ -52,27 +64,60 @@ public class DART {
  	* @param  args list of arguments
  	*/
 	public void join(String[] args) {
-		//Parse things into
+		CommandLineParser clp = new CommandLineParser();
 		Router r = new Router();
 		Address destination = null;
-		int port = -1;
-		Boolean adam = false;
-		String dir = "";
-		String revive = "";
-		Boolean daemon = false;
 		AddressTable neighbors = r.resolveAddress(destination);
-		
 		NodeBuilder bob = new NodeBuilder(neighbors);
-		bob.setAdam(adam);
-		bob.setDaemon(daemon);
-		if(dir != "")
-			bob.setDirectory(dir);
-		if(revive != "")
-			bob.setRevival(revive);
-		if(port != -1)
-			bob.setPort(port);
 		
-		bob.buildNode();
+		clp.setExecutableName("cqbe join");
+		try{
+			clp.addArgument(new Argument().setLongOption("port")
+	            .setOption("p").setMultipleAllowed(false).setTakesValue(true));
+	        clp.addArgument(new Argument().setLongOption("adam")
+	        	.setOption("a").setMultipleAllowed(false));
+	        clp.addArgument(new Argument().setLongOption("dir")
+	        	.setOption("d").setMultipleAllowed(false).setTakesValue(true));
+	        clp.addArgument(new Argument().setLongOption("revive")
+	        	.setOption("r").setMultipleAllowed(false).setTakesValue(true));
+	        clp.addArgument(new Argument().setLongOption("daemon")
+	        	.setOption("dm").setMultipleAllowed(false));
+	        Map<String, Argument> out = clp.parseArgs(args);
+            if(out.containsKey("help")){
+                System.out.println(clp.getHelpText());
+            }
+            else {
+            	if(out.containsKey("port")){
+            		int port = Integer.parseInt((out.get("port").getValues().get(0)));
+            		bob.setPort(port);
+            	}
+            	if(out.containsKey("adam")){
+            		bob.setAdam(true);
+            	}
+            	if(out.containsKey("dir")){
+            		String dir = out.get("dir").getValues().get(0);
+            		bob.setDirectory(dir);
+            	}
+            	if(out.containsKey("revive")){
+            		String revive = out.get("revive").getValues().get(0);
+            		bob.setRevival(revive);
+            	}
+            	if(out.containsKey("daemon")){
+            		bob.setDaemon(true);
+            	}
+        		bob.buildNode();
+            }
+		}
+        catch (DuplicateOptionException e) {
+            System.out.println("dups exeption");
+        }
+        catch (InvalidFormatException e) {
+            System.out.println("invalidException");
+        }
+        catch (Exception e) {
+            System.out.println("all other exeptions");
+        }
+
 	}
 
 	/**
@@ -97,8 +142,35 @@ public class DART {
  	* @param  args list of arguments
  	*/
 	public void shutdown(String[] args) {
-		// CrazyIvan
-		//RPCBuilder r = new RPCBuilder();
-		//r.buildSHUTDOWN();
+		CommandLineParser clp = new CommandLineParser();
+		clp.setExecutableName("cqbe shutdown");
+		try{
+			clp.addArgument(new Argument().setLongOption("port")
+				.setOption("p").setMultipleAllowed(false).setRequiredArg(true)
+				.setTakesValue(true).setHelpText("The port of the node to be shutdown"));
+			Map<String,Argument> out = clp.parseArgs(args);
+            if(out.containsKey("help")){
+                System.out.println(clp.getHelpText());
+            }
+            else {
+
+            	int port = Integer.parseInt(out.get("port").getValues().get(0));
+        		RPCBuilder r = new RPCBuilder();
+        		JSONObject rpc = r.buildSHUTDOWN(port);
+        		Router router = new Router();
+        		router.routeWithCalls(rpc);
+            }
+		}
+		 catch (DuplicateOptionException e) {
+	         System.out.println("dups exeption");
+	     }
+	     catch (InvalidFormatException e) {
+			 System.out.println("invalidException");
+	     }
+	     catch (Exception e) {
+	    	 System.out.println("all other exeptions");
+	     }
+		
+
 	}
 }

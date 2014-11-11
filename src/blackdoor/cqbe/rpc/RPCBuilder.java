@@ -1,5 +1,7 @@
 package blackdoor.cqbe.rpc;
 
+import org.json.JSONObject;
+
 /**
  * 
  * @author Cj Buresch
@@ -57,5 +59,14 @@ public class RPCBuilder {
 	 * @return JSON Object with relevant information.
 	 */
 	public void buildPING() {
+	}
+	
+	/**
+	 * Initiliazes a SHUTDOWN RPC JSON request to be sent
+	 *
+	 * @param port - Port to be shutdown
+	 */
+	public JSONObject buildSHUTDOWN(int port) {
+		return null;
 	}
 }
