@@ -5,7 +5,7 @@ import blackdoor.cqbe.addressing.*;
 import blackdoor.cqbe.rpc.RPCException.*;
 
 /**
- * Handles routing through the overlay network, resolution of overlay addresses, sending RPCs and resolving replies
+ * Responsibility - Handles routing through the overlay network, resolution of overlay addresses, sending RPCs and resolving replies
  * @author nfischer3
  *
  */
