@@ -65,7 +65,7 @@ public class CQBE {
             .setMultipleAllowed(false).setTakesValue(false).setHelpText("Displays the version."));
         clp.addArgument(new Argument().setLongOption("help").setOption("h")
             .setMultipleAllowed(false).setTakesValue(false).setHelpText("Display help menue."));
-        Map out = clp.parseArgs(args);
+        Map<String, Argument> out = clp.parseArgs(args);
         if (out.containsKey("version")) {
           System.out.println("cqbe 1.0");
         } else {
@@ -212,16 +212,16 @@ public class CQBE {
           .setTakesValue(false).setHelpText("location for the retrieved file to be stored."));
       clp.addArgument(new Argument().setLongOption("help").setOption("h").setMultipleAllowed(false)
           .setTakesValue(false).setHelpText("Display help menue."));
-      Map<String, Argument> out = clp.parseArgs(args);
-      if (out.containsKey("help")) {
+      Map<String, Argument> parsedArgs = clp.parseArgs(args);
+      if (parsedArgs.containsKey("help")) {
         System.out.println(clp.getHelpText());
-      } else if (out.containsKey("endorse")) {
-        if (out.containsKey("issuer")) {
+      } else if (parsedArgs.containsKey("endorse")) {
+        if (parsedArgs.containsKey("issuer")) {
 
           RPCBuilder rpcObject = new RPCBuilder();
           JSONObject rpc =
-              rpcObject.buildGETendorsement(out.get("subjectUID").getValue(),
-                  out.getValue("issuer"));
+              rpcObject.buildGETendorsement(parsedArgs.get("subjectUID").getValue(), parsedArgs
+                  .get("issuer").getValue());
           Router router = new Router();
           JSONObject enorceJSON = router.routeWithCalls(rpc);
           File outputFile = new File("out.endrsmnt");
@@ -234,15 +234,15 @@ public class CQBE {
           System.out.println("a issuer unique identifier must be provided");
           System.out.println(clp.getHelpText());
         }
-      } else if (out.containsKey("list")) {
+      } else if (parsedArgs.containsKey("list")) {
         RPCBuilder rpcObject = new RPCBuilder();
-        JSONObject rpc = rpcObject.buildGETendorsementList(out.get("subjectUID").getValue());
+        JSONObject rpc = rpcObject.buildGETendorsementList(parsedArgs.get("subjectUID").getValue());
         Router router = new Router();
         JSONObject enorceListJSON = router.routeWithCalls(rpc);
         System.out.println(enorceListJSON.toString());
       } else {
         RPCBuilder rpcObject = new RPCBuilder();
-        JSONObject rpc = rpcObject.buildGETcertificate(out.get("subjectUID").getValue());
+        JSONObject rpc = rpcObject.buildGETcertificate(parsedArgs.get("subjectUID").getValue());
         Router router = new Router();
         JSONObject certificateJSON = router.routeWithCalls(rpc);
         File outputFile = new File("out.certificate");

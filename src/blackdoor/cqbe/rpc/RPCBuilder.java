@@ -73,5 +73,22 @@ public class RPCBuilder {
 	public JSONObject buildSHUTDOWN(int port) {
 		return null;
 	}
+	public JSONObject buildGETendorsement(String subjectUID, String issuer) {
+	    return null;
+	}
 
+  public static byte[] getBinary(JSONObject enorceJSON) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public JSONObject buildGETendorsementList(String subjectUID) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public JSONObject buildGETcertificate(String subjectUID) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }
