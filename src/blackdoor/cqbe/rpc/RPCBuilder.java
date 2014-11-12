@@ -1,5 +1,7 @@
 package blackdoor.cqbe.rpc;
 
+import java.io.File;
+
 import org.json.JSONObject;
 
 /**
@@ -28,13 +30,15 @@ public class RPCBuilder {
 	/**
 	 * Initializies a PUT RPC JSON request to be sent.
 	 * <p>
+	 * @param file 
 	 * 
 	 * @parem ?
 	 * @parem ??
 	 * @parem ???
 	 * @return JSON Object.
 	 */
-	public void buildPUT() {
+	public JSONObject buildPUT(File file) {
+    return null;
 	}
 
 	/**
@@ -69,4 +73,5 @@ public class RPCBuilder {
 	public JSONObject buildSHUTDOWN(int port) {
 		return null;
 	}
+
 }
