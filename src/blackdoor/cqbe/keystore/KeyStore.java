@@ -73,7 +73,9 @@ public class KeyStore {
    * @return PrivateKey Returns the private key of a user. probably need to figure out how I'd like
    *         that to be formated. IF it needs to be a string, byte array or something else.
    */
-  public void getPrivateKey(String alias) {}
+  public String getPrivateKey(String alias) {
+	  return alias + " password";
+  }
 
 
   /**
