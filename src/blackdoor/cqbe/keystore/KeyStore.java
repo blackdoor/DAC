@@ -112,11 +112,12 @@ public class KeyStore {
   /**
    * Deletes an entry from the keystore.
    * <p>
+ * @param string 
    * 
    * @param Alias
    *        The subject name or alias of a certificate that was created.
    */
-  public void deleteEntry() {}
+  public void deleteEntry(String string) {}
 
   /**
    * Deletes an entry from the keystore.

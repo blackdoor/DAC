@@ -67,16 +67,11 @@ public class Keys {
 		CommandLineParser parser = new CommandLineParser();
 		parser.setExecutableName("cqbe keys");
 		parser.setUsageHint("\tmandatory options to long options are mandatory for short options too.\n"
-				+ "The subcommands for cqbe keys are:\n"
-				+ "\t create \n"
-				+ "\t retrieve \n" + "\t remove \n");
-		Argument subcommand = new Argument().setLongOption("subcommand")
-				.setParam(true).setMultipleAllowed(false).setRequiredArg(false)
-				.setTakesValue(false)
-				.setHelpText("the subcommand of keys to execute.");
-		Argument helpArgument = new Argument().setLongOption("help")
-				.setOption("h").setMultipleAllowed(false).setTakesValue(false)
-				.setHelpText("print this help.");
+				+ "The subcommands for cqbe keys are:\n" + "\t create \n" + "\t retrieve \n" + "\t remove \n");
+		Argument subcommand = new Argument().setLongOption("subcommand").setParam(true).setMultipleAllowed(false)
+				.setRequiredArg(false).setTakesValue(false).setHelpText("the subcommand of keys to execute.");
+		Argument helpArgument = new Argument().setLongOption("help").setOption("h").setMultipleAllowed(false)
+				.setTakesValue(false).setHelpText("print this help.");
 		try {
 			parser.addArguments(new Argument[] { subcommand, helpArgument });
 		} catch (DuplicateOptionException e) {
@@ -93,19 +88,13 @@ public class Keys {
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("");
 		parser.setExecutableName("cqbe keys create");
-		Argument alias = new Argument().setLongOption("alias").setParam(true)
-				.setMultipleAllowed(false).setRequiredArg(true);
-		Argument store = new Argument().setLongOption("store").setOption("s")
-				.setMultipleAllowed(false).setValueRequired(true)
-				.setHelpText("a keystore that is different than the default.")
+		Argument alias = new Argument().setLongOption("alias").setParam(true).setMultipleAllowed(false)
+				.setRequiredArg(true);
+		Argument store = new Argument().setLongOption("store").setOption("s").setMultipleAllowed(false)
+				.setValueRequired(true).setHelpText("a keystore that is different than the default.")
 				.setValueHint("FILE");
-		Argument output = new Argument()
-				.setLongOption("output")
-				.setOption("o")
-				.setMultipleAllowed(false)
-				.setValueRequired(true)
-				.setHelpText(
-						"location of public key cryptography standards(PKCS) output.")
+		Argument output = new Argument().setLongOption("output").setOption("o").setMultipleAllowed(false)
+				.setValueRequired(true).setHelpText("location of public key cryptography standards(PKCS) output.")
 				.setValueHint("DIRECTORY");
 		try {
 			parser.addArguments(new Argument[] { alias, store, output });
@@ -123,20 +112,15 @@ public class Keys {
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("");
 		parser.setExecutableName("cqbe keys retrieve");
-		Argument alias = new Argument().setLongOption("alias").setParam(true)
-				.setMultipleAllowed(false).setRequiredArg(true);
-		Argument store = new Argument().setLongOption("store").setOption("s")
-				.setMultipleAllowed(false).setValueRequired(true)
-				.setHelpText("retrieve a key of ALIAS from FILE.")
-				.setValueHint("FILE");
-		Argument output = new Argument().setLongOption("output").setOption("o")
-				.setMultipleAllowed(false).setValueRequired(true)
-				.setHelpText("location that output should to be stored.")
+		Argument alias = new Argument().setLongOption("alias").setParam(true).setMultipleAllowed(false)
+				.setRequiredArg(true);
+		Argument store = new Argument().setLongOption("store").setOption("s").setMultipleAllowed(false)
+				.setValueRequired(true).setHelpText("retrieve a key of ALIAS from FILE.").setValueHint("FILE");
+		Argument output = new Argument().setLongOption("output").setOption("o").setMultipleAllowed(false)
+				.setValueRequired(true).setHelpText("location that output should to be stored.")
 				.setValueHint("DIRECTORY");
-		Argument display = new Argument().setLongOption("display")
-				.setOption("d").setMultipleAllowed(false)
-				.setValueRequired(true)
-				.setHelpText("password displayed in terminal.");
+		Argument display = new Argument().setLongOption("display").setOption("d").setMultipleAllowed(false)
+				.setValueRequired(true).setHelpText("password displayed in terminal.");
 		try {
 			parser.addArguments(new Argument[] { alias, store, output });
 		} catch (DuplicateOptionException e) {
@@ -149,12 +133,10 @@ public class Keys {
 		CommandLineParser parser = new CommandLineParser();
 		parser.setUsageHint("");
 		parser.setExecutableName("cqbe keys remove");
-		Argument alias = new Argument().setLongOption("alias").setParam(true)
-				.setMultipleAllowed(false).setRequiredArg(true);
-		Argument store = new Argument().setLongOption("store").setOption("s")
-				.setMultipleAllowed(false).setValueRequired(true)
-				.setHelpText("removes key of ALIAS from FILE.")
-				.setValueHint("FILE");
+		Argument alias = new Argument().setLongOption("alias").setParam(true).setMultipleAllowed(false)
+				.setRequiredArg(true);
+		Argument store = new Argument().setLongOption("store").setOption("s").setMultipleAllowed(false)
+				.setValueRequired(true).setHelpText("removes key of ALIAS from FILE.").setValueHint("FILE");
 		try {
 			parser.addArguments(new Argument[] { alias, store });
 		} catch (DuplicateOptionException e) {
@@ -185,8 +167,7 @@ public class Keys {
 
 		//
 		if (!parsedArgs.containsKey("alias")) {
-			System.out.println("Must enter a value alias."
-					+ parser.getHelpText());
+			System.out.println("Must enter a value for alias." + parser.getHelpText());
 			return;
 		}
 
@@ -194,19 +175,18 @@ public class Keys {
 		if (parsedArgs.containsKey("store")) {
 			// use the entered file to add the alias
 			in = new File(parsedArgs.get("store").getValue());
-			if (!existsAndReadable(in)) {
-				System.out
-						.println("Specified keystore file does not exist or does not have read permissions.");
+			if (existsAndReadable(in)) {
+				password = scannerPrompt(); // for IDE TESTING ONLY
+			} else {
+				System.out.println("Specified keystore file does not exist or does not have read permissions.");
 				return;
 			}
-			password = scannerPrompt(); // for IDE TESTING ONLY
 		} else {
 			// Use default
 			in = new File(Config.getKeystoreDir());
 			if (!existsAndReadable(in)) {
 				// Initialize keystore!
-				System.out
-						.println("Keystore does not exist or is not readable. Creating new KeyStore...");
+				System.out.println("Keystore does not exist or is not readable. Creating new KeyStore...");
 				isNew = true;
 				password = newpassword_scannerPrompt();
 			} else {
@@ -223,19 +203,16 @@ public class Keys {
 			out = new File(Config.getKeystoreDir());
 		}
 
-		ks = new KeyStore().setIn(in).setOut(out).setPassword(password)
-				.isnewKeyStore(isNew);
+		ks = new KeyStore().setIn(in).setOut(out).setPassword(password).isnewKeyStore(isNew);
 		ks.load();
 
 		if (ks.containsAlias(parsedArgs.get("alias").getValue())) {
-			System.out
-					.println("alias already exists in specified keystore file.");
+			System.out.println("alias already exists in specified keystore file.");
 			return;
 		} else {
 			ks.newEntry(parsedArgs.get("alias").getValue()); // TODO Needs more
 																// stuff....
 		}
-
 		ks.store(); // throw stuff
 	}
 
@@ -259,8 +236,7 @@ public class Keys {
 
 		//
 		if (!parsedArgs.containsKey("alias")) {
-			System.out.println("Must enter a value alias."
-					+ parser.getHelpText());
+			System.out.println("Must enter a value alias." + parser.getHelpText());
 			return;
 		}
 
@@ -269,8 +245,7 @@ public class Keys {
 			// use the entered file to add the alias
 			in = new File(parsedArgs.get("store").getValue());
 			if (!existsAndReadable(in)) {
-				System.out
-						.println("Specified keystore file does not exist or does not have read permissions.");
+				System.out.println("Specified keystore file does not exist or does not have read permissions.");
 				return;
 			}
 			password = scannerPrompt(); // for IDE TESTING ONLY
@@ -283,8 +258,7 @@ public class Keys {
 			} else {
 
 				// Initialize keystore!
-				System.out
-						.println("Keystore does not exist or is not readable.");
+				System.out.println("Keystore does not exist or is not readable.");
 				return;
 			}
 		}
@@ -303,8 +277,7 @@ public class Keys {
 		if (ks.containsAlias(parsedArgs.get("alias").getValue())) {
 			System.out.println(ks.getPrivateKey(parsedArgs.get("alias").getValue()));
 		} else {
-			System.out
-					.println("alias does not exist in keystore file.");
+			System.out.println("alias does not exist in keystore file.");
 			return;
 		}
 
@@ -331,8 +304,7 @@ public class Keys {
 
 		//
 		if (!parsedArgs.containsKey("alias")) {
-			System.out.println("Must enter a value alias."
-					+ parser.getHelpText());
+			System.out.println("Must enter a value alias." + parser.getHelpText());
 			return;
 		}
 
@@ -341,8 +313,7 @@ public class Keys {
 			// use the entered file to add the alias
 			in = new File(parsedArgs.get("store").getValue());
 			if (!existsAndReadable(in)) {
-				System.out
-						.println("Specified keystore file does not exist or does not have read permissions.");
+				System.out.println("Specified keystore file does not exist or does not have read permissions.");
 				return;
 			}
 			password = scannerPrompt(); // for IDE TESTING ONLY
@@ -355,8 +326,7 @@ public class Keys {
 			} else {
 
 				// Initialize keystore!
-				System.out
-						.println("Keystore does not exist or is not readable.");
+				System.out.println("Keystore does not exist or is not readable.");
 				return;
 			}
 		}
@@ -375,11 +345,9 @@ public class Keys {
 		if (ks.containsAlias(parsedArgs.get("alias").getValue())) {
 			ks.deleteEntry(parsedArgs.get("alias").getValue());
 		} else {
-			System.out
-					.println("alias does not exist in keystore file.");
+			System.out.println("alias does not exist in keystore file.");
 			return;
 		}
-
 		ks.store(); // throw stuff
 	}
 
@@ -407,8 +375,7 @@ public class Keys {
 	private static String consolePrompt() {
 		Console cons = null;
 		char[] passwd = null;
-		if ((cons = System.console()) != null
-				&& (passwd = cons.readPassword("[%s]", "enter password:")) != null) {
+		if ((cons = System.console()) != null && (passwd = cons.readPassword("[%s]", "enter password:")) != null) {
 			java.util.Arrays.fill(passwd, ' ');
 		} else {
 			// Handle a null console, or no password entry!
@@ -420,8 +387,7 @@ public class Keys {
 		Console cons = null;
 		char[] passwd = null;
 		if ((cons = System.console()) != null
-				&& (passwd = cons.readPassword("[%s]",
-						"enter password to encrypt keystore:")) != null) {
+				&& (passwd = cons.readPassword("[%s]", "enter password to encrypt keystore:")) != null) {
 			java.util.Arrays.fill(passwd, ' ');
 		} else {
 			// Handle a null console, or no password entry!
@@ -434,7 +400,6 @@ public class Keys {
 		Scanner s = new Scanner(System.in);
 		String password = s.next();
 		// Check password format
-
 		return password;
 	}
 
@@ -451,7 +416,6 @@ public class Keys {
 		Scanner s = new Scanner(System.in);
 		String password = s.next();
 		// Check password format
-
 		return password;
 	}
 }
