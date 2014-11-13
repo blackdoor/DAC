@@ -63,6 +63,10 @@ local.properties
 # External tool builders
 .externalToolBuilders/
 
+*~
+
+Test.java
+
 # Locally stored "Eclipse launch configurations"
 *.launch
 
