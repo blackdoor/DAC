@@ -20,9 +20,13 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 	
 	
 	public static final int MAX_SIZE = 256;
+
+	public AddressTable() {
+		this(new Address(Address.nullOverlay));
+	}
 	
-	public AddressTable(Address refrence){
-		super(new Address.OverlayComparator(refrence));
+	public AddressTable(Address reference){
+		super(new Address.OverlayComparator(reference));
 	}
 	
 	/**
@@ -87,8 +91,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 	
 	//private ConcurrentSkipListMap<Address, Address> table;// = new ConcurrentSkipListMap<OverlayAddress, Address>();;
 
-	public AddressTable() {
-	}
+
 
 	/**
 	 * Likely redundant. But who knows.

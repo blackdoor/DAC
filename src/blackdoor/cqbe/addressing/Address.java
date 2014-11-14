@@ -18,7 +18,9 @@ import blackdoor.util.Misc;
  */
 @SuppressWarnings("serial")
 public class Address implements Serializable{
-	
+
+	public static final byte[] nullOverlay = new byte[32];
+
 	private byte[] overlayAddress;
 	private Inet6Address l3Address = null;
 	private int port = -1;
@@ -127,12 +129,20 @@ public class Address implements Serializable{
 		return true;
 	}
 
+	/*private String formattedBytes(byte[] bytes, String separator){
+		String out = "";
+		for(byte b : bytes){
+			out += Misc.bytesToHex(new byte[]{b}) + separator;
+		}
+		return out;
+	}*/
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "Address [overlayAddress=" + Arrays.toString(overlayAddress)
+		return "Address [overlayAddress=" + Misc.getHexBytes(overlayAddress, ":")
 				+ ", l3Address=" + l3Address + ", port=" + port + "]";
 	}
 	
