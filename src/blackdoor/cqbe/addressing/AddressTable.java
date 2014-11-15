@@ -55,9 +55,27 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 			add(a);
 		}
 	}
-	
+
+	/**
+	 * Associates the specified Address with the overlay address of the specified Address in this map (optional operation).
+	 * If the map previously contained a mapping for the Address, the old value is replaced by the specified value.
+	 * (A map m is said to contain a mapping for a key k if and only if m.containsKey(k) would return true.)
+	 * In general add(Address) should be used instead. This method can be dangerous as it can overfill the table.
+	 * @param value value to be added to the map
+	 * @return the previous Address object at that overlay address, or null if there was Address with that overlay.
+	 */
+	public Address put(Address value){
+		return super.put(value.getOverlayAddress(), value);
+	}
+
+	/**
+	 * Same as the put contract for Map, except the key is implied by the value. In other words only the value parameter has any effect.
+	 * @param _
+	 * @param value
+	 * @return
+	 */
 	@Deprecated
-	public Address put(byte[] key, Address value){
+	public Address put(byte[] _, Address value){
 		return super.put(value.getOverlayAddress(), value);
 	}
 	
@@ -87,6 +105,23 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 			DBP.printException(e);
 		}
 		return ret;
+	}
+
+	/**
+	 * If the table contains more than MAX_SIZE entries, remove the farthest addresses until it is less than MAX_SIZE
+	 * This has a horrible time complexity.
+	 * Due to the non-consistent nature of finding the size in skip lists, this method is not guaranteed result in < MAX_SIZE entries.
+	 * @return true if the table was affected by this call
+	 */
+	public boolean trim() {
+		if(size() > MAX_SIZE){
+			while(size() > MAX_SIZE){
+				pollLastEntry();
+			}
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	//private ConcurrentSkipListMap<Address, Address> table;// = new ConcurrentSkipListMap<OverlayAddress, Address>();;
