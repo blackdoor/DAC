@@ -20,6 +20,11 @@ import blackdoor.util.Misc;
 public class Address implements Serializable{
 
 	public static final byte[] nullOverlay = new byte[32];
+	public static final byte[] getFullOverlay(){
+		byte[] b = new byte[32];
+		Arrays.fill(b, (byte) 0xFF);
+		return b;
+	}
 
 	private byte[] overlayAddress;
 	private Inet6Address l3Address = null;
@@ -102,12 +107,12 @@ public class Address implements Serializable{
 	}
 	
 	public String overlayAddressToString(){
-		return Misc.bytesToHex(overlayAddress);
+		return Misc.getHexBytes(overlayAddress, ":");
 	}
 	
 	public String l3ToString() throws MissingLayer3Exception{
 		if (l3Address != null)
-			return l3Address.getHostAddress() + ":" + port;
+			return l3Address.getHostAddress() + " : " + port;
 		else
 			throw new MissingLayer3Exception();
 	}
@@ -142,7 +147,7 @@ public class Address implements Serializable{
 	 */
 	@Override
 	public String toString() {
-		return "Address [overlayAddress=" + Misc.getHexBytes(overlayAddress, ":")
+		return "Address [overlayAddress=" + overlayAddressToString()
 				+ ", l3Address=" + l3Address + ", port=" + port + "]";
 	}
 	
@@ -158,6 +163,10 @@ public class Address implements Serializable{
 		@Override
 		public int compare(byte[] arg0, byte[] arg1) {
 			return comp.compare(new Address(arg0), new Address(arg1));
+		}
+		
+		public String toString(){
+			return comp.toString();
 		}
 	}
 	
@@ -203,6 +212,14 @@ public class Address implements Serializable{
 			} else if (!reference.equals(other.reference))
 				return false;
 			return true;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "AddressComparator [reference=" + reference + "]";
 		}
 
 		

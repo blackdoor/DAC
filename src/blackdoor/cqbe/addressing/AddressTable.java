@@ -129,7 +129,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 	}
 
 	public String toString(){
-		String ret = "AddressTable [";
+		String ret = "AddressTable [\n";
 		Set<Entry<byte[], Address>> order = this.entrySet();
 		for(Entry<byte[], Address> entry : order){
 			try {
