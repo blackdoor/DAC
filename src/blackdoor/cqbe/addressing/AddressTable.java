@@ -1,6 +1,5 @@
 package blackdoor.cqbe.addressing;
 
-import java.util.Comparator;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -65,7 +64,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 	 * @return the previous Address object at that overlay address, or null if there was Address with that overlay.
 	 */
 	public Address put(Address value){
-		return super.put(value.getOverlayAddress(), value);
+		return put(value.getOverlayAddress(), value);
 	}
 
 	/**
@@ -76,8 +75,13 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 	 */
 	@Deprecated
 	public Address put(byte[] _, Address value){
+		if(!value.hasLayer3()){
+			throw new RuntimeException("NO LAYER 3 ADDRESS IN VALUE: " + value);
+		}
 		return super.put(value.getOverlayAddress(), value);
 	}
+	
+
 	
 	public boolean containsValue(Address value){
 		return containsKey(value.getOverlayAddress());
@@ -123,79 +127,24 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], Address>{
 			return false;
 		}
 	}
+
+	public String toString(){
+		String ret = "AddressTable [";
+		Set<Entry<byte[], Address>> order = this.entrySet();
+		for(Entry<byte[], Address> entry : order){
+			try {
+				ret += entry.getValue().overlayAddressToString() + "\n"
+						+ "\t" + entry.getValue().l3ToString() + "\n";
+			} catch (MissingLayer3Exception e) {
+				DBP.printerrorln("One of the addresses in the address table did not have a layer 3 address. "
+						+ "That's a no-no, have you been modifying the values after insertion? "
+						+ "Cause I tried real hard to ensure you didn't add addresses without a L3.");
+				DBP.printException(e);
+			}
+		}
+		return ret + "size()=" + size() + ", isEmpty()=" + isEmpty()
+				+ ", comparator()=" + comparator() + "]";
+	}
 	
-	//private ConcurrentSkipListMap<Address, Address> table;// = new ConcurrentSkipListMap<OverlayAddress, Address>();;
-
-
-
-	/**
-	 * Likely redundant. But who knows.
-	 *
-	public static void init() {
-
-	}
-	yea, redundant
-	*/
-
-	/**
-	 * Adds an address to the address table.
-	 * <p>
-	 * 
-	 * @param Address
-	 * 
-	 */
-	public static void addAddress() {
-
-	}
-
-	/**
-	 * Removes an address from the address table.
-	 * <p>
-	 * 
-	 * @param Address
-	 * 
-	 */
-	public static void removeAddress() {
-
-	}
-
-	/**
-	 * Adds an address to the address table.
-	 * <p>
-	 * 
-	 * @param Address
-	 *            TODO might overload this with ones that will take a IPv6,
-	 *            OverlayAddress or whatever.
-	 * @return True or false depending on if the address table contains
-	 */
-	public static void containsAddress() {
-	}
-
-	/**
-	 * Checks to see if an address belongs in this table.
-	 * <p>
-	 * 
-	 * An address will be stored if the table is not full or if the new address
-	 * is closer than the furthest address in the table.
-	 * 
-	 * @return boolean. True or False if it does belong in table. TODO might
-	 *         store it as well?
-	 */
-	public static void belongsInTable() {
-	}
-
-	/**
-	 * Sorts the address table based on distance.
-	 * <p>
-	 * 
-	 */
-	public static void sort() {
-	}
-
-	// More functions that are basically just a wrapper for the MAP
-
-	/*
-	 * GETTERS and SETTERS
-	 */
-
+	
 }
