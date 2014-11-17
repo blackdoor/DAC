@@ -95,14 +95,17 @@ public class CQBE {
     clp.setExecutableName("cqbe join");
     try {
       clp.addArgument(new Argument().setLongOption("port").setOption("p").setMultipleAllowed(false)
-          .setTakesValue(true));
-      clp.addArgument(new Argument().setLongOption("adam").setOption("a").setMultipleAllowed(false));
+          .setTakesValue(true).setValueRequired(true));
+      clp.addArgument(new Argument().setLongOption("adam").setOption("a").setMultipleAllowed(false)
+    	  .setTakesValue(false));
       clp.addArgument(new Argument().setLongOption("dir").setOption("d").setMultipleAllowed(false)
-          .setTakesValue(true));
+          .setTakesValue(true).setValueRequired(true));
       clp.addArgument(new Argument().setLongOption("revive").setOption("r")
-          .setMultipleAllowed(false).setTakesValue(true));
+          .setMultipleAllowed(false).setTakesValue(true).setTakesValue(false));
       clp.addArgument(new Argument().setLongOption("daemon").setOption("dm")
-          .setMultipleAllowed(false));
+          .setMultipleAllowed(false).setTakesValue(false));
+      clp.addArgument(new Argument().setLongOption("help").setOption("h").setMultipleAllowed(false)
+          .setTakesValue(false).setHelpText("Display help menu."));
       Map<String, Argument> out = clp.parseArgs(args);
       if (out.containsKey("help")) {
         System.out.println(clp.getHelpText());
@@ -131,8 +134,10 @@ public class CQBE {
       System.out.println("dups exeption");
     } catch (InvalidFormatException e) {
       System.out.println("invalidException");
+      //Print Help Text
     } catch (Exception e) {
       System.out.println("all other exeptions");
+      DBP.printException(e);
     }
   }
 
