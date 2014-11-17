@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
-import blackdoor.auth.AuthServer.AuthConnectionHandler;
 import blackdoor.cqbe.settings.Config;
 
 /**
@@ -49,8 +48,8 @@ public class Server {
         System.err.println("Unable to accept connection on port " + port);
         e.printStackTrace();
       }
-      AuthConnectionHandler handler = new AuthConnectionHandler(socket, authManager);
-      handler.start();
+      // AuthConnectionHandler handler = new AuthConnectionHandler(socket, authManager);
+      // handler.start();
     }
   }
 
@@ -76,4 +75,5 @@ public class Server {
   public void sendResponse() {
 
   }
+
 }

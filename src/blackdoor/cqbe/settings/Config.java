@@ -17,6 +17,7 @@ public class Config {
   /*
    * GETTERS and SETTERS to EDIT configurations on the fly!
    */
+
   public static String getKeystoreDir() {
     return null;
   }
@@ -36,4 +37,5 @@ public class Config {
   public static int getPORT() {
     return PORT;
   }
+
 }

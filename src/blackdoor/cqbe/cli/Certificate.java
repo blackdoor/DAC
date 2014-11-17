@@ -12,17 +12,10 @@ import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.Map;
 
-import blackdoor.cqbe.certificate.BuilderException;
-import blackdoor.cqbe.certificate.CertificateBuilder;
-import blackdoor.cqbe.certificate.CertificateProtos;
-import blackdoor.cqbe.certificate.CertificateValidator;
-import blackdoor.cqbe.certificate.EndorsementBuilder;
-import blackdoor.cqbe.certificate.EndorsementValidator;
-import blackdoor.cqbe.certificate.Validator;
+
+import blackdoor.cqbe.certificate.*;
+import blackdoor.util.CommandLineParser.*;
 import blackdoor.util.CommandLineParser;
-import blackdoor.util.CommandLineParser.Argument;
-import blackdoor.util.CommandLineParser.DuplicateOptionException;
-import blackdoor.util.CommandLineParser.InvalidFormatException;
 import blackdoor.util.DBP;
 
 public class Certificate {
@@ -353,7 +346,19 @@ public class Certificate {
 		builder = new EndorsementBuilder(issuerFile, subjectFile);
 		builder.setEndorsement(descriptorFile);
 		PrivateKey privateKey = null;//need way to get private key from file
-		Files.write(outputFile.toPath(), builder.build(privateKey), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		try {
+			Files.write(outputFile.toPath(), builder.build(privateKey), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		} catch (KeyException e) {
+			// TODO Auto-generated catch block
+			DBP.printException(e);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			DBP.printException(e);
+		} catch (BuilderException e) {
+			// TODO Auto-generated catch block
+			DBP.printException(e);
+		}
+
 		
 	}
 
@@ -369,14 +374,4 @@ public class Certificate {
 	public static void sign(String[] args) {
 	}
 
-	/**
- 	* verify a certificate based on endocment
- 	*
- 	* @param  args list of arguments
- 	*/
-	//public void verify(String[] args) {
-	//}
-	
-	public Certificate(String[] args) {
-	}
 }
