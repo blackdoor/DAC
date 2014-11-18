@@ -277,7 +277,7 @@ public class CQBE {
     clp.setExecutableName("cqbe shutdown");
     try {
       clp.addArgument(new Argument().setLongOption("port").setOption("p").setMultipleAllowed(false)
-          .setRequiredArg(true).setTakesValue(true)
+          .setRequiredArg(true).setTakesValue(true).setValueRequired(true)
           .setHelpText("The port of the node to be shutdown"));
       Map<String, Argument> out = clp.parseArgs(args);
       if (out.containsKey("help")) {

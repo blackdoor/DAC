@@ -1,5 +1,7 @@
 package blackdoor.cqbe.node.server;
 
+import org.json.JSONObject;
+
 /**
  * 
  * @author Cj Buresch
@@ -14,7 +16,7 @@ public class RPCHandler {
 	/**
 	 * Handles appropriate RPC call Only publicly-facing function
 	 */
-	public void handleRPC() {
+	public void handleRPC(JSONObject call) {
 
 	}
 

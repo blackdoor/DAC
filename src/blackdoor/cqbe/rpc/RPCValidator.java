@@ -1,5 +1,23 @@
 package blackdoor.cqbe.rpc;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.util.Iterator;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import com.github.fge.jsonschema.core.report.ProcessingReport;
+import com.github.fge.jsonschema.examples.Utils;
+import com.github.fge.jsonschema.main.JsonSchema;
+import com.github.fge.jsonschema.main.JsonSchemaFactory;
+import com.sun.net.ssl.internal.www.protocol.https.Handler;
+
+import blackdoor.cqbe.node.server.RPCHandler;
+
 /**
  * 
  * @author Cj Buresch
@@ -8,8 +26,22 @@ package blackdoor.cqbe.rpc;
  */
 public class RPCValidator {
 
-	public RPCValidator() {
-		// TODO Auto-generated constructor stub
+	public RPCValidator(Socket s, RPCHandler r) {
+		Socket socket = s;
+		RPCHandler handler = r;
+	}
+	
+	public void handle(JSONObject call) throws ProcessingException, IOException{
+		if(this.isValid(call)){
+			//Handle the call by passing off to the handler.
+			//String methodCalled = call.getString("method");
+			RPCHandler handler = new RPCHandler();
+			handler.handleRPC(call);
+		}
+		else{
+			RPCBuilder bob = new RPCBuilder();
+			//bob.buildERROR();
+		}
 	}
 
 	/**
@@ -18,8 +50,21 @@ public class RPCValidator {
 	 * Checks for semantics, syntax and if the RPC is supported by this system.
 	 *
 	 * @param JSONObject
+	 * @return 
 	 * @return True if RPC is valid, false if not.
+	 * @throws ProcessingException 
+	 * @throws IOException 
 	 */
-	public void isValid() {
+	public boolean isValid(JSONObject call) throws ProcessingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode fstabSchema = Utils.loadResource("/fstab.json");
+		JsonNode callNode = mapper.convertValue(call, JsonNode.class);
+		JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
+		JsonSchema schema = factory.getJsonSchema(fstabSchema);
+		ProcessingReport report;
+		
+		return schema.validInstance(callNode);
+		
 	}
+	
 }
