@@ -34,7 +34,6 @@ public class Config {
     JSONObject obj = load();
     return obj.getInt("port");
   }
-
   /**
    * Returns a string of the Inet6Address.
    * <p>

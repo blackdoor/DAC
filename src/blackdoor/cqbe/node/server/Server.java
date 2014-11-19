@@ -21,7 +21,7 @@ import blackdoor.cqbe.settings.Config;
  */
 public class Server implements Runnable {
 
-  private int port = Config.PORT;
+  private int port = Config.Port();
   private ServerSocket serverSocket;
   private boolean running = true;
   private ThreadPoolExecutor pool;
@@ -40,16 +40,8 @@ public class Server implements Runnable {
   }
 
   /**
-   * TESTER
-   * 
-   * @param args
-   */
-  public static void main(String[] args) {
-    Server server = new Server();
-    server.run();
-  }
-
-  /**
+   * Starts the node server.
+   * <p>
    * 
    */
   @Override
@@ -72,8 +64,10 @@ public class Server implements Runnable {
   }
 
   /**
- * 
- */
+   * Stops the running node server.
+   * <p>
+   * 
+   */
   public synchronized void stop() {
     pool.shutdown(); // Disable new tasks from being submitted
     try {
@@ -96,6 +90,8 @@ public class Server implements Runnable {
   }
 
   /**
+   * Returns the boolean status of the node server.
+   * <p>
    * 
    * @return
    */
@@ -114,6 +110,10 @@ public class Server implements Runnable {
     }
   }
 
+  /**
+   * 
+   * @return
+   */
   private ThreadPoolExecutor getPool() {
     int cpus = Runtime.getRuntime().availableProcessors();
     int core = 5 * cpus;

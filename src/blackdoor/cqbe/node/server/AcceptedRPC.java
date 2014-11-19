@@ -38,6 +38,7 @@ public class AcceptedRPC implements Runnable {
     read();
     closeIn();
 
+    // pass outstream and string 
     RPCValidator validator = new RPCValidator();
     // TODO Pass off!!
   }
