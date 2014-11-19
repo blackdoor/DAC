@@ -102,7 +102,7 @@ public class Address implements Comparable<Address> {
 			throw new MissingLayer3Exception();
 	}
 
-	public void getOverlay() {
-		return;
+	public String getOverlay() {
+		return null;
 	}
 }

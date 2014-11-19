@@ -31,12 +31,12 @@ public class RPCValidator {
 		RPCHandler handler = r;
 	}
 	
-	public void handle(JSONObject call) throws ProcessingException, IOException{
-		if(this.isValid(call)){
+	public void handle(String call) throws ProcessingException, IOException{
+		if(isValid(call)){
 			//Handle the call by passing off to the handler.
 			//String methodCalled = call.getString("method");
 			RPCHandler handler = new RPCHandler();
-			handler.handleRPC(call);
+			//handler.handleRPC(call);
 		}
 		else{
 			RPCBuilder bob = new RPCBuilder();
@@ -55,16 +55,14 @@ public class RPCValidator {
 	 * @throws ProcessingException 
 	 * @throws IOException 
 	 */
-	public boolean isValid(JSONObject call) throws ProcessingException, IOException {
+	public boolean isValid(String call) throws ProcessingException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode fstabSchema = Utils.loadResource("/fstab.json");
 		JsonNode callNode = mapper.convertValue(call, JsonNode.class);
 		JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
 		JsonSchema schema = factory.getJsonSchema(fstabSchema);
-		ProcessingReport report;
 		
 		return schema.validInstance(callNode);
-		
 	}
 	
 }

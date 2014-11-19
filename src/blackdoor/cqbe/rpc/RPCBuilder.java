@@ -1,8 +1,16 @@
 package blackdoor.cqbe.rpc;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.json.JSONObject;
+
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.settings.Config;
+
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 /**
  * 
@@ -40,7 +48,7 @@ public class RPCBuilder {
 	public JSONObject buildPUT(File file) {
     return null;
 	}
-
+	
 	/**
 	 * Initializies a LOOKUP RPC JSON request to be sent.
 	 * <p>
@@ -50,7 +58,18 @@ public class RPCBuilder {
 	 * @parem ???
 	 * @return JSON Object with relevant information.
 	 */
-	public void buildLOOKUP() {
+	public JSONObject buildLOOKUP() {
+		String ipAddress = Config.getAddress();
+		String port = Config.getPort();
+		Address overlayAddress = new Address(ipAddress,port);
+		JSONObject lookupObject = new JSONObject();
+		lookupObject.put("call_name", "LOOKUP");
+		lookupObject.put("source_overlay_address", overlayAddress.getOverlay());
+		lookupObject.put("source_ip_address", ipAddress);
+		lookupObject.put("source_port", port);
+		//Should buildLOOKUP be passed the destination overlay address or is that done elsewhere?
+		
+		return lookupObject;
 	}
 
 	/**
@@ -70,8 +89,18 @@ public class RPCBuilder {
 	 *
 	 * @param port - Port to be shutdown
 	 */
-	public JSONObject buildSHUTDOWN(int port) {
-		return null;
+	public JSONObject buildSHUTDOWN(int portToShutdown) {
+		String ipAddress = Config.getAddress();
+		String port = Integer.toString(portToShutdown);
+		Address overlayAddress = new Address(ipAddress,port);
+		JSONObject shutdownObject = new JSONObject();
+		shutdownObject.put("call_name", "LOOKUP");
+		shutdownObject.put("source_overlay_address", overlayAddress.getOverlay());
+		shutdownObject.put("source_ip_address", ipAddress);
+		shutdownObject.put("source_port", port);
+		//Is there a destination overlayAddress?
+		
+		return shutdownObject;
 	}
 	public JSONObject buildGETendorsement(String subjectUID, String issuer) {
 	    return null;
