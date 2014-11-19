@@ -1,5 +1,7 @@
 package blackdoor.cqbe.settings;
 
+import org.json.JSONObject;
+
 /**
  * 
  * @author Cj Buresch
@@ -7,35 +9,76 @@ package blackdoor.cqbe.settings;
  */
 public class Config {
 
-  // ////////////// Configurations ////////////////
-  // Port that the node is running on
-  public static int PORT = 1234;
-  // Where the default keystore file is
-  public static String KeyStoreDir = "";
+	private static String FILE_LOCATION;
 
-  
-  /*
-   * GETTERS and SETTERS to EDIT configurations on the fly!
-   */
+	/**
+	 * 
+	 * @param FILE_LOCATION
+	 */
+	public Config(String FILE_LOCATION) {
+		this.FILE_LOCATION = FILE_LOCATION;
+	}
 
-  public static String getKeystoreDir() {
-    return null;
-  }
+	/**
+	 * 
+	 * @return
+	 */
+	public static int Port() {
+		JSONObject obj = load();
+		return obj.getInt("port");
+	}
 
-  public static void setPORT(int pORT) {
-    PORT = pORT;
-  }
+	/**
+	 * 
+	 * @return
+	 */
+	public static String Address() {
+		JSONObject obj = load();
+		return null;
+	}
 
-  public static String getKeyStoreDir() {
-    return KeyStoreDir;
-  }
+	/**
+	 * 
+	 * @return
+	 */
+	public static String OverlayAddress() {
+		JSONObject obj = load();
+		return null;
+	}
 
-  public static void setKeyStoreDir(String keyStoreDir) {
-    KeyStoreDir = keyStoreDir;
-  }
+	/**
+	 * 
+	 * @return
+	 */
+	public static String NodeDirectory() {
+		JSONObject obj = load();
+		return null;
+	}
 
-  public static int getPORT() {
-    return PORT;
-  }
+	/**
+	 * 
+	 * @return
+	 */
+	public static String StorageDirectory() {
+		JSONObject obj = load();
+		return null;
+	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public static String KeyStoreDirectory() {
+		JSONObject obj = load();
+		return null;
+	}
+
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	private static JSONObject load() {
+		return null;
+	}
 }
