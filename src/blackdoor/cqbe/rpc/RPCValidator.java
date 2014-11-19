@@ -26,24 +26,46 @@ import blackdoor.cqbe.node.server.RPCHandler;
  */
 public class RPCValidator {
 
-	public RPCValidator(Socket s, RPCHandler r) {
+	public RPCValidator(String call, Socket s) {
 		Socket socket = s;
-		RPCHandler handler = r;
 	}
 	
-	public void handle(String call) throws ProcessingException, IOException{
-		if(isValid(call)){
-			//Handle the call by passing off to the handler.
-			//String methodCalled = call.getString("method");
-			RPCHandler handler = new RPCHandler();
-			//handler.handleRPC(call);
+	public void handle(String call){
+		JSONObject k = new JSONObject();
+		try{
+			k.testValidity(call);
+			if(isValid(call)){
+				//Handle the call by passing off to the handler.
+				//String methodCalled = call.getString("method");
+				RPCHandler handler = new RPCHandler();
+				//handler.handleRPC(call);
+			}
+			else {
+				
+			}
 		}
-		else{
-			RPCBuilder bob = new RPCBuilder();
-			//bob.buildERROR();
+		catch(Exception e){
+
 		}
+
 	}
 
+	public JSONObject buildError(String errorStyle, String id, String call){
+		JSONObject error = new JSONObject();
+		JSONObject errorObject = new JSONObject();
+		if(errorStyle.equals("i")){
+			
+		}
+		if(errorStyle.equals("bm")){	
+			error.append("code",-32601);
+			error.append("message","Method not found");
+		}
+		errorObject.append("error", error);
+		errorObject.append("id",id);
+		
+		return error;
+	}
+	
 	/**
 	 * Returns True if JSONObject is a valid RPC.
 	 * <p>
