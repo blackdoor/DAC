@@ -55,14 +55,23 @@ public class RPCValidator {
 	 * @throws ProcessingException 
 	 * @throws IOException 
 	 */
-	public boolean isValid(String call) throws ProcessingException, IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode fstabSchema = Utils.loadResource("/fstab.json");
-		JsonNode callNode = mapper.convertValue(call, JsonNode.class);
-		JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-		JsonSchema schema = factory.getJsonSchema(fstabSchema);
-		
-		return schema.validInstance(callNode);
+	public boolean isValid(String call){
+		JSONObject jCall = new JSONObject(call);
+		JSONObject params = new JSONObject(jCall.get("params"));
+		if(!jCall.has("method") || !params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
+				|| !params.has("destinationO") || !params.has("extensions")){
+			return false;
+		}
+		if(jCall.getString("method").equals("PUT") && !params.has("value")){
+			return false;
+		}
+		if(jCall.getString("method").equals("GET") && !params.has("index")){
+			return false;
+		}
+		if(jCall.getString("method").equals("SHUTDOWN") && !params.has("port")){
+			return false;
+		}
+		return true;
 	}
 	
 }
