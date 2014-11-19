@@ -212,6 +212,7 @@ public class CQBE {
       if (parsedArgs.containsKey("help")) {
         System.out.println(clp.getHelpText());
       } else {
+        /*
         RPCBuilder rpcObject = new RPCBuilder();
         JSONObject rpc = rpcObject.buildGET(parsedArgs.get("subjectUID").getValue());
         Router router = new Router();
@@ -222,6 +223,7 @@ public class CQBE {
         }
         Files.write(outputFile.toPath(), RPCBuilder.getBinary(certificateJSON),
             StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            */
       }
     } catch (DuplicateOptionException e) {
       DBP.printException(e);
@@ -246,6 +248,8 @@ public class CQBE {
       clp.addArgument(new Argument().setLongOption("port").setOption("p").setMultipleAllowed(false)
           .setRequiredArg(true).setTakesValue(true)
           .setHelpText("The port of the node to be shutdown"));
+      clp.addArgument(new Argument().setLongOption("help").setOption("h").setTakesValue(false).setRequiredArg(false)
+              .setHelpText("display this help text"));
       Map<String, Argument> out = clp.parseArgs(args);
       if (out.containsKey("help")) {
         System.out.println(clp.getHelpText());
