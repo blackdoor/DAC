@@ -6,6 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import blackdoor.cqbe.settings.Config;
 
 /**
@@ -21,7 +22,8 @@ import blackdoor.cqbe.settings.Config;
  */
 public class Server implements Runnable {
 
-  private int port = Config.Port();
+  // private int port = Config.Port();
+  private int port;
   private ServerSocket serverSocket;
   private boolean running = true;
   private ThreadPoolExecutor pool;
@@ -39,6 +41,13 @@ public class Server implements Runnable {
     pool = getPool();
   }
 
+  public static void main(String[] args) {
+    int port = 1778;
+    Server server = new Server(port);
+    // START
+    new Thread(server).start();
+  }
+
   /**
    * Starts the node server.
    * <p>
@@ -52,7 +61,9 @@ public class Server implements Runnable {
     openServerSocket();
     while (this.isRunning()) {
       try {
+
         pool.execute(new AcceptedRPC(this.serverSocket.accept(), blockingQueue));
+
       } catch (IOException e) {
         if (!isRunning()) {
           System.out.println("Server Stopped.");
