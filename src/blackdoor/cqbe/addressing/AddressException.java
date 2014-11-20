@@ -6,6 +6,13 @@ package blackdoor.cqbe.addressing;
  * @version v0.0.1 - Nov 5, 2014
  */
 public class AddressException extends Exception {
+
+	public AddressException(){}
+
+	public AddressException(String e){
+		super(e);
+	}
+
 	/**
 	 * Missing Layer 3 Address.
 	 * <p>

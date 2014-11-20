@@ -204,6 +204,14 @@ public class CQBE {
     try {
       clp.addArgument(new Argument().setLongOption("subjectUID").setParam(true)
           .setMultipleAllowed(false).setRequiredArg(true));
+      clp.addArgument(new Argument().setLongOption("endorse").setOption("e")
+          .setMultipleAllowed(false).setTakesValue(false)
+          .setHelpText("item being retrieved is an endorsement."));
+      clp.addArgument(new Argument().setLongOption("issuer").setOption("i")
+          .setMultipleAllowed(false).setTakesValue(true).setHelpText("issuer unique identifier."));
+      clp.addArgument(new Argument().setLongOption("list").setOption("l").setMultipleAllowed(false)
+          .setTakesValue(true)
+          .setHelpText("list of endorsements for this subject unique identifier."));
       clp.addArgument(new Argument().setLongOption("dir").setOption("d").setMultipleAllowed(false)
           .setTakesValue(false).setHelpText("location for the retrieved file to be stored."));
       clp.addArgument(new Argument().setLongOption("help").setOption("h").setMultipleAllowed(false)
@@ -211,6 +219,31 @@ public class CQBE {
       Map<String, Argument> parsedArgs = clp.parseArgs(args);
       if (parsedArgs.containsKey("help")) {
         System.out.println(clp.getHelpText());
+      } else if (parsedArgs.containsKey("endorse")) {
+        if (parsedArgs.containsKey("issuer")) {
+
+          RPCBuilder rpcObject = new RPCBuilder();
+          JSONObject rpc =
+              rpcObject.buildGETendorsement(parsedArgs.get("subjectUID").getValue(), parsedArgs
+                  .get("issuer").getValue());
+          Router router = new Router();
+          JSONObject enorceJSON = router.routeWithCalls(rpc);
+          File outputFile = new File("out.endrsmnt");
+          if (parsedArgs.containsKey("dir")) {
+            outputFile = new File(parsedArgs.get("dir").getValue());
+          }
+          Files.write(outputFile.toPath(), RPCBuilder.getBinary(enorceJSON),
+              StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        } else {
+          System.out.println("a issuer unique identifier must be provided");
+          System.out.println(clp.getHelpText());
+        }
+      } else if (parsedArgs.containsKey("list")) {
+        RPCBuilder rpcObject = new RPCBuilder();
+        JSONObject rpc = rpcObject.buildGETendorsementList(parsedArgs.get("subjectUID").getValue());
+        Router router = new Router();
+        JSONObject enorceListJSON = router.routeWithCalls(rpc);
+        System.out.println(enorceListJSON.toString());
       } else {
         /*
         RPCBuilder rpcObject = new RPCBuilder();
