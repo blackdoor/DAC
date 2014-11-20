@@ -1,6 +1,10 @@
 package blackdoor.cqbe.rpc;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.Socket;
 import java.util.Iterator;
 
@@ -26,26 +30,44 @@ import blackdoor.cqbe.node.server.RPCHandler;
  */
 public class RPCValidator {
 
-	public RPCValidator(String call, Socket s) {
-		Socket socket = s;
+	public RPCValidator(String rpcCall, OutputStream os) {
+		String call = rpcCall;
 	}
 	
-	public void handle(String call){
+	public void handle(String call,OutputStream os){
 		JSONObject k = new JSONObject();
+		BufferedWriter buffy = new BufferedWriter(new OutputStreamWriter(os));
 		try{
 			k.testValidity(call);
-			if(isValid(call)){
+			String validity = isValid(call);
+			if(validity.equals("valid")){
 				//Handle the call by passing off to the handler.
 				//String methodCalled = call.getString("method");
 				RPCHandler handler = new RPCHandler();
 				//handler.handleRPC(call);
 			}
 			else {
-				
+				JSONObject error = buildError(validity,new JSONObject(call).getString("id"),call);
+				try {
+					buffy.write(error.toString());
+					buffy.flush();
+					buffy.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 		catch(Exception e){
-
+			JSONObject error = buildError("parse",null,call);
+			try {
+				buffy.write(error.toString());
+				buffy.flush();
+				buffy.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 
 	}
@@ -53,17 +75,35 @@ public class RPCValidator {
 	public JSONObject buildError(String errorStyle, String id, String call){
 		JSONObject error = new JSONObject();
 		JSONObject errorObject = new JSONObject();
-		if(errorStyle.equals("i")){
-			
+		errorObject.append("jsonrpc", "2.0");
+		if(errorStyle.equals("parse")){
+			error.append("code",-32700);
+			error.append("message","Parse Error");
 		}
-		if(errorStyle.equals("bm")){	
+		if(errorStyle.equals("invalid")){
+			error.append("code",-32600);
+			error.append("message","Invalid Request");
+		}
+		if(errorStyle.equals("method")){	
 			error.append("code",-32601);
 			error.append("message","Method not found");
+		}
+		if(errorStyle.equals("params")){
+			error.append("code",-32602);
+			error.append("message","Invalid params");
+		}
+		if(errorStyle.equals("internal")){
+			error.append("code",-32603);
+			error.append("message","Internal error");
+		}
+		if(errorStyle.equals("server")){
+			error.append("code",-32000);
+			error.append("message","Server error");
 		}
 		errorObject.append("error", error);
 		errorObject.append("id",id);
 		
-		return error;
+		return errorObject;
 	}
 	
 	/**
@@ -77,23 +117,23 @@ public class RPCValidator {
 	 * @throws ProcessingException 
 	 * @throws IOException 
 	 */
-	public boolean isValid(String call){
+	public String isValid(String call){
 		JSONObject jCall = new JSONObject(call);
 		JSONObject params = new JSONObject(jCall.get("params"));
 		if(!jCall.has("method") || !params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
 				|| !params.has("destinationO") || !params.has("extensions")){
-			return false;
+			return "invalid";
 		}
 		if(jCall.getString("method").equals("PUT") && !params.has("value")){
-			return false;
+			return "params";
 		}
 		if(jCall.getString("method").equals("GET") && !params.has("index")){
-			return false;
+			return "params";
 		}
 		if(jCall.getString("method").equals("SHUTDOWN") && !params.has("port")){
-			return false;
+			return "params";
 		}
-		return true;
+		return "valid";
 	}
 	
 }
