@@ -17,6 +17,10 @@ import blackdoor.cqbe.settings.Config;
  * 
  * HOT TO STOP: server.stop();
  * 
+ * Kill process because something went wrong:
+ * >sudo netstat -lpn |grep :1778
+ * >kill [ps]
+ * 
  * @author Cj Buresch
  * @version v0.0.2 - Nov 17, 2014
  */
@@ -59,6 +63,7 @@ public class Server implements Runnable {
       this.runningThread = Thread.currentThread();
     }
     openServerSocket();
+    System.out.println("Starting");
     while (this.isRunning()) {
       try {
 
