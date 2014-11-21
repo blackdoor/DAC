@@ -48,4 +48,8 @@ public class RPCException extends Exception {
 	public static class ServerException extends RPCException{
 		
 	}
+
+	public static class RequieredParametersNotSet extends RPCException{
+		
+	}
 }
