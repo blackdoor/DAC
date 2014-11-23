@@ -2,14 +2,10 @@ package blackdoor.cqbe.addressing;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.net.Inet6Address;
-import java.nio.charset.Charset;
+import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.Comparator;
 
-import blackdoor.cqbe.addressing.AddressException.MissingLayer3Exception;
 import blackdoor.crypto.Hash;
-import blackdoor.util.Misc;
 
 /**
  *
@@ -18,9 +14,10 @@ import blackdoor.util.Misc;
  * @author Nathaniel Fischer
  * @version v1.0.0 - Nov 13, 2014
  */
+@SuppressWarnings("serial")
 public class L3Address extends Address implements Serializable{
 
-	private Inet6Address l3Address = null;
+	private InetAddress l3Address = null;
 	private int port = -1;
 
 	/**
@@ -28,7 +25,7 @@ public class L3Address extends Address implements Serializable{
 	 * @param a the IPv6 Address to use to create this Address
 	 * @param port the port to use to create this Address
 	 */
-	public L3Address(Inet6Address a, int port) {
+	public L3Address(InetAddress a, int port) {
 		super();
 		setLayer3(a, port);
 	}
@@ -48,11 +45,11 @@ public class L3Address extends Address implements Serializable{
 		return v6;
 	}
 
-	protected void setLayer3(Inet6Address a, int port){
+	protected void setLayer3(InetAddress a, int port){
 		l3Address = a;
 		this.port = port;
 		byte [] portBytes = BigInteger.valueOf(port).toByteArray();
-		byte[] l3Bytes = a.getAddress();
+		byte[] l3Bytes = a.getAddress().length == 4 ? v426(a.getAddress()) : a.getAddress();
 		byte[] overlay = new byte[l3Bytes.length + portBytes.length];
 		System.arraycopy(l3Bytes, 0, overlay, 0, l3Bytes.length);
 		System.arraycopy(portBytes, 0, overlay, l3Bytes.length, portBytes.length);
@@ -63,7 +60,7 @@ public class L3Address extends Address implements Serializable{
 	 * Returns the InetAddress for this L3Address.
 	 * @return the InetAddress for this L3Address
 	 */
-	public Inet6Address getLayer3Address(){
+	public InetAddress getLayer3Address(){
 		return l3Address;
 	}
 
