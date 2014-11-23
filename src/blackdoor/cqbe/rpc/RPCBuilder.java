@@ -44,7 +44,7 @@ public class RPCBuilder {
 		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null || index == -1) {
 			throw new RequieredParametersNotSet();
 		}
-		else
+		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "get");
@@ -59,6 +59,7 @@ public class RPCBuilder {
 			rpc.put("params", params);
 			rpc.put("id", id);
 			return rpc;
+		}
 	}
 
 	/**
@@ -70,7 +71,7 @@ public class RPCBuilder {
 		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null || value == null) {
 			throw new RequieredParametersNotSet();
 		}
-		else
+		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "put");
@@ -85,6 +86,7 @@ public class RPCBuilder {
 			rpc.put("params", params);
 			rpc.put("id", id);
 			return rpc;
+		}
 	}
 	
 	/**
@@ -97,6 +99,7 @@ public class RPCBuilder {
 			throw new RequieredParametersNotSet();
 		}
 		else
+		{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "lookup");
@@ -110,6 +113,7 @@ public class RPCBuilder {
 			rpc.put("params", params);
 			rpc.put("id", id);
 			return rpc;
+		}
 	}
 
 	/**
@@ -121,7 +125,7 @@ public class RPCBuilder {
 		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null) {
 			throw new RequieredParametersNotSet();
 		}
-		else
+		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "ping");
@@ -135,6 +139,7 @@ public class RPCBuilder {
 			rpc.put("params", params);
 			rpc.put("id", id);
 			return rpc;
+		}
 	}
 	
 	/**
@@ -146,7 +151,7 @@ public class RPCBuilder {
 		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null) {
 			throw new RequieredParametersNotSet();
 		}
-		else
+		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "shutdown");
@@ -160,6 +165,7 @@ public class RPCBuilder {
 			rpc.put("params", params);
 			rpc.put("id", id);
 			return rpc;
+		}
 	}
 
 	private void setID() {
