@@ -3,7 +3,7 @@ package blackdoor.cqbe.rpc;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import blackdoor.cqbe.rpc.RPCException.RequieredParametersNotSet;
+import blackdoor.cqbe.rpc.RPCException.RequiredParametersNotSetException;
 
 public class RPCResponseBuilder {
 	
@@ -16,7 +16,7 @@ public class RPCResponseBuilder {
 		result = null;
 	}
 	
-	public JSONObject buildGETResponse() throws RequieredParametersNotSet {
+	public JSONObject buildGETResponse() throws RequiredParametersNotSetException {
 		if (result != null){
 			JSONObject responceRPC = new JSONObject();
 			responceRPC.put("jsonrpc", "2.0");
@@ -25,10 +25,10 @@ public class RPCResponseBuilder {
 			return responceRPC;
 		}
 		else
-			throw new RequieredParametersNotSet();
+			throw new RequiredParametersNotSetException();
 	}
 	
-	public JSONObject buildPUTResponse() throws RequieredParametersNotSet {
+	public JSONObject buildPUTResponse() throws RequiredParametersNotSetException {
 		if (result != null){
 			JSONObject responceRPC = new JSONObject();
 			responceRPC.put("jsonrpc", "2.0");
@@ -37,10 +37,10 @@ public class RPCResponseBuilder {
 			return responceRPC;
 		}
 		else
-			throw new RequieredParametersNotSet();
+			throw new RequiredParametersNotSetException();
 	}
 	
-	public JSONObject buildLOOKUPResponse() throws RequieredParametersNotSet {
+	public JSONObject buildLOOKUPResponse() throws RequiredParametersNotSetException {
 		if (result != null){
 			JSONObject responceRPC = new JSONObject();
 			responceRPC.put("jsonrpc", "2.0");
@@ -49,10 +49,10 @@ public class RPCResponseBuilder {
 			return responceRPC;
 		}
 		else
-			throw new RequieredParametersNotSet();
+			throw new RequiredParametersNotSetException();
 	}
 
-	public JSONObject buildPINGResponse() throws RequieredParametersNotSet {
+	public JSONObject buildPINGResponse() throws RequiredParametersNotSetException {
 		if (result != null){
 			JSONObject responceRPC = new JSONObject();
 			responceRPC.put("jsonrpc", "2.0");
@@ -61,10 +61,10 @@ public class RPCResponseBuilder {
 			return responceRPC;
 		}
 		else
-			throw new RequieredParametersNotSet();
+			throw new RequiredParametersNotSetException();
 	}
 
-	public JSONObject buildSHUTDOWNResponse() throws RequieredParametersNotSet {
+	public JSONObject buildSHUTDOWNResponse() throws RequiredParametersNotSetException {
 		if (result != null){
 			JSONObject responceRPC = new JSONObject();
 			responceRPC.put("jsonrpc", "2.0");
@@ -73,7 +73,7 @@ public class RPCResponseBuilder {
 			return responceRPC;
 		}
 		else
-			throw new RequieredParametersNotSet();
+			throw new RequiredParametersNotSetException();
 	}
 
 	public JSONArray getResult() {

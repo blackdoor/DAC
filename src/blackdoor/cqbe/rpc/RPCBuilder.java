@@ -1,10 +1,13 @@
 package blackdoor.cqbe.rpc;
 
+import java.net.InetAddress;
 import java.util.Random;
 
 import org.json.JSONObject;
 
-import blackdoor.cqbe.rpc.RPCException.RequieredParametersNotSet;
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.addressing.L3Address;
+import blackdoor.cqbe.rpc.RPCException.RequiredParametersNotSetException;
 
 
 
@@ -15,11 +18,10 @@ import blackdoor.cqbe.rpc.RPCException.RequieredParametersNotSet;
  * @version v0.0.1 - Nov 3, 2014
  */
 public class RPCBuilder {
-	
-	private String sourceO;
-	private String sourceIP;
-	private String sourcePort;
-	private String destinationO;
+
+	private InetAddress sourceIP;
+	private int sourcePort;
+	private Address destinationO;
 	private String value;
 	
 	private int index;
@@ -27,12 +29,20 @@ public class RPCBuilder {
 
 	public RPCBuilder() {
 		setID();
-		sourceO = null;
-		sourceIP = null;
-		sourcePort = null;
-		destinationO = null;
-		value = null;
+		sourcePort = -1;
 		index = -1;
+	}
+	
+	private JSONObject getDefaultParams() throws RequiredParametersNotSetException{
+		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
+			throw new RequiredParametersNotSetException();
+		}
+		JSONObject params = new JSONObject();
+		params.put("sourceO", new L3Address(sourceIP, sourcePort).overlayAddressToString());
+		params.put("sourceIP", sourceIP.getHostAddress());
+		params.put("sourcePort", sourcePort);
+		params.put("destinationO", destinationO.overlayAddressToString());
+		return params;
 	}
 
 	/**
@@ -40,19 +50,15 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object with relevant information.
 	 */
-	public JSONObject buildGET() throws RequieredParametersNotSet {
-		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null || index == -1) {
-			throw new RequieredParametersNotSet();
+	public JSONObject buildGET() throws RequiredParametersNotSetException {
+		if (sourceIP == null || sourcePort == -1 || destinationO == null || index == -1) {
+			throw new RequiredParametersNotSetException();
 		}
 		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "get");
-			JSONObject params = new JSONObject();
-			params.put("sourceO", sourceO);
-			params.put("sourceIP", sourceIP);
-			params.put("sourcePort", sourcePort);
-			params.put("destinationO", destinationO);
+			JSONObject params = getDefaultParams();
 			params.put("index", index);
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
@@ -67,19 +73,15 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object.
 	 */
-	public JSONObject buildPUT() throws RequieredParametersNotSet {
-		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null || value == null) {
-			throw new RequieredParametersNotSet();
+	public JSONObject buildPUT() throws RequiredParametersNotSetException {
+		if (sourceIP == null || sourcePort == -1 || destinationO == null || value == null) {
+			throw new RequiredParametersNotSetException();
 		}
 		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "put");
-			JSONObject params = new JSONObject();
-			params.put("sourceO", sourceO);
-			params.put("sourceIP", sourceIP);
-			params.put("sourcePort", sourcePort);
-			params.put("destinationO", destinationO);
+			JSONObject params = getDefaultParams();
 			params.put("value", value);
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
@@ -94,20 +96,16 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object with relevant information.
 	 */
-	public JSONObject buildLOOKUP() throws RequieredParametersNotSet {
-		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null) {
-			throw new RequieredParametersNotSet();
+	public JSONObject buildLOOKUP() throws RequiredParametersNotSetException {
+		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
+			throw new RequiredParametersNotSetException();
 		}
 		else
 		{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "lookup");
-			JSONObject params = new JSONObject();
-			params.put("sourceO", sourceO);
-			params.put("sourceIP", sourceIP);
-			params.put("sourcePort", sourcePort);
-			params.put("destinationO", destinationO);
+			JSONObject params = getDefaultParams();
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
 			rpc.put("params", params);
@@ -121,19 +119,15 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object with relevant information.
 	 */
-	public JSONObject buildPING() throws RequieredParametersNotSet {
-		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null) {
-			throw new RequieredParametersNotSet();
+	public JSONObject buildPING() throws RequiredParametersNotSetException {
+		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
+			throw new RequiredParametersNotSetException();
 		}
 		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "ping");
-			JSONObject params = new JSONObject();
-			params.put("sourceO", sourceO);
-			params.put("sourceIP", sourceIP);
-			params.put("sourcePort", sourcePort);
-			params.put("destinationO", destinationO);
+			JSONObject params = getDefaultParams();
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
 			rpc.put("params", params);
@@ -147,19 +141,15 @@ public class RPCBuilder {
 	 *
 	 * @param port - Port to be shutdown
 	 */
-	public JSONObject buildSHUTDOWN() throws RequieredParametersNotSet {
-		if (sourceO == null || sourceIP == null || sourcePort == null || destinationO == null) {
-			throw new RequieredParametersNotSet();
+	public JSONObject buildSHUTDOWN() throws RequiredParametersNotSetException {
+		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
+			throw new RequiredParametersNotSetException();
 		}
 		else{
 			JSONObject rpc = new JSONObject();
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "shutdown");
-			JSONObject params = new JSONObject();
-			params.put("sourceO", sourceO);
-			params.put("sourceIP", sourceIP);
-			params.put("sourcePort", sourcePort);
-			params.put("destinationO", destinationO);
+			JSONObject params = getDefaultParams();
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
 			rpc.put("params", params);
@@ -170,38 +160,34 @@ public class RPCBuilder {
 
 	private void setID() {
 	  Random rand = new Random();
-	  id = rand.nextInt();
+	  id = rand.nextInt(Integer.MAX_VALUE);
 	}
 
-	public String getSourceO() {
-		return sourceO;
+	public Address getSourceO() {
+		return new L3Address(sourceIP, sourcePort);
 	}
 
-	public void setSourceO(String sourceO) {
-		this.sourceO = sourceO;
-	}
-
-	public String getSourceIP() {
+	public InetAddress getSourceIP() {
 		return sourceIP;
 	}
 
-	public void setSourceIP(String sourceIP) {
+	public void setSourceIP(InetAddress sourceIP) {
 		this.sourceIP = sourceIP;
 	}
 
-	public String getSourcePort() {
+	public int getSourcePort() {
 		return sourcePort;
 	}
 
-	public void setSourcePort(String sourcePort) {
+	public void setSourcePort(int sourcePort) {
 		this.sourcePort = sourcePort;
 	}
 
-	public String getDestinationO() {
+	public Address getDestinationO() {
 		return destinationO;
 	}
 
-	public void setDestinationO(String destinationO) {
+	public void setDestinationO(Address destinationO) {
 		this.destinationO = destinationO;
 	}
 

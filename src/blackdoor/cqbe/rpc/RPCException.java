@@ -49,7 +49,7 @@ public class RPCException extends Exception {
 		
 	}
 
-	public static class RequieredParametersNotSet extends RPCException{
+	public static class RequiredParametersNotSetException extends RPCException{
 		
 	}
 }
