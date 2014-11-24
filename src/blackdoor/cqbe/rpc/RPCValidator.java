@@ -4,41 +4,30 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.Socket;
-import java.util.Iterator;
-
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.examples.Utils;
-import com.github.fge.jsonschema.main.JsonSchema;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
-import com.sun.net.ssl.internal.www.protocol.https.Handler;
 
 import blackdoor.cqbe.node.server.RPCHandler;
 
 /**
  * 
- * @author Cj Buresch
- * @version 0.0.1 11/3/2014
+ * @author Cyril Van Dyke
+ * @version 0.0.3 11/20/2014
  *
  */
 public class RPCValidator {
-
-	public RPCValidator(String rpcCall, OutputStream os) {
-		String call = rpcCall;
+	private String call;
+	private OutputStream os;
+	
+	public RPCValidator(String rpcCall, OutputStream oStream) {
+		call = rpcCall;
+		os = oStream;
 	}
 	
-	public void handle(String call,OutputStream os){
+	public void handle(){
 		JSONObject k = new JSONObject();
 		BufferedWriter buffy = new BufferedWriter(new OutputStreamWriter(os));
 		try{
-			k.testValidity(call);
+			JSONObject.testValidity(call);
 			String validity = isValid(call);
 			if(validity.equals("valid")){
 				//Handle the call by passing off to the handler.
@@ -107,31 +96,32 @@ public class RPCValidator {
 	}
 	
 	/**
-	 * Returns True if JSONObject is a valid RPC.
 	 * <p>
 	 * Checks for semantics, syntax and if the RPC is supported by this system.
 	 *
-	 * @param JSONObject
-	 * @return 
-	 * @return True if RPC is valid, false if not.
-	 * @throws ProcessingException 
-	 * @throws IOException 
+	 * @param String
+	 * @return String detailing whether the JSONObject is valid or not.
 	 */
 	public String isValid(String call){
 		JSONObject jCall = new JSONObject(call);
 		JSONObject params = new JSONObject(jCall.get("params"));
+		String methodName = jCall.getString("method");
 		if(!jCall.has("method") || !params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
 				|| !params.has("destinationO") || !params.has("extensions")){
 			return "invalid";
 		}
-		if(jCall.getString("method").equals("PUT") && !params.has("value")){
+		if(methodName.equals("PUT") && !params.has("value")){
 			return "params";
 		}
-		if(jCall.getString("method").equals("GET") && !params.has("index")){
+		if(methodName.equals("GET") && !params.has("index")){
 			return "params";
 		}
-		if(jCall.getString("method").equals("SHUTDOWN") && !params.has("port")){
+		if(methodName.equals("SHUTDOWN") && !params.has("port")){
 			return "params";
+		}
+		if(!methodName.equals("PING") || !methodName.equals("PONG") || !methodName.equals("LOOKUP") || 
+				!methodName.equals("PUT") || !methodName.equals("GET") || !methodName.equals("SHUTDOWN")){
+			return "method";
 		}
 		return "valid";
 	}
