@@ -37,12 +37,15 @@ public class RPCBuilder {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
 			throw new RequiredParametersNotSetException();
 		}
-		JSONObject params = new JSONObject();
-		params.put("sourceO", new L3Address(sourceIP, sourcePort).overlayAddressToString());
-		params.put("sourceIP", sourceIP.getHostAddress());
-		params.put("sourcePort", sourcePort);
-		params.put("destinationO", destinationO.overlayAddressToString());
-		return params;
+		else
+		{
+			JSONObject params = new JSONObject();
+			params.put("sourceO", new L3Address(sourceIP, sourcePort).overlayAddressToString());
+			params.put("sourceIP", sourceIP.getHostAddress());
+			params.put("sourcePort", sourcePort);
+			params.put("destinationO", destinationO.overlayAddressToString());
+			return params;
+		}
 	}
 
 	/**
