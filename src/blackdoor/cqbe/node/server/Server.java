@@ -8,47 +8,49 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import blackdoor.cqbe.settings.Config;
+import blackdoor.util.DBP;
 
 /**
  * Node server that accepts and handles RPCs.
  * <p>
  * 
- * HOW TO START: Server server = new Server(); new Thread(server).start();
- * 
- * HOT TO STOP: server.stop();
- * 
- * Kill process because something went wrong:
- * >sudo netstat -lpn |grep :1778
- * >kill [ps]
- * 
  * @author Cj Buresch
- * @version v0.0.2 - Nov 17, 2014
+ * @version v0.1.0 - Nov 17, 2014
  */
 public class Server implements Runnable {
 
-  // private int port = Config.Port();
+  // private int port = Config.Port(); not yet working
   private int port;
   private ServerSocket serverSocket;
-  private boolean running = true;
+  private boolean running = false;
   private ThreadPoolExecutor pool;
   private BlockingQueue<Runnable> blockingQueue;
   private Thread runningThread = null;
 
+  /**
+   * Initialize from configuration file settings.
+   * <p>
+   */
   public Server() {
-    blockingQueue = new SynchronousQueue<Runnable>();
-    pool = getPool();
+    this(Config.Port());
   }
 
+  /**
+   * Initialize with specific port.
+   * 
+   * @param port
+   */
   public Server(int port) {
     this.port = port;
     blockingQueue = new SynchronousQueue<Runnable>();
     pool = getPool();
   }
 
+  /*
+   * just for testing this... or example how to run
+   */
   public static void main(String[] args) {
-    int port = 1778;
-    Server server = new Server(port);
-    // START
+    Server server = new Server(1778);
     new Thread(server).start();
   }
 
@@ -59,22 +61,17 @@ public class Server implements Runnable {
    */
   @Override
   public void run() {
+    running = true;
     synchronized (this) {
       this.runningThread = Thread.currentThread();
     }
     openServerSocket();
-    System.out.println("Starting");
     while (this.isRunning()) {
       try {
-
-        pool.execute(new AcceptedRPC(this.serverSocket.accept(), blockingQueue));
-
+        pool.execute(new AcceptedRPC(this.serverSocket.accept()));
       } catch (IOException e) {
-        if (!isRunning()) {
-          System.out.println("Server Stopped.");
-          return;
-        }
-        throw new RuntimeException("Error accepting client connection", e);
+        DBP.printerror("Could not accept socket connection!");
+        DBP.printException(e);
       }
     }
   }
@@ -85,19 +82,20 @@ public class Server implements Runnable {
    * 
    */
   public synchronized void stop() {
+    running = false;
     pool.shutdown(); // Disable new tasks from being submitted
     try {
-      this.serverSocket.close();
       // Wait a while for existing tasks to terminate
-      if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+      if (!pool.awaitTermination(60, TimeUnit.SECONDS))
         pool.shutdownNow(); // Cancel currently executing tasks
-        // Wait a while for tasks to respond to being cancelled
-        if (!pool.awaitTermination(60, TimeUnit.SECONDS))
-          System.err.println("Pool did not terminate");
-      }
+      if (!serverSocket.isClosed())
+        this.serverSocket.close();
     } catch (IOException e) {
-      System.err.println("Error closing Socket. \n" + e);
+      DBP.printerror("Error closing Socket.");
+      DBP.printException(e);
     } catch (InterruptedException ie) {
+      DBP.printerror("Error shutting down threadpool.");
+      DBP.printException(ie);
       // (Re-)Cancel if current thread also interrupted
       pool.shutdownNow();
       // Preserve interrupt status
@@ -111,7 +109,7 @@ public class Server implements Runnable {
    * 
    * @return
    */
-  private synchronized boolean isRunning() {
+  public synchronized boolean isRunning() {
     return this.running;
   }
 
@@ -122,7 +120,9 @@ public class Server implements Runnable {
     try {
       this.serverSocket = new ServerSocket(this.port);
     } catch (IOException e) {
-      throw new RuntimeException("Cannot open port" + this.port + e);
+      running = false;
+      DBP.printerror("COULD NOT OPEN SERVERSOCKET on port: " + port);
+      DBP.printException(e);
     }
   }
 

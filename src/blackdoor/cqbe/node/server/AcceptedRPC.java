@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 import blackdoor.auth.AuthRequest;
 import blackdoor.cqbe.rpc.RPCValidator;
+import blackdoor.util.DBP;
 
 /**
  * 
@@ -29,17 +30,15 @@ import blackdoor.cqbe.rpc.RPCValidator;
  * @version v0.0.2 - Nov 17, 2014
  */
 public class AcceptedRPC implements Runnable {
-  private BlockingQueue<Runnable> blockingQueue;
+  private final int BUFFER_SIZE = 64 * 1024;
   private Socket socket = null;
   private OutputStream out;
   private InputStream in;
-  private BufferedInputStream bis;
 
-  public AcceptedRPC(Socket socket, BlockingQueue<Runnable> blockingQueue) {
+  public AcceptedRPC(Socket socket) {
     this.socket = socket;
-    this.blockingQueue = blockingQueue;
-    openInput();
-    openOutput();
+    openInputStream();
+    openOutputStream();
   }
 
   /**
@@ -47,15 +46,10 @@ public class AcceptedRPC implements Runnable {
  */
   @Override
   public void run() {
-    System.out.println("Got it.");
     String input = read();
-
-    // pass outstream and string
-    // RPCValidator validator = new RPCValidator(); TODO Pass off!!
-
-    // FOR TESTING
     System.out.println(":::RECIEVED:::\n " + input);
-    //closeIn();
+    shutdownSocketInput();
+
   }
 
   /**
@@ -64,32 +58,18 @@ public class AcceptedRPC implements Runnable {
    */
   private String read() {
     StringBuilder sb = new StringBuilder();
-    bis = new BufferedInputStream(in);
-    byte[] bytes = new byte[100];
-    int s = 0;
-    int index = 0;
-
+    BufferedReader br = null;
     try {
-      while (true) {
-        s = bis.read();
-        if (s == 10) {
-          break;
-        }
-        bytes[index++] = (byte) (s);
-        if (index == bytes.length) {
-          sb.append(new String(bytes));
-          bytes = new byte[100];
-          index = 0;
-        }
+      br = new BufferedReader(new InputStreamReader(in));
+      String inputLine;
+      while ((inputLine = br.readLine()) != null) {
+        sb.append(inputLine);
       }
+
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
-
-    if (index > 0) {
-      sb.append(new String(Arrays.copyOfRange(bytes, 0, index)));
+      DBP.printerror("Problem reading from InputStream...");
+      DBP.printException(e);
+      return null;
     }
 
     return sb.toString();
@@ -98,49 +78,38 @@ public class AcceptedRPC implements Runnable {
   /**
    * 
    */
-  private void openInput() {
+  private void openInputStream() {
     try {
-      // in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      // stdIn = new BufferedReader(new InputStreamReader(System.in));
       in = socket.getInputStream();
     } catch (IOException e) {
-      System.err.println("BufferReader is no GO.");
+      DBP.printerror("Problem opening InputStream...");
+      DBP.printException(e);
     }
   }
 
   /**
  * 
  */
-  private void openOutput() {
+  private void openOutputStream() {
     try {
-      // out = socket.getOutputStream();
       out = socket.getOutputStream();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      System.err.println("Could not Open OutputSocket...");
+      DBP.printerror("Problem opening OutputStream...");
+      DBP.printException(e);
     }
   }
 
   /**
  * 
  */
-  private void closeIn() {
+  private void shutdownSocketInput() {
     try {
-      // in.close();
-      // out.close(); // TODO for Testing
-      bis.close();
-      in.close();
-      out.close();
+      // socket.shutdownInput();
       socket.close();
-      // inputBuffer.close();
-      // outputObject.close();
-
     } catch (IOException e) {
-      System.err.println("Problem with connection...");
-    } catch (NullPointerException e) {
-      System.err.println("NULLPOINTER in CloseIn");
+      DBP.printerror("Problem shutting down InputStream...");
+      DBP.printException(e);
     }
-    System.err.println("Couldn't close connections. Was the connection reset?");
   }
 
 }

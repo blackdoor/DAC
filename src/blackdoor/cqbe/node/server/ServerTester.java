@@ -1,58 +1,67 @@
 package blackdoor.cqbe.node.server;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+
+import org.json.JSONObject;
 
 
 public class ServerTester {
+
+  private String hostname;
+  private int port;
+  private Socket csock = null;
+
   public static void main(String[] args) {
-    int port = 1778;
-    String hostname = "localhost";
-    Socket kkSocket = null;
-    PrintWriter out = null;
-    Scanner s = new Scanner(System.in);
-    String in = s.nextLine();
+    ServerTester ts = new ServerTester();
+    ts.sendJSON(ts.getStubRPC());
+    ts.closeOut();
+  }
+
+  public ServerTester() {
+    this.port = 1778;
+    hostname = "localhost";
+    grabSocket();
+  }
+
+  public void grabSocket() {
     try {
-      kkSocket = new Socket(hostname, port);
-      out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(kkSocket.getOutputStream())));
-      for (int i = 0; i < 2; i++) {
-        if (!in.equals("stop")) {
-          System.out.println("Sending " + in);
-          out.println(in);
-          out.flush();
-          in = s.nextLine();
-          // Thread.sleep(1000);
-        } else {
-          System.out.println("EXITING");
-          break;
-        }
-      }
+      csock = new Socket(hostname, port);
     } catch (IOException e) {
-      System.err.println("NOPE");
+      e.printStackTrace();
     }
+  }
 
-
-    // STOP
-    out.close();
-
+  public void closeOut() {
     try {
-      kkSocket.close();
+      csock.close();
     } catch (IOException e) {
-      System.err.println("not closing....");
+      e.printStackTrace();
     }
-    s.close();
+  }
 
+  public void sendJSON(JSONObject jo) {
+    String input = jo.toString();
+    PrintWriter out;
+    try {
+      out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(csock.getOutputStream())));
+      out.print(input);
+      out.flush();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
+  public JSONObject getStubRPC() {
+    JSONObject rpc = new JSONObject();
+    rpc.put("jsonrpc", "2.0");
+    rpc.put("method", "TESTER");
+    rpc.put("id", "FAKETESTER");
+    return rpc;
   }
 }
