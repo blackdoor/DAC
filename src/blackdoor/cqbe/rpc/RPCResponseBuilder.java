@@ -2,7 +2,7 @@ package blackdoor.cqbe.rpc;
 
 import org.json.JSONObject;
 
-import blackdoor.cqbe.rpc.RPCException.RequieredParametersNotSet;
+import blackdoor.cqbe.rpc.RPCException.RequiredParametersNotSetException;
 
 public class RPCResponseBuilder {
 	
@@ -15,7 +15,7 @@ public class RPCResponseBuilder {
 		result = null;
 	}
 	
-	public JSONObject buildResponse() throws RequieredParametersNotSet {
+	public JSONObject buildResponse() throws RequiredParametersNotSetException {
 		if (result != null){
 			JSONObject responceRPC = new JSONObject();
 			responceRPC.put("jsonrpc", "2.0");
@@ -24,7 +24,7 @@ public class RPCResponseBuilder {
 			return responceRPC;
 		}
 		else
-			throw new RequieredParametersNotSet();
+			throw new RequiredParametersNotSetException();
 	}
 
 	public Object getResult() {
