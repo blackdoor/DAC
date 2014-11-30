@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.JSONObject;
 
 import blackdoor.cqbe.node.server.RPCHandler;
@@ -36,7 +39,7 @@ public class RPCValidator {
 				//handler.handleRPC(call);
 			}
 			else {
-				JSONObject error = buildError(validity,new JSONObject(call).getString("id"),call);
+				JSONObject error = buildError(validity,new JSONObject(call).getJSONArray("id").getString(0),call);
 				try {
 					buffy.write(error.toString());
 					buffy.flush();
@@ -104,8 +107,8 @@ public class RPCValidator {
 	 */
 	public String isValid(String call){
 		JSONObject jCall = new JSONObject(call);
-		JSONObject params = new JSONObject(jCall.get("params"));
-		String methodName = jCall.getString("method");
+		JSONObject params = jCall.getJSONArray("params").getJSONObject(0);
+		String methodName = jCall.getJSONArray("method").getString(0);
 		if(!jCall.has("method") || !params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
 				|| !params.has("destinationO") || !params.has("extensions")){
 			return "invalid";
@@ -119,10 +122,25 @@ public class RPCValidator {
 		if(methodName.equals("SHUTDOWN") && !params.has("port")){
 			return "params";
 		}
-		if(!methodName.equals("PING") || !methodName.equals("PONG") || !methodName.equals("LOOKUP") || 
-				!methodName.equals("PUT") || !methodName.equals("GET") || !methodName.equals("SHUTDOWN")){
+		if(!methodName.equals("PING") && !methodName.equals("PONG") && !methodName.equals("LOOKUP") && 
+				!methodName.equals("PUT") && !methodName.equals("GET") && !methodName.equals("SHUTDOWN")){
 			return "method";
 		}
+		//Check for validity of params
+		//Not really sure how to do this with overlay addresses yet lawl
+		String ip = params.getJSONArray("sourceIP").getString(0);
+		int port = params.getJSONArray("sourcePort").getInt(0);
+		final String PATTERN = 
+		        "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+		Pattern pattern = Pattern.compile(PATTERN);
+		Matcher matcher = pattern.matcher(ip);
+		if(!matcher.matches()){
+			return "params";
+		}
+		if(port < 0 || port > 61001){
+			return "params";
+		}
+		
 		return "valid";
 	}
 	
