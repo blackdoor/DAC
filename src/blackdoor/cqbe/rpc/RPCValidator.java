@@ -39,7 +39,7 @@ public class RPCValidator {
 				//handler.handleRPC(call);
 			}
 			else {
-				JSONObject error = buildError(validity,new JSONObject(call).getJSONArray("id").getString(0),call);
+				JSONObject error = buildError(validity,new JSONObject(call).getInt("id"),call);
 				try {
 					buffy.write(error.toString());
 					buffy.flush();
@@ -51,7 +51,7 @@ public class RPCValidator {
 			}
 		}
 		catch(Exception e){
-			JSONObject error = buildError("parse",null,call);
+			JSONObject error = buildError("parse",-1,call);
 			try {
 				buffy.write(error.toString());
 				buffy.flush();
@@ -64,36 +64,36 @@ public class RPCValidator {
 
 	}
 
-	public JSONObject buildError(String errorStyle, String id, String call){
+	public JSONObject buildError(String errorStyle, int id, String call){
 		JSONObject error = new JSONObject();
 		JSONObject errorObject = new JSONObject();
-		errorObject.append("jsonrpc", "2.0");
+		errorObject.put("jsonrpc", "2.0");
 		if(errorStyle.equals("parse")){
-			error.append("code",-32700);
-			error.append("message","Parse Error");
+			error.put("code",-32700);
+			error.put("message","Parse Error");
 		}
 		if(errorStyle.equals("invalid")){
-			error.append("code",-32600);
-			error.append("message","Invalid Request");
+			error.put("code",-32600);
+			error.put("message","Invalid Request");
 		}
 		if(errorStyle.equals("method")){	
-			error.append("code",-32601);
-			error.append("message","Method not found");
+			error.put("code",-32601);
+			error.put("message","Method not found");
 		}
 		if(errorStyle.equals("params")){
-			error.append("code",-32602);
-			error.append("message","Invalid params");
+			error.put("code",-32602);
+			error.put("message","Invalid params");
 		}
 		if(errorStyle.equals("internal")){
-			error.append("code",-32603);
-			error.append("message","Internal error");
+			error.put("code",-32603);
+			error.put("message","Internal error");
 		}
 		if(errorStyle.equals("server")){
-			error.append("code",-32000);
-			error.append("message","Server error");
+			error.put("code",-32000);
+			error.put("message","Server error");
 		}
-		errorObject.append("error", error);
-		errorObject.append("id",id);
+		errorObject.put("error", error);
+		errorObject.put("id",id);
 		
 		return errorObject;
 	}
@@ -107,8 +107,8 @@ public class RPCValidator {
 	 */
 	public String isValid(String call){
 		JSONObject jCall = new JSONObject(call);
-		JSONObject params = jCall.getJSONArray("params").getJSONObject(0);
-		String methodName = jCall.getJSONArray("method").getString(0);
+		JSONObject params = jCall.getJSONObject("params");
+		String methodName = jCall.getString("method");
 		if(!jCall.has("method") || !params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
 				|| !params.has("destinationO") || !params.has("extensions")){
 			return "invalid";
@@ -128,8 +128,8 @@ public class RPCValidator {
 		}
 		//Check for validity of params
 		//Not really sure how to do this with overlay addresses yet lawl
-		String ip = params.getJSONArray("sourceIP").getString(0);
-		int port = params.getJSONArray("sourcePort").getInt(0);
+		String ip = params.getString("SourceIP");
+		int port = params.getInt("sourcePort");
 		final String PATTERN = 
 		        "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 		Pattern pattern = Pattern.compile(PATTERN);
