@@ -47,7 +47,7 @@ public class ConfigurationFileManager {
 	 * 
 	 * @return Boolean
 	 */
-	public void isValidConfigurations() {
+	public void isValidConfiguration() {
 
 	}
 
