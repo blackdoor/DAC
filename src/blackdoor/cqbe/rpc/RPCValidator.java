@@ -14,7 +14,7 @@ import blackdoor.cqbe.node.server.RPCHandler;
 /**
  * 
  * @author Cyril Van Dyke
- * @version 0.0.3 11/20/2014
+ * @version 0.0.4 12/03/2014
  *
  */
 public class RPCValidator {
