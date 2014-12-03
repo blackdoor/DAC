@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import blackdoor.util.DBP;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.node.server.RPCHandler;
@@ -33,6 +34,7 @@ public class RPCValidator {
 			JSONObject.testValidity(call);
 			String validity = isValid(call);
 			if(validity.equals("valid")){
+				DBP.printdemoln("RPC is valid, handing off to RPCHandler");
 				//Handle the call by passing off to the handler.
 				//String methodCalled = call.getString("method");
 				RPCHandler handler = new RPCHandler();
@@ -51,6 +53,7 @@ public class RPCValidator {
 			}
 		}
 		catch(Exception e){
+			DBP.printException(e);
 			JSONObject error = buildError("parse",-1,call);
 			try {
 				buffy.write(error.toString());
@@ -113,22 +116,22 @@ public class RPCValidator {
 				|| !params.has("destinationO") || !params.has("extensions")){
 			return "invalid";
 		}
-		if(methodName.equals("PUT") && !params.has("value")){
+		if(methodName.equalsIgnoreCase("PUT") && !params.has("value")){
 			return "params";
 		}
-		if(methodName.equals("GET") && !params.has("index")){
+		if(methodName.equalsIgnoreCase("GET") && !params.has("index")){
 			return "params";
 		}
-		if(methodName.equals("SHUTDOWN") && !params.has("port")){
+		if(methodName.equalsIgnoreCase("SHUTDOWN") && !params.has("port")){
 			return "params";
 		}
-		if(!methodName.equals("PING") && !methodName.equals("PONG") && !methodName.equals("LOOKUP") && 
-				!methodName.equals("PUT") && !methodName.equals("GET") && !methodName.equals("SHUTDOWN")){
+		if(!methodName.equalsIgnoreCase("PING") && !methodName.equalsIgnoreCase("PONG") && !methodName.equalsIgnoreCase("LOOKUP") &&
+				!methodName.equalsIgnoreCase("PUT") && !methodName.equalsIgnoreCase("GET") && !methodName.equalsIgnoreCase("SHUTDOWN")){
 			return "method";
 		}
 		//Check for validity of params
 		//Not really sure how to do this with overlay addresses yet lawl
-		String ip = params.getString("SourceIP");
+		String ip = params.getString("sourceIP");
 		int port = params.getInt("sourcePort");
 		final String PATTERN = 
 		        "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
