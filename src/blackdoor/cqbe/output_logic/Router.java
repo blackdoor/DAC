@@ -1,8 +1,8 @@
 package blackdoor.cqbe.output_logic;
 
+import blackdoor.cqbe.rpc.RPCException;
 import org.json.*;
 import blackdoor.cqbe.addressing.*;
-import blackdoor.cqbe.rpc.RPCException.*;
 
 /**
  * Responsibility - Handles routing through the overlay network, resolution of overlay addresses, sending RPCs and resolving replies
@@ -52,23 +52,9 @@ public class Router {
 	 * @param RPC
 	 * @return the consensus reply to RPC. Note: this is not the RPC response,
 	 *         but rather the JSON object in the "method" field of the response.
-	 * @throws ParseException
-	 *             Invalid JSON-RPC was received by the server. An error
-	 *             occurred on the server while parsing the JSON text.
-	 * @throws InvalidRequestException
-	 *             The RPC sent is not a valid Request object.
-	 * @throws MethodNotFoundException
-	 *             The method does not exist / is not available.
-	 * @throws InvalidParameterException
-	 *             Invalid method parameter(s).
-	 * @throws InternalException
-	 *             Internal JSON-RPC error.
-	 * @throws ServerException
-	 *             Reserved for implementation-defined server-errors.
+	 * @throws RPCException
 	 */
-	public JSONObject routeWithCalls(Object RPC) throws ParseException,
-			InvalidRequestException, MethodNotFoundException,
-			InvalidParameterException, InternalException, ServerException {
+	public JSONObject routeWithCalls(Object RPC) throws RPCException {
 		return null;
 	}
 
@@ -78,24 +64,10 @@ public class Router {
 	 * @param destination
 	 * @return the reply from destination. Note: this is not the RPC response,
 	 *         but rather the JSON object in the "method" field of the response.
-	 * @throws ParseException
-	 *             Invalid JSON-RPC was received by the server. An error
-	 *             occurred on the server while parsing the JSON text.
-	 * @throws InvalidRequestException
-	 *             The RPC sent is not a valid Request object.
-	 * @throws MethodNotFoundException
-	 *             The method does not exist / is not available.
-	 * @throws InvalidParameterException
-	 *             Invalid method parameter(s).
-	 * @throws InternalException
-	 *             Internal JSON-RPC error.
-	 * @throws ServerException
-	 *             Reserved for implementation-defined server-errors.
+	 * @throws RPCException
 	 */
 	public static JSONObject call(Address destination, Object RPC)
-			throws ParseException, InvalidRequestException,
-			MethodNotFoundException, InvalidParameterException,
-			InternalException, ServerException {
+			throws RPCException {
 		return null;
 	}
 
@@ -107,24 +79,10 @@ public class Router {
 	 * @return the consensus reply to the RPC. Note: this is not the RPC
 	 *         response, but rather the JSON object in the "method" field of the
 	 *         response.
-	 * @throws ParseException
-	 *             Invalid JSON-RPC was received by the server. An error
-	 *             occurred on the server while parsing the JSON text.
-	 * @throws InvalidRequestException
-	 *             The RPC sent is not a valid Request object.
-	 * @throws MethodNotFoundException
-	 *             The method does not exist / is not available.
-	 * @throws InvalidParameterException
-	 *             Invalid method parameter(s).
-	 * @throws InternalException
-	 *             Internal JSON-RPC error.
-	 * @throws ServerException
-	 *             Reserved for implementation-defined server-errors.
+	 * @throws RPCException
 	 */
 	public static JSONObject call(AddressTable destinations, Object RPC)
-			throws ParseException, InvalidRequestException,
-			MethodNotFoundException, InvalidParameterException,
-			InternalException, ServerException {
+			throws RPCException {
 		return null;
 	}
 }

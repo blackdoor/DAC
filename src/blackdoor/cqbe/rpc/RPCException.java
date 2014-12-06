@@ -1,55 +1,17 @@
 package blackdoor.cqbe.rpc;
-
 public class RPCException extends Exception {
-	/**
-	 * Invalid JSON was received by the server.
-	 * An error occurred on the server while parsing the JSON text.
-	 * @author nfischer3
-	 *
-	 */
-	public static class ParseException extends RPCException{
-		
+	RPCBuilder.JSONRPCError e;
+	public RPCException(RPCBuilder.JSONRPCError e){
+		this.e = e;
 	}
-	/**
-	 * The JSON sent is not a valid Request object.
-	 * @author nfischer3
-	 *
-	 */
-	public static class InvalidRequestException extends RPCException{
-		
-	}
-	/**
-	 * The method does not exist / is not available.
-	 * @author nfischer3
-	 *
-	 */
-	public static class MethodNotFoundException extends RPCException{
-		
-	}
-	/*
-	 * Invalid method parameter(s).
-	 */
-	public static class InvalidParameterException extends RPCException{
-		
-	}
-	/**
-	 * Internal JSON-RPC error.
-	 * @author nfischer3
-	 *
-	 */
-	public static class InternalException extends RPCException{
-		
-	}
-	/**
-	 * Reserved for implementation-defined server-errors.
-	 * @author nfischer3
-	 *
-	 */
-	public static class ServerException extends RPCException{
-		
+	public RPCBuilder.JSONRPCError getRPCError(){
+		return e;
 	}
 
-	public static class RequiredParametersNotSetException extends RPCException{
-		
+	public static class RPCCreationException extends RuntimeException{
+		public RPCCreationException(String message){
+			super(message);
+		}
 	}
+
 }
