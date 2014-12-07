@@ -106,7 +106,7 @@ public class Node {
 		 */
 		public NodeBuilder() {
 			daemon = false;
-			adam = true;
+			adam = false;
 			port = -1;
 		}
 
