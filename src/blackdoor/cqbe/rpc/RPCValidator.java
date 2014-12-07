@@ -30,31 +30,19 @@ public class RPCValidator {
 	public void handle(){
 		JSONObject k = new JSONObject();
 		BufferedWriter buffy = new BufferedWriter(new OutputStreamWriter(os));
-		try{
-			JSONObject.testValidity(call);
-			String validity = isValid(call);
-			if(validity.equals("valid")){
-				DBP.printdemoln("RPC is valid, handing off to RPCHandler");
-				//Handle the call by passing off to the handler.
-				//String methodCalled = call.getString("method");
-				RPCHandler handler = new RPCHandler();
-				//handler.handleRPC(call);
-			}
-			else {
-				JSONObject error = buildError(validity,new JSONObject(call).getInt("id"),call);
-				try {
-					buffy.write(error.toString());
-					buffy.flush();
-					buffy.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
+		JSONObject.testValidity(call);
+		String validity = isValid(call);
+		
+		if(validity.equals("valid")){
+			DBP.printdemoln("RPC is valid, handing off to RPCHandler");
+			//Handle the call by passing off to the handler.
+			//String methodCalled = call.getString("method");
+			RPCHandler handler = new RPCHandler();
+			//handler.handleRPC(call);
 		}
-		catch(Exception e){
-			DBP.printException(e);
-			JSONObject error = buildError("parse",-1,call);
+		
+		else {
+			JSONObject error = buildError(validity,new JSONObject(call).getInt("id"),call);
 			try {
 				buffy.write(error.toString());
 				buffy.flush();
@@ -64,7 +52,6 @@ public class RPCValidator {
 				e1.printStackTrace();
 			}
 		}
-
 	}
 
 	public JSONObject buildError(String errorStyle, int id, String call){
@@ -109,12 +96,24 @@ public class RPCValidator {
 	 * @return String detailing whether the JSONObject is valid or not.
 	 */
 	public String isValid(String call){
+		try{
+			JSONObject.testValidity(call);
+		} 
+		catch(Exception e) {
+			return "parse";
+		}
 		JSONObject jCall = new JSONObject(call);
-		JSONObject params = jCall.getJSONObject("params");
-		String methodName = jCall.getString("method");
-		if(!jCall.has("method") || !params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
-				|| !params.has("destinationO") || !params.has("extensions")){
+		JSONObject params = new JSONObject();
+		String methodName = "";
+		if(!jCall.has("method") || !jCall.has("params") || !jCall.has("jsonrpc")){
 			return "invalid";
+		} else {
+			methodName = jCall.getString("method");
+			params = jCall.getJSONObject("params");
+		}
+		if(!params.has("sourceO") || !params.has("sourceIP") || !params.has("sourcePort")
+				|| !params.has("destinationO") || !params.has("extensions")){
+			return "params";
 		}
 		if(methodName.equalsIgnoreCase("PUT") && !params.has("value")){
 			return "params";
@@ -122,7 +121,7 @@ public class RPCValidator {
 		if(methodName.equalsIgnoreCase("GET") && !params.has("index")){
 			return "params";
 		}
-		if(methodName.equalsIgnoreCase("SHUTDOWN") && !params.has("port")){
+		if(methodName.equalsIgnoreCase("SHUTDOWN") && !params.has("sourcePort")){
 			return "params";
 		}
 		if(!methodName.equalsIgnoreCase("PING") && !methodName.equalsIgnoreCase("PONG") && !methodName.equalsIgnoreCase("LOOKUP") &&
