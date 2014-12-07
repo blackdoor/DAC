@@ -158,22 +158,24 @@ public class Node {
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
 		 */
-		public void buildNode() throws RequiredParametersNotSetException {
+		public Node buildNode() throws RequiredParametersNotSetException {
+			Node node = null;
 			if (!daemon) {
 				if (adam) {
 					AddressTable builderAddressTable = new AddressTable();
-					Node node = new Node(port);
+					node = new Node(port);
 					node.addressTable = builderAddressTable;
 				} else if (!adam && bootstrapNode != null) {
 					AddressTable builderAddressTable = new AddressTable();
 					builderAddressTable.add(bootstrapNode);
-					Node node = new Node(port);
+					node = new Node(port);
 					node.addressTable = builderAddressTable;
 				} else
 					throw new RequiredParametersNotSetException();
 			}
+			Node.singleton = node;
+			return Node.getInstance();
 		}
-
 	}
 
 }

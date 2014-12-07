@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.Node.NodeBuilder;
 import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
+import blackdoor.util.DBP;
 
 public class NodeTester {
 
@@ -13,6 +14,7 @@ public class NodeTester {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		DBP.VERBOSE = true;
 		if (args.length >1 && args[0].equals("adam")) {
 			NodeBuilder adamNode = new NodeBuilder();
 			adamNode.setAdam(true);
