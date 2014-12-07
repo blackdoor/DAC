@@ -1,5 +1,6 @@
 package blackdoor.cqbe.addressing;
 
+import java.io.Serializable;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -15,7 +16,7 @@ import blackdoor.util.DBP;
  * @author Nathan Fischer
  * @version v1.0.0 - Nov 19, 2014
  */
-public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable{
+public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable {
 	public static final int MAX_SIZE = 256;
 
 	/**
