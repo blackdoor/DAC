@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.node.server.RPCHandler;
+import blackdoor.cqbe.rpc.RPCBuilder.JSONRPCError;
 
 /**
  * 
@@ -56,40 +57,21 @@ public class RPCValidator {
 	}
 
 	public JSONObject buildError(String errorStyle, int id) {
-		JSONObject error = new JSONObject();
-		JSONObject errorObject = new JSONObject();
-		errorObject.put("jsonrpc", "2.0");
-		if (errorStyle.equals("parse")) {
-			error.put("code", -32700);
-			error.put("message", "Parse Error");
-		}
-		if (errorStyle.equals("invalid")) {
-			error.put("code", -32600);
-			error.put("message", "Invalid Request");
-		}
-		if (errorStyle.equals("method")) {
-			error.put("code", -32601);
-			error.put("message", "Method not found");
-		}
-		if (errorStyle.equals("params")) {
-			error.put("code", -32602);
-			error.put("message", "Invalid params");
-		}
-		if (errorStyle.equals("internal")) {
-			error.put("code", -32603);
-			error.put("message", "Internal error");
-		}
-		if (errorStyle.equals("server")) {
-			error.put("code", -32000);
-			error.put("message", "Server error");
-		}
-		errorObject.put("error", error);
-		if (id == -1) {
-			errorObject.put("id", JSONObject.NULL);
-		} else {
-			errorObject.put("id", id);
-		}
-		return errorObject;
+		JSONObject error = null;
+		Integer _id = id == -1 ? null : id;
+		if (errorStyle.equals("parse")) 
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCBuilder.JSONRPCError.PARSE_ERROR);
+		if (errorStyle.equals("invalid")) 
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.INVALID_REQUEST);
+		if (errorStyle.equals("method")) 
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.METHOD_NOT_FOUND);
+		if (errorStyle.equals("params"))
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.INVALID_PARAMS);
+		if (errorStyle.equals("internal")) 
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.INTERNAL_ERROR);
+		if (error == null)
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.NODE_SHAT);
+		return error;
 	}
 
 	/**

@@ -4,10 +4,11 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.json.JSONObject;
+
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.rpc.RPCBuilder;
-import blackdoor.cqbe.rpc.RPCException.RequiredParametersNotSetException;
 import blackdoor.cqbe.rpc.RPCValidator;
 import blackdoor.util.DBP;
 
@@ -30,7 +31,7 @@ public class RPCTester {
 		//rpc = builder.buildLOOKUP().toString();
 		rpc = builder.buildSHUTDOWN().toString();
 		//rpc = "{\"method\":\"shutdown\",\"id\":2052568617,\"params\":{\"sourcePort\":1234,\"extensions\":{},\"destinationO\":\"00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\",\"sourceIP\":\"192.168.1.1\",\"sourceO\":\"1B:1D:95:95:3A:8C:6E:92:C8:0F:E9:D5:EA:A1:EA:12:A3:A1:C6:56:BA:CC:A9:2F:B0:35:F7:C9:8A:33:E5:8A\"}}{\"id\":2052568617,\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Invalid params\"}}";
-		//rpc = rpc.substring(1);
+		rpc = rpc.substring(1);
 		DBP.printdevln("Testing RPC:");
 		DBP.printdevln(rpc);
 		RPCValidator validator = new RPCValidator(rpc, System.out);
@@ -54,5 +55,13 @@ public class RPCTester {
 		System.out.println(builder.buildGET());
 		System.out.println(builder.buildLOOKUP());
 	}
+	
+    public static void testResponseBuilder(){
+        JSONObject goodResponse = RPCBuilder.RPCResponseFactory(5, true, "good one", null);
+        System.out.println(goodResponse.toString(2));
+        RPCBuilder.JSONRPCError e = RPCBuilder.JSONRPCError.NODE_SHAT;
+        JSONObject errorResponse = RPCBuilder.RPCResponseFactory(null, false, null, e, "poop");
+        System.out.println(errorResponse.toString(2));
+    }
 
 }

@@ -7,10 +7,6 @@ import org.json.JSONObject;
 
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.L3Address;
-import blackdoor.cqbe.rpc.RPCException.RequiredParametersNotSetException;
-
-
-
 
 /**
  * 
@@ -33,9 +29,9 @@ public class RPCBuilder {
 		index = -1;
 	}
 	
-	private JSONObject getDefaultParams() throws RequiredParametersNotSetException{
+	private JSONObject getDefaultParams() throws RPCException {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
-			throw new RequiredParametersNotSetException();
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
 		}
 		else
 		{
@@ -53,9 +49,9 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object with relevant information.
 	 */
-	public JSONObject buildGET() throws RequiredParametersNotSetException {
+	public JSONObject buildGET() throws RPCException {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null || index == -1) {
-			throw new RequiredParametersNotSetException();
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
 		}
 		else{
 			JSONObject rpc = new JSONObject();
@@ -76,9 +72,9 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object.
 	 */
-	public JSONObject buildPUT() throws RequiredParametersNotSetException {
+	public JSONObject buildPUT() throws RPCException  {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null || value == null) {
-			throw new RequiredParametersNotSetException();
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
 		}
 		else{
 			JSONObject rpc = new JSONObject();
@@ -99,9 +95,9 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object with relevant information.
 	 */
-	public JSONObject buildLOOKUP() throws RequiredParametersNotSetException {
+	public JSONObject buildLOOKUP() throws RPCException  {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
-			throw new RequiredParametersNotSetException();
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
 		}
 		else
 		{
@@ -122,9 +118,9 @@ public class RPCBuilder {
 	 * <p>
 	 * @return JSON Object with relevant information.
 	 */
-	public JSONObject buildPING() throws RequiredParametersNotSetException {
+	public JSONObject buildPING() throws RPCException {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
-			throw new RequiredParametersNotSetException();
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
 		}
 		else{
 			JSONObject rpc = new JSONObject();
@@ -144,9 +140,9 @@ public class RPCBuilder {
 	 *
 	 * @param port - Port to be shutdown
 	 */
-	public JSONObject buildSHUTDOWN() throws RequiredParametersNotSetException {
+	public JSONObject buildSHUTDOWN() throws RPCException {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
-			throw new RequiredParametersNotSetException();
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
 		}
 		else{
 			JSONObject rpc = new JSONObject();
@@ -214,4 +210,100 @@ public class RPCBuilder {
 		return id;
 	}
 
+	/**
+	 * An enumeration of all the possible JSON RPC error objects supported by this system.
+	 * Contains both the error code and the error message associated with that code.
+	 */
+	public static enum JSONRPCError{
+
+		/**
+		 * Invalid JSON was received by the server.
+		 * An error occurred on the server while parsing the JSON text.
+		 */
+		PARSE_ERROR(-32700, "Parse error"),
+		/**
+		 * The JSON sent is not a valid Request object.
+		 */
+		INVALID_REQUEST(-32600, "Invalid Request"),
+		/**
+		 * The method does not exist / is not available.
+		 */
+		METHOD_NOT_FOUND(-32601,"Method not found"),
+		/**
+		 * Invalid method parameter(s).
+		 */
+		INVALID_PARAMS(-32602,"Invalid params"),
+		/**
+		 * Internal JSON-RPC error.
+		 */
+		INTERNAL_ERROR(-32603, "Internal error"),
+		/**
+		 * When logic goes AWOL, things are worse than SNAFU, and life is FUBAR.
+		 */
+		NODE_SHAT(-32099,"Node has shat itself");
+
+		private final int code;
+		private final String message;
+
+		JSONRPCError(int code, String message){
+			this.code = code;
+			this.message = message;
+		}
+
+		public int getCode(){
+			return code;
+		}
+
+		public String getMessage(){
+			return message;
+		}
+
+
+	}
+
+	/**
+	 * A factory for JSON RPC responses. Creates both successful and unsuccessful responses.
+	 * If successful then error and errorData are irrelevant. else error and errorData are considered and result is irrelevant.
+	 * @param id the id of the JSON RPC request object for which this response is being created. If the error was a parse error or the request was a notification then id should be null.
+	 * @param successful a boolean indicating if this is a response to a successful request or not i.e. true if creating a response, false if creating an error.
+	 * @param result ignored if !successful
+	 * @param error ignored if successful
+	 * @param errorData ignored if successful
+	 * @return a JSON RPC response object
+	 */
+	public static JSONObject RPCResponseFactory(Integer id, boolean successful, Object result, JSONRPCError error, Object errorData ){
+		JSONObject response = new JSONObject();
+		response.put("jsonrpc", "2.0");
+		if(id == null){
+			if(successful)
+				throw new RPCException.RPCCreationException("Awww Heeeelll naw. id is null and successful is true.");
+			response.put("id", JSONObject.NULL);
+		}else {
+			response.put("id", id);
+		}
+		if(successful){
+			response.put("result", result);
+		}else{
+			JSONObject errorObject = new JSONObject();
+			errorObject.put("code", error.getCode());
+			errorObject.put("message", error.getMessage());
+			if(errorData != null)
+				errorObject.put("data", errorData);
+			response.put("error", errorObject);
+		}
+		return response;
+	}
+
+	/**
+	 * Convenience method for making an RPC response that is either a successful response or whose error object will not have a "data" member.
+	 * Equivalent to calling RPCResponseFactory(id, successful, result, error, null);
+	 * @param id
+	 * @param successful
+	 * @param result
+	 * @param error
+	 * @return
+	 */
+	public static JSONObject RPCResponseFactory(Integer id, boolean successful, Object result, JSONRPCError error){
+		return RPCResponseFactory(id, successful, result, error, null);
+	}
 }
