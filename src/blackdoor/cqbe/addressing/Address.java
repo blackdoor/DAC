@@ -6,6 +6,7 @@ import blackdoor.util.Misc;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.StringTokenizer;
 
 /**
  * @author Nathaniel Fischer
@@ -37,7 +38,7 @@ public class Address implements Serializable {
     public Address(byte[] overlayAddress) throws AddressException {
         if (overlayAddress.length != ADDRESS_SIZE){
             throw new AddressException("overlay address is " + overlayAddress.length + " bytes and needs to be "
-                    + ADDRESS_SIZE + " bytes");
+                    + ADDRESS_SIZE + " bytes.");
         }
         this.overlayAddress = overlayAddress;
     }
@@ -48,6 +49,27 @@ public class Address implements Serializable {
      */
     public Address(){
        this.overlayAddress = nullOverlay;
+    }
+
+    /**
+     * Construct an Address object from a String which contains a formatted address representation.
+     * @param address an address in the format given by Address.overlayAddressToString
+     * @return an Address object
+     * @throws AddressException thrown if the address parameter is not in a valid format
+     */
+    public static Address parse(String address) throws AddressException{
+    	Address a = new Address();
+    	StringTokenizer tk = new StringTokenizer(address, ":");
+    	if(tk.countTokens() != Address.ADDRESS_SIZE)
+    		throw new AddressException("String representation of Address is improperly formatted. Wrong number of elements");
+    	try{
+    		for(int i = 0; i < Address.ADDRESS_SIZE; i++){
+    			a.overlayAddress[i] = Integer.decode("0x" + tk.nextToken()).byteValue();
+    		}
+    		return a;
+    	}catch (NumberFormatException e){
+    		throw new AddressException("String representation of Address is improperly formatted. Invalid hex format.");
+    	}
     }
 
     /**
@@ -65,8 +87,44 @@ public class Address implements Serializable {
     public String overlayAddressToString(){
         return Misc.getHexBytes(overlayAddress, ":");
     }
+    
+    
 
-    public static class OverlayComparator implements Comparator<byte[]> {
+    /* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(overlayAddress);
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Address other = (Address) obj;
+		if (!Arrays.equals(overlayAddress, other.overlayAddress))
+			return false;
+		return true;
+	}
+
+    public String toString(){
+        return overlayAddressToString();
+    }
+
+
+
+	public static class OverlayComparator implements Comparator<byte[]> {
         private byte[] ref;
 
         public OverlayComparator(byte[] refrence){

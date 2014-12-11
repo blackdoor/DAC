@@ -1,5 +1,20 @@
 package blackdoor.cqbe.test;
 
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.node.server.RPCHandler;
+import blackdoor.cqbe.rpc.RPCBuilder;
+import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.util.DBP;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+/**
+ * Created by nfischer3 on 12/5/14.
+ */
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -55,7 +70,7 @@ public class RPCTester {
 		System.out.println(builder.buildGET());
 		System.out.println(builder.buildLOOKUP());
 	}
-	
+
     public static void testResponseBuilder(){
         JSONObject goodResponse = RPCBuilder.RPCResponseFactory(5, true, "good one", null);
         System.out.println(goodResponse.toString(2));
@@ -63,5 +78,4 @@ public class RPCTester {
         JSONObject errorResponse = RPCBuilder.RPCResponseFactory(null, false, null, e, "poop");
         System.out.println(errorResponse.toString(2));
     }
-
 }

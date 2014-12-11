@@ -240,7 +240,8 @@ public class RPCBuilder {
 		/**
 		 * When logic goes AWOL, things are worse than SNAFU, and life is FUBAR.
 		 */
-		NODE_SHAT(-32099,"Node has shat itself");
+		NODE_SHAT(-32099,"Node has shat itself"),
+		INVALID_ADDRESS_FORMAT(-32001, "Invalid Address Format");
 
 		private final int code;
 		private final String message;
