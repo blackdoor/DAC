@@ -22,6 +22,7 @@ public class ServerTester {
 	private String desthost;
 	private int destport;
 	private Socket csock = null;
+	
 
 	public static void main(String[] args) {
 		for (int i = 0; i++ < 100;) {
