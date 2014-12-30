@@ -6,13 +6,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.KeyException;
 import java.security.PrivateKey;
-import java.util.Scanner;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.google.protobuf.ByteString;
-
+import org.json.JSONTokener;
 import blackdoor.cqbe.certificate.CertificateProtos.Certificate;
+import blackdoor.cqbe.certificate.CertificateProtos.Extension;
+import com.google.protobuf.ByteString;
 
 public class CertificateBuilder implements Builder {
 
@@ -63,7 +62,7 @@ public class CertificateBuilder implements Builder {
 		if (certificate.hasProtocolVersion()) {
 		builder.setVersion(certificate.getProtocolVersion());
 		}
-	    //builder.setCertificateExtensions(....)
+	    //builder.setCertificateEndorsements(....)
         if (certificate.hasValidity()){
         	builder.setValidity(certificate.getValidity());
         }
@@ -88,50 +87,140 @@ public class CertificateBuilder implements Builder {
 		return ByteString.copyFrom(bb);
 	}
 	
-	public void setCertObject(File certificateDescriptor) throws IOException{
-		//file --> JSON object
-		    try {
-		        JSONObject certificate = new JSONObject(builder.mergeFrom(new FileInputStream(certificateDescriptor)));
-		//String content = new Scanner(certificateDescriptor).useDelimiter("//Z").next();
-		//JSONObject certificate = new JSONObject(content);
-		//builder.setSubjectUniqueId(certificate.optString("subject_unique_id");
-		//builder.setSubjectKeyInfo(certificate.optString("subject_key_info"));
-		//if (certificate.has("revocation_info") {
-		//builder.setRevocationInfo(certificate.opt("revocation_info"));
-		//}
-		if (certificate.has("version")) {
-		builder.setVersion(certificate.optInt("version"));
-		}
-		if (certificate.has("protocol_version")) {
-		builder.setProtocolVersion(certificate.optInt("protocol_version"));
-		}
-	    //builder.setCertificateExtensions(i, certificate.getCertificateExtensionsList());
-        //if (certificate.has("validity"){
-        	//builder.setValidity(certificate.get("validity");
-        //}
-        if (certificate.has("serial_number")){
-        	builder.setSerialNumber(certificate.optString("serial_number"));
-        }
-		if (certificate.has("subject_common_name")){	
-			builder.setSubjectCommonName(certificate.optString("subject_common_name"));
-		}
-		      } catch (FileNotFoundException e) {
-			        System.out.println("File not found");
-			      }
+	public CertificateProtos.TimeFrame time_frame_parse(JSONObject json){
+		CertificateProtos.TimeFrame.Builder revocation_builder = CertificateProtos.TimeFrame.newBuilder();
+		return revocation_builder.build();
 	}
-
-       /** builder.setSignature(ByteString(certificate.optString("signature")));
-        //builder.setCertificateExtensions(index, value);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();/**
+	
+	public CertificateProtos.Revocation revocation_parse(JSONObject json){
+		CertificateProtos.Revocation.Builder revocation_builder = CertificateProtos.Revocation.newBuilder();
+ 		int revocation_date = json.optInt("revocation_date");
+ 		revocation_builder.setRevocationReason(revocation_date);
+ 		int revocation_reason = json.optInt("revocation_reason");
+		revocation_builder.setRevocationDate(revocation_reason);
+		return revocation_builder.build();
+	}
+	
+	public CertificateProtos.PublicKeyInfo public_key_parse(JSONObject json){
+		CertificateProtos.PublicKeyInfo.Builder public_key_builder = CertificateProtos.PublicKeyInfo.newBuilder();
+		String public_key = json.optString("public_key");
+		ByteString pk_bytes = ByteString.copyFromUtf8(public_key);
+		public_key_builder.setPublicKey(pk_bytes);
+		String hash = json.optString("hash_algorithm");
+		public_key_builder.setHashAlgorithm(hash);
+		String signing_algorithm = json.optString("signing_algorithm");
+		public_key_builder.setSigningAlgorithm(signing_algorithm);
+		return public_key_builder.build();
+	}
+	
+	
+	public CertificateProtos.Endorsement endorsement_parse(JSONObject json){
+		CertificateProtos.Endorsement.Builder endorsement_builder = CertificateProtos.Endorsement.newBuilder();
+		String issuer_unique_id = json.optString("issuer_unique_id");
+		endorsement_builder.setIssuerUniqueId(issuer_unique_id);
+		if (json.has("issuer_system")){
+			String issuer = json.optString("issuer_system");
+			endorsement_builder.setIssuerSystem(issuer);
 		}
+		String subject_unique_id = json.optString("subject_unique_id");
+		endorsement_builder.setIssuerUniqueId(subject_unique_id);
+		JSONObject subject_key_info = json.optJSONObject("subject_key_info");
+		builder.setSubjectKeyInfo(public_key_parse(subject_key_info));
+		if (json.has("validity")){
+			JSONObject validity = json.optJSONObject("validity");
+			endorsement_builder.setValidity(time_frame_parse(validity));
+		}
+		if (json.has("revocation_info")) {
+			JSONObject revocation_info = json.optJSONObject("revocation_info");
+			builder.setRevocationInfo(revocation_parse(revocation_info));
+			}
+		if (json.has("protocol_version")) {
+			builder.setProtocolVersion(json.optInt("protocol_version"));
+		}
+		if (json.has("subject_common_name")){	
+			builder.setSubjectCommonName(json.optString("subject_common_name"));
+		}
+		if (json.has("issuer_common_name")){	
+			builder.setSubjectCommonName(json.optString("issuer_common_name"));
+		}
+		if (json.has("Extensions")){
+			JSONObject certificate_extensions = json.getJSONObject("certificate_extensions");
+			JSONArray extensions = new JSONArray(certificate_extensions);
+			for (int i = 0; i < extensions.length(); i++){
+				JSONObject extension_json = extensions.getJSONObject(i);
+				Extension extension = extension_parse(extension_json);
+				builder.setCertificateExtensions(i, extension);
+			}	
+		}
+		return endorsement_builder.build();
+	}
+	
+	public CertificateProtos.Extension extension_parse(JSONObject json){
+		CertificateProtos.Extension.Builder extension_builder = CertificateProtos.Extension.newBuilder();
+		String name = json.optString("name");
+ 		extension_builder.setName(name);
+		return extension_builder.build();
+		//TODO - parse extensions?
+	}
+	
+	
+	public void setCertObject(File certificateDescriptor) throws IOException{
+	//file --> JSON object
+	    try {
+	    	FileInputStream file = new FileInputStream(certificateDescriptor);
+	    	JSONObject certificate = (JSONObject) new JSONTokener(file).nextValue();
+			builder.setSubjectUniqueId(certificate.optString("subject_unique_id"));
+			//subject key feilds
+			JSONObject public_key_info = certificate.optJSONObject("subject_key_info");
+			builder.setSubjectKeyInfo(public_key_parse(public_key_info));
+			if (certificate.has("revocation_info")) {
+				JSONObject revocation_info = certificate.optJSONObject("revocation_info");
+				builder.setRevocationInfo(revocation_parse(revocation_info));
+				}
+	 		if (certificate.has("version")) {
+	 			builder.setVersion(certificate.optInt("version"));
+	 			}
+			if (certificate.has("protocol_version")) {
+				builder.setProtocolVersion(certificate.optInt("protocol_version"));
+			}
+			if (certificate.has("validity")){
+				JSONObject validity = certificate.optJSONObject("validity");
+				builder.setValidity(time_frame_parse(validity));
+			}
+			if (certificate.has("serial_number")){
+				builder.setSerialNumber(certificate.optString("serial_number"));
+			}
+			if (certificate.has("subject_common_name")){	
+				builder.setSubjectCommonName(certificate.optString("subject_common_name"));
+			}
+			if (certificate.has("Extensions")){
+				JSONObject certificate_extensions = certificate.getJSONObject("certificate_extensions");
+				JSONArray extensions = new JSONArray(certificate_extensions);
+				for (int i = 0; i < extensions.length(); i++){
+					JSONObject extension_json = extensions.getJSONObject(i);
+					Extension extension = extension_parse(extension_json);
+					builder.setCertificateExtensions(i, extension);
+				}
+				
+			}
+			String signature = certificate.optString("public_key");
+			ByteString signature_bytes = ByteString.copyFromUtf8(signature);
+			builder.setSignature(signature_bytes);
+			
+	      } catch (FileNotFoundException e) {
+		        System.out.println("File not found");
+		        e.printStackTrace();
+	      }
+	    
+	}
+	    
 	/**
 	 * Retrieves the Certificate object that will be used to build the certificate when build is called.
 	 * @return the Certificate object that will be used to build the certificate when build is called.
 	 */
 	public Certificate getCertObject(){
-		return null;
+		
+		return builder.build();
 	}
 
 	
@@ -150,7 +239,8 @@ public class CertificateBuilder implements Builder {
 	
 	public static void main(String[] args) throws Exception{
 		CertificateBuilder builder2 = new CertificateBuilder();
-		System.out.println("building");
+		File Json = new File("C:\\Users\\annakocer\\git\\DAC\\src\\blackdoor\\cqbe\\certificate\\certTest.JSON");
+		builder2.setCertObject(Json);
 
 	}
 	}
