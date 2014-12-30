@@ -43,6 +43,7 @@ public class CertificateBuilder implements Builder {
 	 * @param certificate 
 	 */
 	public CertificateBuilder(Certificate certificate) {
+		builder = Certificate.newBuilder();
 		setCertObject(certificate);
 	}
 
@@ -219,7 +220,6 @@ public class CertificateBuilder implements Builder {
 	 * @return the Certificate object that will be used to build the certificate when build is called.
 	 */
 	public Certificate getCertObject(){
-		
 		return builder.build();
 	}
 
@@ -241,6 +241,9 @@ public class CertificateBuilder implements Builder {
 		CertificateBuilder builder2 = new CertificateBuilder();
 		File Json = new File("C:\\Users\\annakocer\\git\\DAC\\src\\blackdoor\\cqbe\\certificate\\certTest.JSON");
 		builder2.setCertObject(Json);
+		Certificate cert = builder2.getCertObject();
+		cert.getSubjectUniqueId();
+		CertificateBuilder builder3 = new CertificateBuilder(cert);
 
 	}
 	}
