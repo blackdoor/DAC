@@ -22,6 +22,7 @@ public class Node {
 	private AddressTable addressTable;
 	private volatile int n;
 	private volatile int o;
+	private Thread serverThread;
 
 	protected Node(int port) {
 		startServer(port);
@@ -29,7 +30,8 @@ public class Node {
 
 	private void startServer(int port) {
 		server = new Server(port);
-		new Thread(server).start();
+		serverThread = new Thread(server);
+		serverThread.start();
 	}
 
 	/**
@@ -157,6 +159,7 @@ public class Node {
 
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
+		 * TODO add and start updater
 		 */
 		public Node buildNode() throws RequiredParametersNotSetException {
 			Node node = null;
@@ -172,6 +175,8 @@ public class Node {
 					node.addressTable = builderAddressTable;
 				} else
 					throw new RequiredParametersNotSetException();
+			}else{
+				//TODO start new process
 			}
 			Node.singleton = node;
 			return Node.getInstance();
