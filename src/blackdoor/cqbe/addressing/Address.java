@@ -54,22 +54,25 @@ public class Address implements Serializable {
     /**
      * Construct an Address object from a String which contains a formatted address representation.
      * @param address an address in the format given by Address.overlayAddressToString
-     * @return an Address object
      * @throws AddressException thrown if the address parameter is not in a valid format
      */
-    public static Address parse(String address) throws AddressException{
-    	Address a = new Address();
+    public Address(String address) throws AddressException{
+    	//Address this = new Address();
     	StringTokenizer tk = new StringTokenizer(address, ":");
     	if(tk.countTokens() != Address.ADDRESS_SIZE)
     		throw new AddressException("String representation of Address is improperly formatted. Wrong number of elements");
     	try{
     		for(int i = 0; i < Address.ADDRESS_SIZE; i++){
-    			a.overlayAddress[i] = Integer.decode("0x" + tk.nextToken()).byteValue();
+    			this.overlayAddress[i] = Integer.decode("0x" + tk.nextToken()).byteValue();
     		}
-    		return a;
+    		//return a;
     	}catch (NumberFormatException e){
     		throw new AddressException("String representation of Address is improperly formatted. Invalid hex format.");
     	}
+    }
+    
+    public AddressComparator getComparator(){
+    	return new AddressComparator(this);
     }
 
     /**
@@ -113,7 +116,7 @@ public class Address implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Address other = (Address) obj;
-		if (!Arrays.equals(overlayAddress, other.overlayAddress))
+		if (!Arrays.equals(getOverlayAddress(), other.getOverlayAddress()))
 			return false;
 		return true;
 	}

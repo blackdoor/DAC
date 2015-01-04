@@ -153,7 +153,7 @@ public class RPCHandler {
 		JSONObject responseObject;
 		try {
 			JSONObject params = rpc.getJSONObject("params");
-			Address dest = Address.parse(params.getString("destinationO"));//TODO change all "destinationO" to "destO"
+			Address dest = new Address(params.getString("destinationO"));//TODO change all "destinationO" to "destO"
 			Address src = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));  //TODO change all "source" to "src"
 			AddressTable nodeTable = Node.getAddressTable();
 			AddressTable nearest = nodeTable.getNearestAddresses(Node.getN() + 1, dest);
