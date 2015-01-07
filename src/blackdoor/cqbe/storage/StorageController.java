@@ -40,17 +40,28 @@ public class StorageController implements Map<Address, FileAddress> {
 		buckets = new BucketSchlager(refrence);
 		this.reference = refrence;
 		this.domain = domain;
+		highest = reference;
+		lowest = reference;
 	}
 	
 	/**
 	 * remove all entries in the storage controller that represent files that do not exist in the file system.
 	 */
 	public void garbageCollectReferences(){
-		for(Address a : this.keySet()){
-			FileAddress fa = this.get(a);
+		for(FileAddress fa : this.values()){
 			if(!fa.getFile().exists()){
-				this.remove(a);
+				this.remove(fa);
 			}
+		}
+	}
+	
+	/**
+	 * delete all the files in the third bucket from the file system and remove them from the storage controller.
+	 * @throws IOException
+	 */
+	public void deleteThirdBucket() throws IOException{
+		for(Address a : getBucket(3)){
+			delete(a);
 		}
 	}
 	
@@ -179,7 +190,22 @@ public class StorageController implements Map<Address, FileAddress> {
 		return buckets.entrySet();
 	}
 	
+
 	
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "StorageController [lowest=" + lowest
+				+ ", highest=" + highest + ", reference=" + reference
+				+ ", domain=" + domain + ", buckets=" + buckets+"]";
+	}
+
+
+
+
 	/**
 	 * Combines a concurrent set and map to give the best efficiency in operations and to ensure eventual consistency between the map and set.
 	 * 
@@ -190,7 +216,7 @@ public class StorageController implements Map<Address, FileAddress> {
 		
 		public ConcurrentHashMap<Address, FileAddress> items;
 		public ConcurrentSkipListSet<Address> buckets;
-		private Object writeLock;
+		private Object writeLock = new Object();
 		private Address refrence;
 		
 		public BucketSchlager(Address refrence){
@@ -299,6 +325,20 @@ public class StorageController implements Map<Address, FileAddress> {
 		public Set<java.util.Map.Entry<Address, FileAddress>> entrySet() {
 			return items.entrySet();
 		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			String ret = "Buckets [\n";
+			for(FileAddress fa : items.values()){
+				ret += fa+ "\n";
+			}
+			return ret + "]";
+		}
+		
+		
 		
 	}
 

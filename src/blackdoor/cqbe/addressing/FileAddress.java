@@ -9,7 +9,7 @@ import blackdoor.crypto.Hash;
  * Created by nfischer3 on 11/19/14.
  */
 public abstract class FileAddress extends Address {
-    private File f;
+    protected File f;
 
    // public static FileAddress(File f) throws IOException;
 
