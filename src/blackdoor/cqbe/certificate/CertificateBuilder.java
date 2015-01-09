@@ -35,7 +35,6 @@ public class CertificateBuilder implements Builder {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 
 	/**
@@ -88,12 +87,12 @@ public class CertificateBuilder implements Builder {
 		return ByteString.copyFrom(bb);
 	}
 	
-	public CertificateProtos.TimeFrame time_frame_parse(JSONObject json){
+	public static CertificateProtos.TimeFrame time_frame_parse(JSONObject json){
 		CertificateProtos.TimeFrame.Builder revocation_builder = CertificateProtos.TimeFrame.newBuilder();
 		return revocation_builder.build();
 	}
 	
-	public CertificateProtos.Revocation revocation_parse(JSONObject json){
+	public static CertificateProtos.Revocation revocation_parse(JSONObject json){
 		CertificateProtos.Revocation.Builder revocation_builder = CertificateProtos.Revocation.newBuilder();
  		int revocation_date = json.optInt("revocation_date");
  		revocation_builder.setRevocationReason(revocation_date);
@@ -102,7 +101,7 @@ public class CertificateBuilder implements Builder {
 		return revocation_builder.build();
 	}
 	
-	public CertificateProtos.PublicKeyInfo public_key_parse(JSONObject json){
+	public static CertificateProtos.PublicKeyInfo public_key_parse(JSONObject json){
 		CertificateProtos.PublicKeyInfo.Builder public_key_builder = CertificateProtos.PublicKeyInfo.newBuilder();
 		String public_key = json.optString("public_key");
 		ByteString pk_bytes = ByteString.copyFromUtf8(public_key);
@@ -114,49 +113,13 @@ public class CertificateBuilder implements Builder {
 		return public_key_builder.build();
 	}
 	
-	
-	public CertificateProtos.Endorsement endorsement_parse(JSONObject json){
-		CertificateProtos.Endorsement.Builder endorsement_builder = CertificateProtos.Endorsement.newBuilder();
-		String issuer_unique_id = json.optString("issuer_unique_id");
-		endorsement_builder.setIssuerUniqueId(issuer_unique_id);
-		if (json.has("issuer_system")){
-			String issuer = json.optString("issuer_system");
-			endorsement_builder.setIssuerSystem(issuer);
-		}
-		String subject_unique_id = json.optString("subject_unique_id");
-		endorsement_builder.setIssuerUniqueId(subject_unique_id);
-		JSONObject subject_key_info = json.optJSONObject("subject_key_info");
-		builder.setSubjectKeyInfo(public_key_parse(subject_key_info));
-		if (json.has("validity")){
-			JSONObject validity = json.optJSONObject("validity");
-			endorsement_builder.setValidity(time_frame_parse(validity));
-		}
-		if (json.has("revocation_info")) {
-			JSONObject revocation_info = json.optJSONObject("revocation_info");
-			builder.setRevocationInfo(revocation_parse(revocation_info));
-			}
-		if (json.has("protocol_version")) {
-			builder.setProtocolVersion(json.optInt("protocol_version"));
-		}
-		if (json.has("subject_common_name")){	
-			builder.setSubjectCommonName(json.optString("subject_common_name"));
-		}
-		if (json.has("issuer_common_name")){	
-			builder.setSubjectCommonName(json.optString("issuer_common_name"));
-		}
-		if (json.has("Extensions")){
-			JSONObject certificate_extensions = json.getJSONObject("certificate_extensions");
-			JSONArray extensions = new JSONArray(certificate_extensions);
-			for (int i = 0; i < extensions.length(); i++){
-				JSONObject extension_json = extensions.getJSONObject(i);
-				Extension extension = extension_parse(extension_json);
-				builder.setCertificateExtensions(i, extension);
-			}	
-		}
-		return endorsement_builder.build();
-	}
-	
-	public CertificateProtos.Extension extension_parse(JSONObject json){
+//should this method be put into endorsement builder?? doesn't need to be there but....	
+	public static CertificateProtos.Endorsement endorsement_parse(JSONObject json){
+		EndorsementBuilder endorsement_builder = new EndorsementBuilder();
+		endorsement_builder.setEndorsement(json);
+		return endorsement_builder.getEndorsement();
+}
+	public static CertificateProtos.Extension extension_parse(JSONObject json){
 		CertificateProtos.Extension.Builder extension_builder = CertificateProtos.Extension.newBuilder();
 		String name = json.optString("name");
  		extension_builder.setName(name);
