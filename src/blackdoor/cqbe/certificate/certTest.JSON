@@ -1,0 +1,20 @@
+{
+"subject_unique_id": "aaaaaaaa",
+"subject_key_info": { 
+	"signing_algorithm": "a",
+	"hash_algorithm": "b",
+	"public_key": "c"
+},
+"revocation_info" : {
+	"revocation_date": "",
+	"revocation_reason": "",
+},
+"version" : 12,
+"signature": "",
+"certificate_extensions": [
+{"name": "",
+"extensions": ""},
+{"name": "",
+"extensions": ""}
+]
+}
