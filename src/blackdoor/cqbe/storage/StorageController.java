@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import javax.naming.OperationNotSupportedException;
 
 import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.FileAddress;
 import blackdoor.util.DBP;
 
@@ -35,6 +36,7 @@ public class StorageController implements Map<Address, FileAddress> {
 	private volatile Address highest;
 	private Address reference;
 	private Path domain;
+	private AddressTable addressTable;
 
 	public StorageController(Path domain, Address refrence) {
 		buckets = new BucketSchlager(refrence);
@@ -42,6 +44,13 @@ public class StorageController implements Map<Address, FileAddress> {
 		this.domain = domain;
 		highest = reference;
 		lowest = reference;
+		addressTable = null;
+	}
+
+	public StorageController(Path domain, AddressTable table){
+		buckets = new BucketSchlager(table.getReferenceAddress());
+		this.domain = domain;
+		addressTable = table;
 	}
 	
 	/**
@@ -79,25 +88,38 @@ public class StorageController implements Map<Address, FileAddress> {
 	}
 	
 	public Address getReferenceAddress(){
-		return reference;
+		return isAutoRemappingEnabled() ? addressTable.getReferenceAddress() : reference;
+	}
+
+	private Address getLowest(){
+		return isAutoRemappingEnabled() ? addressTable.firstEntry().getValue() : lowest;
+	}
+
+	private Address getHighest(){
+		return isAutoRemappingEnabled() ? addressTable.lastEntry().getValue() : highest;
 	}
 	
 	public synchronized void remap(Address nearest, Address farthest){
-
+		if(isAutoRemappingEnabled())
+			throw new AutoAddressingException("Cannot manually remap, auto remapping is enabled.");
 		highest = farthest;
 		lowest = nearest;
 		
+	}
+
+	public boolean isAutoRemappingEnabled(){
+		return addressTable != null;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public NavigableSet<Address> getBucket(int i){
 		switch(i){
 		case 1:
-			return buckets.buckets.headSet(lowest);
+			return buckets.buckets.headSet(getLowest());
 		case 2:
-			return buckets.buckets.subSet(lowest, highest);
+			return buckets.buckets.subSet(getLowest(), getHighest());
 		case 3:
-			return buckets.buckets.tailSet(highest);
+			return buckets.buckets.tailSet(getHighest());
 		default:
 			throw new RuntimeException(i + " is not a valid bucket number");
 		}
@@ -198,8 +220,8 @@ public class StorageController implements Map<Address, FileAddress> {
 	 */
 	@Override
 	public String toString() {
-		return "StorageController [lowest=" + lowest
-				+ ", highest=" + highest + ", reference=" + reference
+		return "StorageController [lowest=" + getLowest()
+				+ ", highest=" + getHighest() + ", reference=" + getReferenceAddress()
 				+ ", domain=" + domain + ", buckets=" + buckets+"]";
 	}
 
@@ -340,6 +362,13 @@ public class StorageController implements Map<Address, FileAddress> {
 		
 		
 		
+	}
+
+	private static class AutoAddressingException extends RuntimeException{
+		public AutoAddressingException(String s){
+			super(s);
+		}
+
 	}
 
 }
