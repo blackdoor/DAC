@@ -138,7 +138,6 @@ public class RPCBuilder {
 	/**
 	 * Initiliazes a SHUTDOWN RPC JSON request to be sent
 	 *
-	 * @param port - Port to be shutdown
 	 */
 	public JSONObject buildSHUTDOWN() throws RPCException {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
@@ -162,24 +161,33 @@ public class RPCBuilder {
 	  id = rand.nextInt(Integer.MAX_VALUE);
 	}
 
-	public Address getSourceO() {
+	public L3Address getSource() {
 		return new L3Address(sourceIP, sourcePort);
 	}
 
+	@Deprecated
 	public InetAddress getSourceIP() {
 		return sourceIP;
 	}
 
+	@Deprecated
 	public void setSourceIP(InetAddress sourceIP) {
 		this.sourceIP = sourceIP;
 	}
 
+	@Deprecated
 	public int getSourcePort() {
 		return sourcePort;
 	}
 
+	@Deprecated
 	public void setSourcePort(int sourcePort) {
 		this.sourcePort = sourcePort;
+	}
+
+	public void setSource(L3Address source){
+		this.sourceIP = source.getLayer3Address();
+		this.sourcePort = source.getPort();
 	}
 
 	public Address getDestinationO() {
