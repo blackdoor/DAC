@@ -10,8 +10,8 @@ import blackdoor.util.Misc;
  */
 public class AddressTester {
     public static void main(String[] arg0) throws AddressException {
-        Address a = new Address(Address.nullOverlay);
-        Address b = new Address(Address.getFullOverlay());
+        Address a = Address.getNullAddress();
+        Address b = Address.getFullAddress();
         Address.AddressComparator comp1 = new Address.AddressComparator(a);
         Address.OverlayComparator comp2 = new Address.OverlayComparator(a.getOverlayAddress());
         System.out.println(comp1.compare(a, b));

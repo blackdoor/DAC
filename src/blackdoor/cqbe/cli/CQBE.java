@@ -165,7 +165,7 @@ public class CQBE {
           return;
         }
         if (out.containsKey("bootstrap")) {
-          Address a = new Address(out.get("bootstrap").getValues().get(0));
+          Address a = Address.parse(out.get("bootstrap").getValues().get(0));
           RPCBuilder rpcObject = new RPCBuilder();
           JSONObject rpc = rpcObject.buildPUT(file);
           Router router = new Router(a);

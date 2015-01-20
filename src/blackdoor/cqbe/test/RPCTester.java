@@ -38,7 +38,7 @@ public class RPCTester {
 	public static void testValidator() throws Exception {
 		String rpc;
 		RPCBuilder builder = new RPCBuilder();
-		builder.setDestinationO(new Address());
+		builder.setDestinationO(Address.getNullAddress());
 		builder.setSourceIP(InetAddress.getByName("::FFFF:192.168.1.1"));
 		builder.setSourcePort(1234);
 		builder.setIndex(1);

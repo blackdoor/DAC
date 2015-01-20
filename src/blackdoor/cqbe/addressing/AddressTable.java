@@ -23,7 +23,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * Constructs an AddressTable which will sort entries based on their distance to Address.nullOverlay
 	 */
 	public AddressTable() {
-		this(new Address());
+		this(Address.getNullAddress());
 	}
 
 	/**

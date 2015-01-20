@@ -78,7 +78,7 @@ public class RPCValidator {
 	 * <p>
 	 * Checks for semantics, syntax and if the RPC is supported by this system.
 	 *
-	 * @param String
+	 * @param call
 	 * @return String detailing whether the JSONObject is valid or not.
 	 */
 	public String isValid(String call) {

@@ -14,15 +14,15 @@ import java.util.StringTokenizer;
  * This class is the superclass of all addresses that might be encountered in an overlay network.
  * That is, all addresses have an overlay address.
  */
-public class Address implements Serializable {
+public abstract class Address implements Serializable {
 
     /**
      * The size of an overlay address, in bytes.
      */
     public static final int ADDRESS_SIZE = 32;
 
-    public static byte[] nullOverlay = new byte[ADDRESS_SIZE];
-    public static byte[] getFullOverlay(){
+    private static byte[] getNullOverlay() {return new byte[ADDRESS_SIZE];}
+    private static byte[] getFullOverlay(){
         byte[] b = new byte[ADDRESS_SIZE];
         Arrays.fill(b, (byte) 0xFF);
         return b;
@@ -35,20 +35,30 @@ public class Address implements Serializable {
      * @param overlayAddress a byte array representing an overlay address
      * @throws AddressException if overlayAddress is not the correct size (of the same length as ADDRESS_SIZE)
      */
-    public Address(byte[] overlayAddress) throws AddressException {
-        if (overlayAddress.length != ADDRESS_SIZE){
-            throw new AddressException("overlay address is " + overlayAddress.length + " bytes and needs to be "
-                    + ADDRESS_SIZE + " bytes.");
-        }
-        this.overlayAddress = overlayAddress;
+    public static Address getAddress(byte[] overlayAddress) throws AddressException {
+        return new GenericAddress(overlayAddress);
     }
 
     /**
      * Constructs an Address object with an overlay made up of all 0 bits.
      * Equivalent to calling Address(new byte[ADDRESS_SIZE])
      */
-    public Address(){
-       this.overlayAddress = nullOverlay;
+    public static Address getNullAddress(){
+        try {
+            return new GenericAddress(getNullOverlay());
+        } catch (AddressException e) {
+            DBP.printException(e);
+            return null;
+        }
+    }
+
+    public static Address getFullAddress(){
+        try {
+            return new GenericAddress(getFullOverlay());
+        } catch (AddressException e) {
+            DBP.printException(e);
+            return null;
+        }
     }
 
     /**
@@ -58,7 +68,7 @@ public class Address implements Serializable {
      * @throws AddressException thrown if the address parameter is not in a valid format
      */
     public static Address parse(String address) throws AddressException{
-    	Address a = new Address();
+    	Address a = getNullAddress();
     	StringTokenizer tk = new StringTokenizer(address, ":");
     	if(tk.countTokens() != Address.ADDRESS_SIZE)
     		throw new AddressException("String representation of Address is improperly formatted. Wrong number of elements");
@@ -122,7 +132,15 @@ public class Address implements Serializable {
         return overlayAddressToString();
     }
 
-
+    private static class GenericAddress extends Address{
+        public GenericAddress(byte[] address) throws AddressException{
+            if (address.length != ADDRESS_SIZE){
+                throw new AddressException("overlay address is " + address.length + " bytes and needs to be "
+                        + ADDRESS_SIZE + " bytes.");
+            }
+            this.overlayAddress = address;
+        }
+    }
 
 	public static class OverlayComparator implements Comparator<byte[]> {
         private byte[] ref;
@@ -178,7 +196,7 @@ public class Address implements Serializable {
 
         public Address getRefrenceAddress() {
             try {
-                return new Address(comp.getReferenceAddress());
+                return Address.getAddress(comp.getReferenceAddress());
             } catch (AddressException e) {
                 DBP.printException(e);
             }
