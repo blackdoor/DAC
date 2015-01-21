@@ -32,7 +32,7 @@ public class RPCTester {
 	public static void main(String[] args) throws Exception{
 		DBP.VERBOSE = true;
 		testValidator();
-		
+		testPassiveAT();
 	}
 
 	public static void testValidator() throws Exception {
@@ -69,6 +69,17 @@ public class RPCTester {
 		builder.setIndex(1);
 		System.out.println(builder.buildGET());
 		System.out.println(builder.buildLOOKUP());
+	}
+	
+	public static void testPassiveAT() throws RPCException, IOException{
+		RPCBuilder builder = new RPCBuilder();
+		builder.setSourceIP(InetAddress.getLoopbackAddress());
+		builder.setSourcePort(1235);
+		builder.setDestinationO(new L3Address(InetAddress.getLoopbackAddress(), 1234));
+		builder.setIndex(1);
+		JSONObject request = builder.buildGET();
+		RPCHandler handler= new RPCHandler(System.out, request);
+		handler.handle();
 	}
 
     public static void testResponseBuilder(){

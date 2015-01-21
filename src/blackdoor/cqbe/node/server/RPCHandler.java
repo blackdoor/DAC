@@ -42,8 +42,11 @@ public class RPCHandler {
 	 * @throws IOException 
 	 */
 	public void handle() throws IOException {
+		
 		JSONObject responseObject;
 		try{
+			addRequestSenderToAT();
+			
 			switch(rpc.getString("method")){
 				case "get":
 					responseObject = handleGetRequest();
@@ -77,12 +80,28 @@ public class RPCHandler {
 				responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null,e.getRPCError(), errorData);
 			else
 				responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null,e.getRPCError());
+		}catch(UnknownHostException e){
+			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), false, null, RPCBuilder.JSONRPCError.INVALID_ADDRESS_FORMAT);
+			DBP.printException(e);
 		}
+		
 		try(PrintWriter output = new PrintWriter(outy)){
 			DBP.printdevln("in handle");
 			DBP.printdevln("about to write response " + responseObject);
 			output.write(responseObject.toString());
 		}
+	}
+	
+	/**
+	 * adds sender ip and port from rpc to this nodes's address table if applicable. 
+	 * DOES NOT CHECK validity
+	 * @throws JSONException 
+	 * @throws UnknownHostException 
+	 */
+	private void addRequestSenderToAT() throws UnknownHostException, JSONException{
+		JSONObject params = rpc.getJSONObject("params"); 
+		L3Address sender = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
+		Node.getAddressTable().add(sender);
 	}
 
 	/**
