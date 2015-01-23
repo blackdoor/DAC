@@ -33,6 +33,16 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	public AddressTable(Address reference){
 		super(new Address.OverlayComparator(reference.getOverlayAddress()));
 	}
+
+	public Address getReferenceAddress(){
+		Address.OverlayComparator c = (Address.OverlayComparator) comparator();
+		try {
+			return new Address(c.getReferenceAddress());
+		} catch (AddressException e) {
+			e.printStackTrace();
+		}
+		throw new RuntimeException();
+	}
 	
 	/**
 	 * Adds the specified value to this table, they key is implied by the overlay address of the value. 
