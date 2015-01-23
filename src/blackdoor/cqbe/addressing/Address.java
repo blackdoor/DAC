@@ -14,7 +14,7 @@ import java.util.StringTokenizer;
  * This class is the superclass of all addresses that might be encountered in an overlay network.
  * That is, all addresses have an overlay address.
  */
-public abstract class Address implements Serializable {
+public class Address implements Serializable {
 
     /**
      * The size of an overlay address, in bytes.
@@ -29,14 +29,18 @@ public abstract class Address implements Serializable {
     }
 
     protected byte[] overlayAddress;
-
+        
     /**
      * Constructs an Address object based on an overlay address.
      * @param overlayAddress a byte array representing an overlay address
      * @throws AddressException if overlayAddress is not the correct size (of the same length as ADDRESS_SIZE)
      */
-    public static Address getAddress(byte[] overlayAddress) throws AddressException {
-        return new GenericAddress(overlayAddress);
+    public Address(byte[] overlayAddress) throws AddressException {
+        if (overlayAddress.length != ADDRESS_SIZE){
+            throw new AddressException("overlay address is " + overlayAddress.length + " bytes and needs to be "
+                    + ADDRESS_SIZE + " bytes.");
+        }
+        this.overlayAddress = overlayAddress;
     }
 
     /**
@@ -45,7 +49,7 @@ public abstract class Address implements Serializable {
      */
     public static Address getNullAddress(){
         try {
-            return new GenericAddress(getNullOverlay());
+            return new Address(getNullOverlay());
         } catch (AddressException e) {
             DBP.printException(e);
             return null;
@@ -54,7 +58,7 @@ public abstract class Address implements Serializable {
 
     public static Address getFullAddress(){
         try {
-            return new GenericAddress(getFullOverlay());
+            return new Address(getFullOverlay());
         } catch (AddressException e) {
             DBP.printException(e);
             return null;
@@ -64,22 +68,25 @@ public abstract class Address implements Serializable {
     /**
      * Construct an Address object from a String which contains a formatted address representation.
      * @param address an address in the format given by Address.overlayAddressToString
-     * @return an Address object
      * @throws AddressException thrown if the address parameter is not in a valid format
      */
-    public static Address parse(String address) throws AddressException{
-    	Address a = getNullAddress();
+    public Address(String address) throws AddressException{
+    	//Address this = new Address();
     	StringTokenizer tk = new StringTokenizer(address, ":");
     	if(tk.countTokens() != Address.ADDRESS_SIZE)
     		throw new AddressException("String representation of Address is improperly formatted. Wrong number of elements");
     	try{
     		for(int i = 0; i < Address.ADDRESS_SIZE; i++){
-    			a.overlayAddress[i] = Integer.decode("0x" + tk.nextToken()).byteValue();
+    			this.overlayAddress[i] = Integer.decode("0x" + tk.nextToken()).byteValue();
     		}
-    		return a;
+    		//return a;
     	}catch (NumberFormatException e){
     		throw new AddressException("String representation of Address is improperly formatted. Invalid hex format.");
     	}
+    }
+    
+    public AddressComparator getComparator(){
+    	return new AddressComparator(this);
     }
 
     /**
@@ -123,23 +130,13 @@ public abstract class Address implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Address other = (Address) obj;
-		if (!Arrays.equals(overlayAddress, other.overlayAddress))
+		if (!Arrays.equals(getOverlayAddress(), other.getOverlayAddress()))
 			return false;
 		return true;
 	}
 
     public String toString(){
         return overlayAddressToString();
-    }
-
-    private static class GenericAddress extends Address{
-        public GenericAddress(byte[] address) throws AddressException{
-            if (address.length != ADDRESS_SIZE){
-                throw new AddressException("overlay address is " + address.length + " bytes and needs to be "
-                        + ADDRESS_SIZE + " bytes.");
-            }
-            this.overlayAddress = address;
-        }
     }
 
 	public static class OverlayComparator implements Comparator<byte[]> {
@@ -196,7 +193,7 @@ public abstract class Address implements Serializable {
 
         public Address getRefrenceAddress() {
             try {
-                return Address.getAddress(comp.getReferenceAddress());
+                return new Address(comp.getReferenceAddress());
             } catch (AddressException e) {
                 DBP.printException(e);
             }
