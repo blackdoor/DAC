@@ -109,8 +109,7 @@ public class RPCValidator {
 		if (!jCall.getString("jsonrpc").equals("2.0"))
 			return "invalid";
 		if (!params.has("sourceO") || !params.has("sourceIP")
-				|| !params.has("sourcePort") || !params.has("destinationO")
-				|| !params.has("extensions")) {
+				|| !params.has("sourcePort") || !params.has("destinationO")) {
 			return "params";
 		}
 		if (methodName.equalsIgnoreCase("PUT") && !params.has("value")) {
