@@ -37,7 +37,7 @@ public class RPCValidator {
 			DBP.printdemoln("RPC is valid, handing off to RPCHandler");
 			// Handle the call by passing off to the handler.
 			// String methodCalled = call.getString("method");
-			RPCHandler handler = new RPCHandler();
+			//RPCHandler handler = new RPCHandler();
 			// handler.handleRPC(call);
 		} else {
 			JSONObject error = buildError(
@@ -81,7 +81,7 @@ public class RPCValidator {
 	 * @param call
 	 * @return String detailing whether the JSONObject is valid or not.
 	 */
-	public String isValid(String call) {
+	public static String isValid(String call) {
 		JSONObject jCall;
 		try {
 			jCall = new JSONObject(call);
@@ -89,8 +89,14 @@ public class RPCValidator {
 		} catch (JSONException e) {
 			DBP.printException(e);
 			return "parse";
-
 		}
+		
+		int numFields = JSONObject.getNames(jCall).length;
+		if(numFields == 4){
+			if(!jCall.has("id"))
+				return "invalid";
+		}else if(numFields != 3) return "invalid";
+		
 		JSONObject params = new JSONObject();
 		String methodName = "";
 		if (!jCall.has("method") || !jCall.has("params")
