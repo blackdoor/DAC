@@ -74,14 +74,14 @@ public class RPCHandler {
 			return;
 		}catch(AddressException a){
 			DBP.printException(a);
-			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null, RPCBuilder.JSONRPCError.INVALID_ADDRESS_FORMAT, a.getMessage());
+			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT, a.getMessage());
 		}catch(RPCException e){
 			if(errorData != null)
 				responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null,e.getRPCError(), errorData);
 			else
 				responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null,e.getRPCError());
 		}catch(UnknownHostException e){
-			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), false, null, RPCBuilder.JSONRPCError.INVALID_ADDRESS_FORMAT);
+			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), false, null, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
 			DBP.printException(e);
 		}
 		
@@ -189,7 +189,7 @@ public class RPCHandler {
 			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), true, result, null);
 		}catch(JSONException e){
 			errorData = e.getMessage();
-			throw new RPCException(RPCBuilder.JSONRPCError.INVALID_PARAMS);
+			throw new RPCException(RPCException.JSONRPCError.INVALID_PARAMS);
 		}
 		return responseObject;
 	}

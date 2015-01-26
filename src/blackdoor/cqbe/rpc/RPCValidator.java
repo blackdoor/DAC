@@ -13,7 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.node.server.RPCHandler;
-import blackdoor.cqbe.rpc.RPCBuilder.JSONRPCError;
+import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
 /**
  * 
@@ -60,17 +60,17 @@ public class RPCValidator {
 		JSONObject error = null;
 		Integer _id = id == -1 ? null : id;
 		if (errorStyle.equals("parse")) 
-			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCBuilder.JSONRPCError.PARSE_ERROR);
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCException.JSONRPCError.PARSE_ERROR);
 		if (errorStyle.equals("invalid")) 
-			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.INVALID_REQUEST);
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCException.JSONRPCError.INVALID_REQUEST);
 		if (errorStyle.equals("method")) 
-			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.METHOD_NOT_FOUND);
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCException.JSONRPCError.METHOD_NOT_FOUND);
 		if (errorStyle.equals("params"))
-			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.INVALID_PARAMS);
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCException.JSONRPCError.INVALID_PARAMS);
 		if (errorStyle.equals("internal")) 
-			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.INTERNAL_ERROR);
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCException.JSONRPCError.INTERNAL_ERROR);
 		if (error == null)
-			error = RPCBuilder.RPCResponseFactory(_id, false, null, JSONRPCError.NODE_SHAT);
+			error = RPCBuilder.RPCResponseFactory(_id, false, null, RPCException.JSONRPCError.NODE_SHAT);
 		return error;
 	}
 
