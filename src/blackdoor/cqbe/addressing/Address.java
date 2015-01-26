@@ -29,6 +29,10 @@ public class Address implements Serializable {
     }
 
     protected byte[] overlayAddress;
+    
+    protected Address() {
+    	this.overlayAddress = getNullOverlay();
+    }
         
     /**
      * Constructs an Address object based on an overlay address.
