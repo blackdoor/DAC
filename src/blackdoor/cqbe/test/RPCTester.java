@@ -85,7 +85,7 @@ public class RPCTester {
     public static void testResponseBuilder(){
         JSONObject goodResponse = RPCBuilder.RPCResponseFactory(5, true, "good one", null);
         System.out.println(goodResponse.toString(2));
-        RPCBuilder.JSONRPCError e = RPCBuilder.JSONRPCError.NODE_SHAT;
+        RPCException.JSONRPCError e = RPCException.JSONRPCError.NODE_SHAT;
         JSONObject errorResponse = RPCBuilder.RPCResponseFactory(null, false, null, e, "poop");
         System.out.println(errorResponse.toString(2));
     }

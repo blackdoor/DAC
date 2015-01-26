@@ -76,6 +76,7 @@ public class Address implements Serializable {
      */
     public Address(String address) throws AddressException{
     	//Address this = new Address();
+    	this.overlayAddress = getNullOverlay();
     	StringTokenizer tk = new StringTokenizer(address, ":");
     	if(tk.countTokens() != Address.ADDRESS_SIZE)
     		throw new AddressException("String representation of Address is improperly formatted. Wrong number of elements");
