@@ -3,7 +3,11 @@ package blackdoor.cqbe.addressing;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import blackdoor.crypto.Hash;
 
@@ -19,6 +23,20 @@ public class L3Address extends Address implements Serializable{
 
 	private InetAddress l3Address = null;
 	private int port = -1;
+	private static L3Address nonNodeAddress = null;
+	
+	public static L3Address getNonNodeAddress(){
+		if(nonNodeAddress != null)
+			return nonNodeAddress;
+		byte[] b = new byte[16];
+		Arrays.fill(b, (byte)0x0);
+		try {
+			nonNodeAddress = new L3Address(InetAddress.getByAddress(b),0);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		return nonNodeAddress;
+	}
 
 	/**
 	 * Constructs a L3Address from the given address and port.
@@ -28,6 +46,23 @@ public class L3Address extends Address implements Serializable{
 	public L3Address(InetAddress a, int port) {
 		super();
 		setLayer3(a, port);
+	}
+	
+	public static L3Address fromJSON(JSONObject js) throws UnknownHostException, JSONException{
+		InetAddress l3Address = InetAddress.getByName(js.getString("IP"));
+		int port = js.getInt("port");
+		return new L3Address(l3Address, port);
+	}
+	
+	public JSONObject toJSON(){
+		JSONObject ret = new JSONObject();
+		ret.put("IP", l3Address.getHostAddress());
+		ret.put("port", port);
+		return ret;
+	}
+	
+	public String toJSONString(){
+		return toJSON().toString();
 	}
 
 	/**
@@ -104,6 +139,6 @@ public class L3Address extends Address implements Serializable{
 	@Override
 	public String toString() {
 		return "L3Address [overlayAddress=" + overlayAddressToString()
-				+ ", l3Address : port=" + l3ToString() + "]";
+				+ ", l3Address : port = " + l3ToString() + "]";
 	}
 }

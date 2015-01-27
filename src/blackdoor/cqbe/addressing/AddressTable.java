@@ -1,10 +1,18 @@
 package blackdoor.cqbe.addressing;
 
 import java.io.Serializable;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import blackdoor.cqbe.addressing.AddressException.MissingLayer3Exception;
 import blackdoor.util.DBP;
@@ -44,6 +52,33 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		throw new RuntimeException();
 	}
 	
+	public static AddressTable fromJSONArray(JSONArray arr) throws JSONException{
+		AddressTable ret = new AddressTable();
+		for(int i = 0; i < arr.length(); i++){
+			try{
+				ret.add(L3Address.fromJSON(arr.getJSONObject(i)));
+			}catch (UnknownHostException e){
+				DBP.printerrorln("Bad address in " + arr.getJSONObject(i));
+				DBP.printException(e);
+			}
+		}
+		return ret;
+	}
+	
+	public JSONArray toJSONArray(){
+		JSONArray ret = new JSONArray();
+		
+		for(L3Address entry : this.values()){
+			ret.put(entry.toJSON());
+		}
+		
+		return ret;
+	}
+	
+	public String toJSONString(){
+		return toJSONArray().toString();
+	}
+	
 	/**
 	 * Adds the specified value to this table, they key is implied by the overlay address of the value. 
 	 * If the table previously contained this address, the old address is replaced.
@@ -65,13 +100,35 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	/**
 	 * Add all addresses in c to this AddressTable.
 	 * @param c a set of L3Addresses
+	 * @return true if the address table was changed by this operation
 	 */
-	public void addAll(Set<L3Address> c){
+	public boolean addAll(Set<L3Address> c){
+		if(c.size() == 0)
+			return false;
+		boolean changed = false;
 		for(L3Address a : c){
-			add(a);
+			L3Address change = add(a);
+			changed |= (change == null || !change.equals(a));
 		}
+		return changed;
 	}
-
+	
+	/**
+	 * Add all addresses in c to this AddressTable.
+	 * @param c a collection of L3Addresses
+	 * @return true if C IS A SET (not a Set type, but must not have duplicates) and the address table was changed by this operation
+	 */
+	public boolean addAll(Collection<L3Address> c){
+		if(c.size() == 0)
+			return false;
+		boolean changed = false;
+		for(L3Address a : c){
+			L3Address change = add(a);
+			changed |= (change == null || !change.equals(a));
+		}
+		return changed;
+	}
+	
 	/**
 	 * Associates the specified L3Address with the overlay address of the specified L3Address in this map (optional operation).
 	 * If the map previously contained a mapping for the L3Address, the old value is replaced by the specified value.
@@ -81,7 +138,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * @return the previous L3Address object at that overlay address, or null if there was L3Address with that overlay.
 	 */
 	public L3Address put(L3Address value){
-		return put(value.getOverlayAddress(), value);
+		return put(null, value);
 	}
 
 	/**
@@ -92,6 +149,8 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 */
 	@Deprecated
 	public L3Address put(byte[] _, L3Address value){
+		if(value.equals(L3Address.getNonNodeAddress()))
+			return null;
 		return super.put(value.getOverlayAddress(), value);
 	}
 
@@ -134,6 +193,30 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		}else{
 			return false;
 		}
+	}
+	
+	/**
+	 * Probably complexity O(n) to build this set (depending on JVM implementation), but returns the same items as values() (which is constant time to build). 
+	 * This set is not backed by the table so changes to the set will not be reflected in the table.
+	 * This set is thread safe.
+	 * @return
+	 */
+	public SortedSet<L3Address> valueSet(){
+		return new ConcurrentSkipListSet<L3Address>(values());
+	}
+	
+	/**
+	 * O(n) to build. Set implementation is a LinkedHashSet.
+	 * Only worth using if you plan to iterate through more than once or using contains often, else use values().
+	 * @return
+	 */
+	public Set<L3Address> UnsafeValueSet(){
+		return new LinkedHashSet<L3Address>(values());
+	}
+	
+	public AddressTable clone(){
+		AddressTable clone = (AddressTable) super.clone();
+		return clone;
 	}
 
 	public String toString(){
