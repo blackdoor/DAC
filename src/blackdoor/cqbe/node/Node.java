@@ -9,6 +9,7 @@ import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
 import blackdoor.cqbe.node.server.Server;
 
+
 import blackdoor.util.DBP;
 
 /**
@@ -24,7 +25,10 @@ public class Node {
 	private AddressTable addressTable;
 	private volatile int n;
 	private volatile int o;
+
+	private volatile L3Address me;
 	private Thread serverThread;
+
 
 	protected Node(int port) {
 		startServer(port);
@@ -34,6 +38,11 @@ public class Node {
 		server = new Server(port);
 		serverThread = new Thread(server);
 		serverThread.start();
+	}
+	
+	private void configureAddressing(L3Address wanAddress){
+		me = wanAddress;
+		addressTable = new AddressTable(me);
 	}
 
 	/**
@@ -74,8 +83,13 @@ public class Node {
 	public static AddressTable getAddressTable() {
 		return getInstance().addressTable;
 	}
+	
+	public static L3Address getAddress(){
+		return getInstance().me;
+	}
+	
+	protected static Node getInstance(){
 
-	protected static Node getInstance() {
 		checkAndThrow();
 		return singleton;
 	}

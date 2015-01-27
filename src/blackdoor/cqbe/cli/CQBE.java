@@ -92,7 +92,7 @@ public class CQBE {
     CommandLineParser clp = new CommandLineParser();
     Router r = new Router();
     Address destination = null;
-    AddressTable neighbors = r.resolveAddress(destination);
+    AddressTable neighbors = r.iterativeLookup(destination);
     NodeBuilder bob = new NodeBuilder(neighbors);
     clp.setExecutableName("cqbe join");
     try {

@@ -1,7 +1,13 @@
 package blackdoor.cqbe.rpc;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class RPCException extends Exception {
+
 	RPCException.JSONRPCError e;
 	public RPCException(RPCException.JSONRPCError e){
+
 		this.e = e;
 	}
 	public RPCException.JSONRPCError getRPCError(){
@@ -45,12 +51,48 @@ public class RPCException extends Exception {
 		 * When logic goes AWOL, things are worse than SNAFU, and life is FUBAR.
 		 */
 		NODE_SHAT(-32099,"Node has shat itself"),
-		INVALID_ADDRESS_FORMAT(-32001, "Invalid Address Format");
+		/**
+		 * The response contained a string representation of an overlay address that was not valid.
+		 */
+		INVALID_ADDRESS_FORMAT(-32001, "Invalid Address Format"),
+		/**
+		 * A member of the JSON object was expected to contain a Base64 string, but the actual string was not valid Base 64.
+		 */
+		INVALID_BASE64(-32002, "Invalid Base 64"),
+		/**
+		 * The result member of a JSON RPC response did not contain an acceptable type or value.
+		 * This error should not be put into RPC requests.
+		 */
+		 INVALID_RESULT(-32003, "Invalid RPC result");
+
+		/**
+		 * get a JSONRPCError java object from a JSONRPC error object
+		 * @param error
+		 * @return
+		 * @throws JSONException
+		 */
+		public static JSONRPCError fromJSON(JSONObject error) throws JSONException{
+			int code = error.getInt("code");
+			for(JSONRPCError e : JSONRPCError.values()){
+				if(e.code == code)
+					return e;
+			}
+			throw new RuntimeException("unsupported JSONRPC error code");
+		}
 	
 		private final int code;
 		private final String message;
 	
+
+		/**
+		 * true if this error was the result of a weird RPC response rather than an unsuccessful RPC request.
+		 * This can happen if a valid RPC request is sent, but the server replies with a wonky response.
+		 */
+		public boolean serverSideError = false;
+
 		JSONRPCError(int code, String message){
+			if(code == -32003)
+				serverSideError = true;
 			this.code = code;
 			this.message = message;
 		}

@@ -3,6 +3,7 @@ package blackdoor.cqbe.rpc;
 import java.net.InetAddress;
 import java.util.Random;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.addressing.Address;
@@ -228,7 +229,9 @@ public class RPCBuilder {
 		return id;
 	}
 
+
 	/**
+
 	 * A factory for JSON RPC responses. Creates both successful and unsuccessful responses.
 	 * If successful then error and errorData are irrelevant. else error and errorData are considered and result is irrelevant.
 	 * @param id the id of the JSON RPC request object for which this response is being created. If the error was a parse error or the request was a notification then id should be null.
