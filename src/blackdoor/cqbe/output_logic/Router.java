@@ -355,4 +355,19 @@ public class Router {
 			throws RPCException {
 		return null;
 	}
+
+	public int put(Address destination, byte[] value) throws RPCException, IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public byte[] get(Address destination) throws RPCException, IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static void shutDown(int port) {
+		// TODO Auto-generated method stub
+		
+	}
 }

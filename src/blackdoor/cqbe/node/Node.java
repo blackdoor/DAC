@@ -4,13 +4,15 @@ import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
-
 import blackdoor.cqbe.addressing.L3Address;
-import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
 import blackdoor.cqbe.node.server.Server;
-
-
+import blackdoor.cqbe.settings.Config;
+import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
+import blackdoor.cqbe.node.NodeException.*;
+
+import java.net.*;
+import java.io.*;
 
 /**
  * 
@@ -23,15 +25,14 @@ public class Node {
 
 	private Server server;
 	private AddressTable addressTable;
+	private StorageController storageController;
 	private volatile int n;
 	private volatile int o;
 
 	private volatile L3Address me;
 	private Thread serverThread;
 
-
-	protected Node(int port) {
-		startServer(port);
+	protected Node() {
 	}
 
 	private void startServer(int port) {
@@ -39,10 +40,30 @@ public class Node {
 		serverThread = new Thread(server);
 		serverThread.start();
 	}
-	
-	private void configureAddressing(L3Address wanAddress){
-		me = wanAddress;
-		addressTable = new AddressTable(me);
+
+	/**
+	 * Configure Address Table based on ip and port
+	 * 
+	 * @param port
+	 *            the port to use
+	 * @param local
+	 *            is whether or not you want to use local ip or WAN ip
+	 */
+	private void configureAddressing(int port)
+			throws NodeException {
+		InetAddress address;
+		try {
+
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					whatismyip.openStream()));
+			address = InetAddress.getByName(in.readLine());
+
+			me = new L3Address(address, port);
+			addressTable = new AddressTable(me);
+		} catch (Exception e) {
+			throw new CantGetAddress();
+		}
 	}
 
 	/**
@@ -83,12 +104,16 @@ public class Node {
 	public static AddressTable getAddressTable() {
 		return getInstance().addressTable;
 	}
-	
-	public static L3Address getAddress(){
+
+	public static L3Address getAddress() {
 		return getInstance().me;
 	}
-	
-	protected static Node getInstance(){
+
+	public static StorageController getStorageController() {
+		return getInstance().storageController;
+	}
+
+	protected static Node getInstance() {
 
 		checkAndThrow();
 		return singleton;
@@ -115,18 +140,19 @@ public class Node {
 	public static class NodeBuilder {
 
 		private int port;
-		private String dir;
+		private String storageDir;
 		private boolean daemon;
 		private boolean adam;
 		private L3Address bootstrapNode;
+		private Config config;
 
 		/**
 		 * Create a new NodeBuilder with no preset settings
 		 */
 		public NodeBuilder() {
+			loadDefultSettings();
 			daemon = false;
 			adam = false;
-			port = -1;
 		}
 
 		/**
@@ -137,17 +163,30 @@ public class Node {
 		 */
 		public void setPort(int port) {
 			this.port = port;
+			config.put("port", port);
 		}
 
 		/**
 		 * Sets the directory where the node should be spawned and operated from
 		 * Passed from DART.Join
 		 * 
-		 * @param dir
+		 * @param directory
 		 *            - Directory to be used by created node
 		 */
-		public void setDirectory(String dir) {
-			this.dir = dir;
+		public void setStorageDir(String storageDir) {
+			this.storageDir = storageDir;
+			config.put("storageDir", storageDir);
+		}
+
+		/**
+		 * Sets the settings file directory Passed from DART.Join
+		 * 
+		 * @param directory
+		 *            - Directory to be used by created node
+		 */
+		public void setSettings(String settingsDir) {
+			loadSettings("settingsDir");
+
 		}
 
 		/**
@@ -177,27 +216,43 @@ public class Node {
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
 		 * TODO add and start updater
+		 * 
+		 * @throws Exception
 		 */
-		public Node buildNode() throws RequiredParametersNotSetException {
-			Node node = null;
-			if (!daemon) {
-				if (adam) {
-					AddressTable builderAddressTable = new AddressTable();
-					node = new Node(port);
-					node.addressTable = builderAddressTable;
-				} else if (!adam && bootstrapNode != null) {
-					AddressTable builderAddressTable = new AddressTable();
-					builderAddressTable.add(bootstrapNode);
-					node = new Node(port);
-					node.addressTable = builderAddressTable;
-				} else
-					throw new RequiredParametersNotSetException();
-			} else {
-				// TODO start new process
+		public Node buildNode() throws NodeException {
+			config.saveSessionToFile();
+			if (daemon) {
+				// TODO start a demon prossess depending on platform
+			}
+			Node node = new Node();
+			node.configureAddressing(port);
+			node.storageController = new StorageController(new File(
+					this.storageDir).toPath(), node.addressTable);
+			if (!adam && bootstrapNode != null) {
+				node.addressTable.add(bootstrapNode);
 			}
 			Node.singleton = node;
+			node.startServer(port);
+			// TODO start Updater
 			return Node.getInstance();
 		}
+
+		private void loadDefultSettings() {
+			config = new Config(new File("dflt.txt"));
+			this.setPort((int) config.get("port"));
+			this.setStorageDir((String) config.get("storageDir"));
+		}
+
+		private void loadSettings(String dir) {
+			config.loadSettings(new File(dir));
+			if (config.containsKey("port")) {
+				this.setPort((int) config.get("port"));
+			}
+			if (config.containsKey("storageDir")) {
+				this.setStorageDir((String) config.get("storageDir"));
+			}
+		}
+
 	}
 
 }
