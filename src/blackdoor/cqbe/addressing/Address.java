@@ -93,6 +93,10 @@ public class Address implements Serializable {
     public AddressComparator getComparator(){
     	return new AddressComparator(this);
     }
+    
+    protected void setOverlayAddress(byte[] overlayAddress){
+    	this.overlayAddress = overlayAddress;
+    }
 
     /**
      * returns the overlay address of this Address object as a byte[]

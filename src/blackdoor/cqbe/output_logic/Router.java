@@ -205,7 +205,7 @@ public class Router {
 			requestBuilder.setDestinationO(destination);
 			requestBuilder.setSourceIP(source.getLayer3Address());
 			requestBuilder.setSourcePort(source.getPort());
-			requestBuilder.setValue(Base64.encode(value));
+			requestBuilder.setValue(value);
 			requestObject = requestBuilder.buildPUT();
 		} catch (RPCException e) {
 			DBP.printException(e);
