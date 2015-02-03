@@ -5,7 +5,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import blackdoor.cqbe.output_logic.SocketIOWrapper;
+import blackdoor.net.SocketIOWrapper;
+
 
 public class TestOutput {
 
@@ -17,7 +18,7 @@ public class TestOutput {
 	
 	public static void testIO() throws IOException{
 		Socket s = new Socket(InetAddress.getLoopbackAddress(), 1234);
-		SocketIOWrapper w = new SocketIOWrapper(s);
+		SocketIOWrapper w = new blackdoor.net.SocketIOWrapper(s);
 		w.write("this is the test string\n--");
 	}
 	
