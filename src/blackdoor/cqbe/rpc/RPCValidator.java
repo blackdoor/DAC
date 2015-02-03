@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 import org.json.JSONException;
@@ -28,19 +29,18 @@ public class RPCValidator {
 
 	public JSONObject handle() {
 		String validity = isValid(call);
-		JSONObject response = null;;
+		JSONObject response = null;
+		;
 		try {
 			if (validity.equals("valid")) {
 				DBP.printdemoln("RPC is valid, handing off to RPCHandler");
 				// Handle the call by passing off to the handler.
 				// String methodCalled = call.getString("method");
 				RPCHandler handler = new RPCHandler(new JSONObject(call));
-				 response = handler.handle();
+				response = handler.handle();
 			} else {
-				response =  buildError(
-						validity,
-						validity.equals("parse") ? -1 : new JSONObject(call)
-								.getInt("id"));
+				response = buildError(validity, validity.equals("parse") ? -1
+						: new JSONObject(call).getInt("id"));
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
