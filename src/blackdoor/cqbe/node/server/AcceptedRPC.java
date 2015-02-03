@@ -36,6 +36,13 @@ public class AcceptedRPC implements Runnable {
 		} catch (IOException e) {
 			DBP.printerror("Problem with SocketIO in AcceptedRPC");
 			DBP.printException(e);
+		}finally{
+			try {
+				io.close();
+			} catch (IOException e) {
+				DBP.printerror("Problem closing SocketIO");
+				DBP.printException(e);
+			}
 		}
 	}
 
