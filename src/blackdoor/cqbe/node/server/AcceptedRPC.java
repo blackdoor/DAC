@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import blackdoor.cqbe.rpc.RPCValidator;
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 /**
@@ -18,9 +19,11 @@ public class AcceptedRPC implements Runnable {
 	private Socket socket = null;
 	private OutputStream out;
 	private InputStream in;
+	private SocketIOWrapper io;
 
-	public AcceptedRPC(Socket socket) {
+	public AcceptedRPC(Socket socket) throws IOException {
 		this.socket = socket;
+		io = new SocketIOWrapper(socket);
 		openInputStream();
 		openOutputStream();
 	}
@@ -32,7 +35,7 @@ public class AcceptedRPC implements Runnable {
 	public void run() {
 		String input = read();
 		shutdownSocketInput();
-		RPCValidator rv = new RPCValidator(input, out);
+		RPCValidator rv = new RPCValidator(input, io);
 		rv.handle();
 		closeSocket();
 	}

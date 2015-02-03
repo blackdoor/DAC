@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +18,7 @@ import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.Node;
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 /**
@@ -29,12 +31,12 @@ import blackdoor.util.DBP;
 public class RPCHandler {
 	
 	private JSONObject rpc;
-	private OutputStream outy;
+	private SocketIOWrapper io;
 	private String errorData = null;
 
-	public RPCHandler(OutputStream outy, JSONObject rpc) {
+	public RPCHandler(SocketIOWrapper outy, JSONObject rpc) {
 		this.rpc = rpc;
-		this.outy = outy;
+		this.io = outy;
 	}
 
 	/**
@@ -64,7 +66,7 @@ public class RPCHandler {
 					responseObject = handleShutdown();
 					throw new ShutdownInterrupt();
 				default:
-					outy.close();
+					io.close();
 					throw new RuntimeException("WTF IS THISSSS??? I'm looking at a method type that I don't recognize! WHERE is the validator? Is it on vacation? Cause it's not validating!");
 			}
 		}catch(JSONException j){
@@ -84,11 +86,13 @@ public class RPCHandler {
 			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), false, null, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
 			DBP.printException(e);
 		}
-		
-		try(PrintWriter output = new PrintWriter(outy)){
+
+		try{
 			DBP.printdevln("in handle");
 			DBP.printdevln("about to write response " + responseObject);
-			output.write(responseObject.toString());
+			io.write(responseObject.toString());
+		}finally{
+			io.close();
 		}
 	}
 	

@@ -11,9 +11,9 @@ import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.output_logic.Router;
-import blackdoor.cqbe.output_logic.SocketIOWrapper;
 import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.RPCValidator;
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 public class OutputTester {
