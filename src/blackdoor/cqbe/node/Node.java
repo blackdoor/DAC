@@ -7,6 +7,7 @@ import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.server.Server;
 import blackdoor.cqbe.settings.Config;
+
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 import blackdoor.cqbe.node.NodeException.*;
@@ -22,7 +23,7 @@ import java.io.*;
 public class Node {
 
 	private static Node singleton;
-
+	
 	private Server server;
 	private AddressTable addressTable;
 	private StorageController storageController;
@@ -31,64 +32,7 @@ public class Node {
 
 	private volatile L3Address me;
 	private Thread serverThread;
-
-	protected Node() {
-	}
-
-	private void startServer(int port) {
-		server = new Server(port);
-		serverThread = new Thread(server);
-		serverThread.start();
-	}
-
-	/**
-	 * Configure Address Table based on ip and port
-	 * 
-	 * @param port
-	 *            the port to use
-	 * @param local
-	 *            is whether or not you want to use local ip or WAN ip
-	 */
-	private void configureAddressing(int port)
-			throws NodeException {
-		InetAddress address;
-		try {
-
-			URL whatismyip = new URL("http://checkip.amazonaws.com");
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					whatismyip.openStream()));
-			address = InetAddress.getByName(in.readLine());
-
-			me = new L3Address(address, port);
-			addressTable = new AddressTable(me);
-		} catch (Exception e) {
-			throw new CantGetAddress();
-		}
-	}
-
-	/**
-	 * Closes the node and returns a list of folders containing node data
-	 * 
-	 * @return - A list of strings containing the folder locations of the node
-	 *         storage, address table, and updater
-	 */
-	public String[] destroyNode() {
-		return null;
-	}
-
-	/**
-	 * Prints a brief status of node
-	 */
-	public void statusCheck() {
-	}
-
-	/**
-	 * Lists the current status of the node's storage including space used, etc.
-	 */
-	public void checkStorage() {
-
-	}
-
+	
 	private static synchronized void checkAndThrow() {
 		if (singleton == null) {
 			throw new ExceptionInInitializerError(
@@ -135,6 +79,64 @@ public class Node {
 			DBP.printException(e);
 		}
 		return null;
+	}
+
+	protected Node() {
+	}
+
+	private void startServer(int port) {
+		server = new Server(port);
+		serverThread = new Thread(server);
+		serverThread.start();
+	}
+
+	/**
+	 * Configure Address Table based on ip and port
+	 * 
+	 * @param port
+	 *            the port to use
+	 * @param local
+	 *            is whether or not you want to use local ip or WAN ip
+	 */
+	private void configureAddressing(int port)
+			throws NodeException {
+		InetAddress address;
+		try {
+
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					whatismyip.openStream()));
+			address = InetAddress.getByName(in.readLine());
+
+			me = new L3Address(address, port);
+			addressTable = new AddressTable(me);
+		} catch (Exception e) {
+			throw new CantGetAddress();
+		}
+	}
+	
+
+	/**
+	 * Closes the node and returns a list of folders containing node data
+	 * 
+	 * @return - A list of strings containing the folder locations of the node
+	 *         storage, address table, and updater
+	 */
+	public String[] destroyNode() {
+		return null;
+	}
+
+	/**
+	 * Prints a brief status of node
+	 */
+	public void statusCheck() {
+	}
+
+	/**
+	 * Lists the current status of the node's storage including space used, etc.
+	 */
+	public void checkStorage() {
+
 	}
 
 	public static class NodeBuilder {

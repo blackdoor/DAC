@@ -7,6 +7,9 @@ import java.util.Random;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
+
 import blackdoor.cqbe.addressing.*;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
@@ -15,7 +18,48 @@ import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 */
 public abstract class Rpc {
 	
-   public static Rpc fromJsonString(String jsonText) throws RPCException{// UnknownHostException, JSONException, AddressException{
+	public static Rpc fromJson(JSONObject rpcJson) throws RPCException {
+		Rpc rpcObject = null;
+		try {
+			switch (rpcJson.getString("method")) {
+			case "PUT":
+				rpcObject = new PutRpc();
+				PutRpc rpcObjectCast = (PutRpc) rpcObject;
+				try {
+					rpcObjectCast.value = Base64.decode(rpcJson.getJSONObject("params")
+							.getString("value"));
+				} catch (Base64DecodingException e) {
+					throw new RPCException(JSONRPCError.INVALID_BASE64);
+				} catch (JSONException e) {
+					throw new RPCException(JSONRPCError.INVALID_PARAMS);
+				}
+				break;
+			case "SHUTDOWN":
+				break;
+			case "GET":
+				break;
+			case "PING":
+				rpcObject = new PingRpc();
+				rpcObject.method = Method.PING;
+				break;
+			case "LOOKUP":
+				rpcObject = new LookupRpc();
+				rpcObject.method = Method.LOOKUP;
+				break;
+
+			default:
+				throw new RPCException(JSONRPCError.METHOD_NOT_FOUND);
+			}
+		} catch (JSONException jsE) {
+			throw new RPCException(JSONRPCError.INVALID_REQUEST);
+		}
+
+		populateCommonFields(rpcObject, rpcJson);
+
+		return rpcObject;
+	}
+	
+   public static Rpc fromJsonString(String jsonText) throws RPCException{
 	   //TODO validate string
 	   JSONObject rpcJson;
 	   try{
@@ -23,34 +67,7 @@ public abstract class Rpc {
 	   }catch(JSONException e){
 		   throw new RPCException(JSONRPCError.PARSE_ERROR);
 	   }
-	   Rpc rpcObject = null;
-	   try{
-		   switch(rpcJson.getString("method")){
-		   case "PUT":
-			   break;
-		   case "SHUTDOWN":
-			   break;
-		   case "GET":
-			   break;
-		   case "PING":
-			   rpcObject = new PingRpc();
-			   rpcObject.method = Method.PING;
-			   break;
-		   case "LOOKUP":
-			   rpcObject = new LookupRpc();
-			   rpcObject.method = Method.LOOKUP;
-			   break;
-		   
-		   default:
-			   throw new RPCException(JSONRPCError.METHOD_NOT_FOUND);
-		   }
-	   }catch(JSONException jsE){
-		   throw new RPCException(JSONRPCError.INVALID_REQUEST);
-	   }
-	   
-	   populateCommonFields(rpcObject, rpcJson);
-	   
-	   return rpcObject;
+	   return fromJson(rpcJson);
    }
    
    private static void populateCommonFields(Rpc rpcObject, JSONObject rpcJson) throws RPCException{
@@ -71,31 +88,64 @@ public abstract class Rpc {
 	   }
    }
 
-   protected Method method;
-   protected L3Address source;
-   protected Address destination;
-   protected int id;
+   private Method method;
+   private L3Address source;
+   private Address destination;
+   private int id;
    
    protected Rpc(Method method){
 	   this.method = method;
 	   id = new Random().nextInt();
    }
+   
+   
+	/**
+	 * @param method
+	 *            the method to set
+	 */
+	protected void setMethod(Method method) {
+		this.method = method;
+	}
 
-   public Method getMethod() {
-       return method;
-   }
+	/**
+	 * @param source
+	 *            the source to set
+	 */
+	protected void setSource(L3Address source) {
+		this.source = source;
+	}
 
-   public L3Address getSource() {
-       return source;
-   }
+	/**
+	 * @param destination
+	 *            the destination to set
+	 */
+	protected void setDestination(Address destination) {
+		this.destination = destination;
+	}
 
-   public Address getDestination() {
-       return destination;
-   }
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	protected void setId(int id) {
+		this.id = id;
+	}
 
-   public int getId() {
-       return id;
-   }
+	public Method getMethod() {
+		return method;
+	}
+
+	public L3Address getSource() {
+		return source;
+	}
+
+	public Address getDestination() {
+		return destination;
+	}
+
+	public int getId() {
+		return id;
+	}
 
    protected JSONObject getRpcOuterShell(){
 	   JSONObject shell = new JSONObject();

@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 import org.json.JSONException;
@@ -25,33 +26,26 @@ import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
  */
 public class RPCValidator {
 	private String call;
-	private OutputStream os;
+	private SocketIOWrapper io;
 
-	public RPCValidator(String rpcCall, OutputStream oStream) {
+	public RPCValidator(String rpcCall, SocketIOWrapper oStream) {
 		call = rpcCall;
-		os = oStream;
+		io = oStream;
 	}
 
 	public void handle() {
-		BufferedWriter buffy = new BufferedWriter(new OutputStreamWriter(os));
 		String validity = isValid(call);
 		try {
-		if (validity.equals("valid")) {
-			DBP.printdemoln("RPC is valid, handing off to RPCHandler");
-			// Handle the call by passing off to the handler.
-			// String methodCalled = call.getString("method");
-			RPCHandler handler = new RPCHandler(os, new JSONObject(call));
-			handler.handle();
-		} else {
-			JSONObject error = buildError(
-					validity,
-					validity.equals("parse") 
-						? -1 
-						: new JSONObject(call).getInt("id"));
-			
-				buffy.write(error.toString());
-				buffy.flush();
-				buffy.close();
+			if (validity.equals("valid")) {
+				DBP.printdemoln("RPC is valid, handing off to RPCHandler");
+				// Handle the call by passing off to the handler.
+				// String methodCalled = call.getString("method");
+				RPCHandler handler = new RPCHandler(io, new JSONObject(call));
+				handler.handle();
+			} else {
+				JSONObject error = buildError(validity,
+						validity.equals("parse") ? -1 : new JSONObject(call).getInt("id"));
+				io.write(error.toString());
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block

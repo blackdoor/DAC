@@ -6,6 +6,8 @@ import java.util.Random;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.L3Address;
 
@@ -19,7 +21,7 @@ public class RPCBuilder {
 	private InetAddress sourceIP;
 	private int sourcePort;
 	private Address destinationO;
-	private String value;
+	private byte[] value;
 	
 	private int index;
 	private int id;
@@ -82,13 +84,20 @@ public class RPCBuilder {
 			rpc.put("jsonrpc", "2.0");
 			rpc.put("method", "put");
 			JSONObject params = getDefaultParams();
-			params.put("value", value);
+			params.put("value", Base64.encode(value));
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
 			rpc.put("params", params);
 			rpc.put("id", id);
 			return rpc;
 		}
+	}
+	
+	public PutRpc buildPutObject(){
+		PutRpc ret = new PutRpc();
+		populateDefaultParams(ret);
+		ret.setValue(this.value);
+		return ret;
 	}
 	
 	/**
@@ -114,12 +123,19 @@ public class RPCBuilder {
 		}
 	}
 	
+	private void populateDefaultParams(Rpc rpc){
+		if(destinationO == null || sourceIP == null || sourcePort <= 0)
+			throw new RPCException.RPCCreationException("not enough parameters set");
+		rpc.setDestination(getDestinationO());
+		rpc.setSource(new L3Address(getSourceIP(), getSourcePort()));
+	}
+	
 	public LookupRpc buildLookupObject(){
 		if(destinationO == null || sourceIP == null || sourcePort <= 0)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		LookupRpc ret = new LookupRpc();
-		ret.destination = getDestinationO();
-		ret.source = new L3Address(getSourceIP(), getSourcePort());
+		ret.setDestination(getDestinationO());
+		ret.setSource(new L3Address(getSourceIP(), getSourcePort()));
 		return ret;
 	}
 
@@ -149,15 +165,14 @@ public class RPCBuilder {
 		if(destinationO == null || sourceIP == null || sourcePort <= 0)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		PingRpc ret = new PingRpc();
-		ret.destination = getDestinationO();
-		ret.source = new L3Address(getSourceIP(), getSourcePort());
+		ret.setDestination(getDestinationO());
+		ret.setSource(new L3Address(getSourceIP(), getSourcePort()));
 		return ret;
 	}
 	
 	/**
 	 * Initiliazes a SHUTDOWN RPC JSON request to be sent
 	 *
-	 * @param port - Port to be shutdown
 	 */
 	public JSONObject buildSHUTDOWN() throws RPCException {
 		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
@@ -181,24 +196,33 @@ public class RPCBuilder {
 	  id = rand.nextInt(Integer.MAX_VALUE);
 	}
 
-	public Address getSourceO() {
+	public L3Address getSource() {
 		return new L3Address(sourceIP, sourcePort);
 	}
 
+	@Deprecated
 	public InetAddress getSourceIP() {
 		return sourceIP;
 	}
 
+	@Deprecated
 	public void setSourceIP(InetAddress sourceIP) {
 		this.sourceIP = sourceIP;
 	}
 
+	@Deprecated
 	public int getSourcePort() {
 		return sourcePort;
 	}
 
+	@Deprecated
 	public void setSourcePort(int sourcePort) {
 		this.sourcePort = sourcePort;
+	}
+
+	public void setSource(L3Address source){
+		this.sourceIP = source.getLayer3Address();
+		this.sourcePort = source.getPort();
 	}
 
 	public Address getDestinationO() {
@@ -209,11 +233,11 @@ public class RPCBuilder {
 		this.destinationO = destinationO;
 	}
 
-	public String getValue() {
+	public byte[] getValue() {
 		return value;
 	}
 
-	public void setValue(String value) {
+	public void setValue(byte[] value) {
 		this.value = value;
 	}
 

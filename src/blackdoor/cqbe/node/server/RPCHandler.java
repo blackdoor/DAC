@@ -1,13 +1,18 @@
 package blackdoor.cqbe.node.server;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import blackdoor.cqbe.rpc.AckResponse;
+import blackdoor.cqbe.rpc.PutRpc;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+
+import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
+import blackdoor.cqbe.rpc.Rpc;
+import blackdoor.cqbe.storage.StorageController;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,8 +20,10 @@ import org.json.JSONObject;
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.addressing.CASFileAddress;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.Node;
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 /**
@@ -29,12 +36,12 @@ import blackdoor.util.DBP;
 public class RPCHandler {
 	
 	private JSONObject rpc;
-	private OutputStream outy;
+	private SocketIOWrapper io;
 	private String errorData = null;
 
-	public RPCHandler(OutputStream outy, JSONObject rpc) {
+	public RPCHandler(SocketIOWrapper outy, JSONObject rpc) {
 		this.rpc = rpc;
-		this.outy = outy;
+		this.io = outy;
 	}
 
 	/**
@@ -64,7 +71,7 @@ public class RPCHandler {
 					responseObject = handleShutdown();
 					throw new ShutdownInterrupt();
 				default:
-					outy.close();
+					io.close();
 					throw new RuntimeException("WTF IS THISSSS??? I'm looking at a method type that I don't recognize! WHERE is the validator? Is it on vacation? Cause it's not validating!");
 			}
 		}catch(JSONException j){
@@ -84,11 +91,13 @@ public class RPCHandler {
 			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), false, null, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
 			DBP.printException(e);
 		}
-		
-		try(PrintWriter output = new PrintWriter(outy)){
+
+		try{
 			DBP.printdevln("in handle");
 			DBP.printdevln("about to write response " + responseObject);
-			output.write(responseObject.toString());
+			io.write(responseObject.toString());
+		}finally{
+			io.close();
 		}
 	}
 	
@@ -148,9 +157,21 @@ public class RPCHandler {
 
 	/**
 	 * Handles a put request
+	 * @throws RPCException 
 	 */
-	private JSONObject handlePutRequest() {
-		return null;
+	private JSONObject handlePutRequest() throws RPCException {
+		StorageController storageController = Node.getStorageController();
+		PutRpc rpc = (PutRpc) Rpc.fromJson(this.rpc);
+		//TODO look at settings and find out how large of a value we are willing to store
+		//throw exception if value is oversized
+		try {
+			CASFileAddress value = new CASFileAddress(storageController.getDomain(), rpc.getValue());
+			storageController.put(value);
+		} catch (IOException e) {
+			throw new RPCException(JSONRPCError.NODE_SHAT);
+		}
+		AckResponse response = new AckResponse(rpc.getId());
+		return response.toJSON();
 	}
 
 	/**
