@@ -33,8 +33,8 @@ public class Server implements Runnable {
    * Initialize from configuration file settings.
    * <p>
    */
-  public Server() {
-    this(Config.Port());
+  public Server(Config config) {
+    this((int) config.get("port"));
   }
 
   /**

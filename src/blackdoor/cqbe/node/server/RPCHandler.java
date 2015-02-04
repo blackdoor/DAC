@@ -36,19 +36,18 @@ import blackdoor.util.DBP;
 public class RPCHandler {
 	
 	private JSONObject rpc;
-	private SocketIOWrapper io;
 	private String errorData = null;
 
-	public RPCHandler(SocketIOWrapper outy, JSONObject rpc) {
+	public RPCHandler(JSONObject rpc) {
 		this.rpc = rpc;
-		this.io = outy;
 	}
 
 	/**
 	 * Handles appropriate RPC call
+	 * @return 
 	 * @throws IOException 
 	 */
-	public void handle() throws IOException {
+	public JSONObject handle() throws IOException {
 		
 		JSONObject responseObject;
 		try{
@@ -71,14 +70,13 @@ public class RPCHandler {
 					responseObject = handleShutdown();
 					throw new ShutdownInterrupt();
 				default:
-					io.close();
 					throw new RuntimeException("WTF IS THISSSS??? I'm looking at a method type that I don't recognize! WHERE is the validator? Is it on vacation? Cause it's not validating!");
 			}
 		}catch(JSONException j){
 			DBP.printException(j);
 			DBP.printerrorln("Apparently the RPC validator is broken");
 			DBP.printerrorln("A JSON-RPC response is not being sent, better fix the validator");
-			return;
+			return null;
 		}catch(AddressException a){
 			DBP.printException(a);
 			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),false,null, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT, a.getMessage());
@@ -91,14 +89,7 @@ public class RPCHandler {
 			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"), false, null, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
 			DBP.printException(e);
 		}
-
-		try{
-			DBP.printdevln("in handle");
-			DBP.printdevln("about to write response " + responseObject);
-			io.write(responseObject.toString());
-		}finally{
-			io.close();
-		}
+		return responseObject;
 	}
 	
 	/**
