@@ -17,8 +17,6 @@ import blackdoor.cqbe.rpc.RPCValidator;
 
 import org.json.*;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
-
 import blackdoor.cqbe.addressing.*;
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
@@ -411,5 +409,10 @@ public class Router {
 	public static JSONObject call(AddressTable destinations, Object RPC)
 			throws RPCException {
 		return null;
+	}
+
+	public static void shutDown(int port) {
+		// TODO Auto-generated method stub
+		
 	}
 }

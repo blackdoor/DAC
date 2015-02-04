@@ -1,11 +1,13 @@
 package blackdoor.cqbe.test;
 
+import java.io.File;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
+import blackdoor.cqbe.addressing.CASFileAddress;
 import blackdoor.cqbe.addressing.L3Address;
+import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.node.Node.NodeBuilder;
-import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
+import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 
 public class NodeTester {
@@ -21,7 +23,7 @@ public class NodeTester {
 			adamNode.setPort(1778);
 			try {
 				adamNode.buildNode();
-			} catch (RequiredParametersNotSetException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -34,7 +36,11 @@ public class NodeTester {
 				node.setPort(1778);
 				node.setBootstrapNode(bootstrapNode);
 				node.buildNode();
-			} catch (UnknownHostException | RequiredParametersNotSetException e) {
+				StorageController c = Node.getStorageController();
+				CASFileAddress lolfile = new CASFileAddress(new File(c.getDomain().toString() +"/lol_file.txt"));
+				c.put(lolfile);
+				System.out.println(c);
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

@@ -29,13 +29,6 @@ public class Server implements Runnable {
   private Thread runningThread = null;
   private final int QUEUE_SIZE = 256;//?
 
-  /**
-   * Initialize from configuration file settings.
-   * <p>
-   */
-  public Server() {
-    this(Config.Port());
-  }
 
   /**
    * Initialize with specific port.
