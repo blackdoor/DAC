@@ -150,7 +150,7 @@ public class Node {
 		 * Create a new NodeBuilder with no preset settings
 		 */
 		public NodeBuilder() {
-			loadDefultSettings();
+			loadDefaultSettings();
 			daemon = false;
 			adam = false;
 		}
@@ -237,7 +237,7 @@ public class Node {
 			return Node.getInstance();
 		}
 
-		private void loadDefultSettings() {
+		private void loadDefaultSettings() {
 			config = new Config(new File("dflt.txt"));
 			this.setPort((int) config.get("port"));
 			this.setStorageDir((String) config.get("storageDir"));

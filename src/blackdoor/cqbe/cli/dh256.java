@@ -246,7 +246,7 @@ public class dh256 {
 				File fileDir = new File(parsedArgs.get("dir").getValue());
 				new CASFileAddress(fileDir, response);
 				if(existsAndReadable(fileDir))
-					System.out.println("the file was retrived to the spesified directory successfully");
+					System.out.println("the file was retrived to the specified directory successfully");
 			}
 			
 		} catch (DuplicateOptionException e) {
