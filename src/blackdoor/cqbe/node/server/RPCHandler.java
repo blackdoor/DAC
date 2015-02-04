@@ -27,7 +27,7 @@ import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 /**
- * 
+ * RPCHandler takes JSON RPC 2.0 request objects, does any requested operations and forms a response.
  * @author nfischer3
  *
  * Custom RPC response codes:

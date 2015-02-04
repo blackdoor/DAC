@@ -52,6 +52,12 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		throw new RuntimeException();
 	}
 	
+	/**
+	 * Returns an AddressTable built from a JSONArray. Elements of the JSON array should be in a format parsable by L3Address
+	 * @param arr
+	 * @return An address table with the values in arr.
+	 * @throws JSONException
+	 */
 	public static AddressTable fromJSONArray(JSONArray arr) throws JSONException{
 		AddressTable ret = new AddressTable();
 		for(int i = 0; i < arr.length(); i++){
@@ -65,6 +71,10 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		return ret;
 	}
 	
+	/**
+	 * Returns this address table as a JSONArray
+	 * @return this address table as a JSONArray
+	 */
 	public JSONArray toJSONArray(){
 		JSONArray ret = new JSONArray();
 		
@@ -75,6 +85,10 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		return ret;
 	}
 	
+	/**
+	 * Returns this address table as a json array string
+	 * @return this address table as a json array string
+	 */
 	public String toJSONString(){
 		return toJSONArray().toString();
 	}

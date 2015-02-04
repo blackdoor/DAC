@@ -3,6 +3,11 @@ package blackdoor.cqbe.rpc;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * An Exception that can be thrown if a fatal RPC error has occurred. These exceptions should only be handled by the method that is prepared to send a JSON RPC Error response to the caller. 
+ * @author nfischer3
+ *
+ */
 public class RPCException extends Exception {
 
 	RPCException.JSONRPCError e;

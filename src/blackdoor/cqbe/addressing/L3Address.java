@@ -48,12 +48,23 @@ public class L3Address extends Address implements Serializable{
 		setLayer3(a, port);
 	}
 	
+	/**
+	 * Parses a JSONObject into an L3Address object. The JSONObject should contain an "IP" field, and a "port" field.
+	 * @param js
+	 * @return an L3Address object based on js
+	 * @throws UnknownHostException
+	 * @throws JSONException
+	 */
 	public static L3Address fromJSON(JSONObject js) throws UnknownHostException, JSONException{
 		InetAddress l3Address = InetAddress.getByName(js.getString("IP"));
 		int port = js.getInt("port");
 		return new L3Address(l3Address, port);
 	}
 	
+	/**
+	 * 
+	 * @return a JSONObject representing this L3Address
+	 */
 	public JSONObject toJSON(){
 		JSONObject ret = new JSONObject();
 		ret.put("IP", l3Address.getHostAddress());
@@ -61,6 +72,10 @@ public class L3Address extends Address implements Serializable{
 		return ret;
 	}
 	
+	/**
+	 * 
+	 * @return a JSON string representing this L3Address
+	 */
 	public String toJSONString(){
 		return toJSON().toString();
 	}
@@ -101,7 +116,7 @@ public class L3Address extends Address implements Serializable{
 
 	/**
 	 *
-	 * @return
+	 * @return this L3Address's port
 	 */
 	public int getPort(){
 		return port;
