@@ -4,12 +4,12 @@ import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
-
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
 import blackdoor.cqbe.node.server.Server;
 
 
+import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 
 /**
@@ -20,59 +20,16 @@ import blackdoor.util.DBP;
 public class Node {
 
 	private static Node singleton;
-
-	private Server server;
-	private AddressTable addressTable;
-	private volatile int n;
-	private volatile int o;
-
-	private volatile L3Address me;
-	private Thread serverThread;
-
-
-	protected Node(int port) {
-		startServer(port);
-	}
-
-	private void startServer(int port) {
-		server = new Server(port);
-		serverThread = new Thread(server);
-		serverThread.start();
-	}
 	
-	private void configureAddressing(L3Address wanAddress){
-		me = wanAddress;
-		addressTable = new AddressTable(me);
-	}
-
-	/**
-	 * Closes the node and returns a list of folders containing node data
-	 * 
-	 * @return - A list of strings containing the folder locations of the node
-	 *         storage, address table, and updater
-	 */
-	public String[] destroyNode() {
-		return null;
-	}
-
-	/**
-	 * Prints a brief status of node
-	 */
-	public void statusCheck() {
-	}
-
-	/**
-	 * Lists the current status of the node's storage including space used, etc.
-	 */
-	public void checkStorage() {
-
-	}
-
 	private static synchronized void checkAndThrow() {
 		if (singleton == null) {
 			throw new ExceptionInInitializerError(
 					"Node singleton is null. Node has not been built yet.");
 		}
+	}
+	
+	public static StorageController getStorageController(){
+		throw new UnsupportedOperationException("method not implemented");
 	}
 
 	/**
@@ -110,6 +67,54 @@ public class Node {
 			DBP.printException(e);
 		}
 		return null;
+	}
+
+	private Server server;
+	private AddressTable addressTable;
+	private volatile int n;
+	private volatile int o;
+
+	private volatile L3Address me;
+	private Thread serverThread;
+
+
+	protected Node(int port) {
+		startServer(port);
+	}
+
+	private void startServer(int port) {
+		server = new Server(port);
+		serverThread = new Thread(server);
+		serverThread.start();
+	}
+	
+	private void configureAddressing(L3Address wanAddress){
+		me = wanAddress;
+		addressTable = new AddressTable(me);
+	}
+	
+
+	/**
+	 * Closes the node and returns a list of folders containing node data
+	 * 
+	 * @return - A list of strings containing the folder locations of the node
+	 *         storage, address table, and updater
+	 */
+	public String[] destroyNode() {
+		return null;
+	}
+
+	/**
+	 * Prints a brief status of node
+	 */
+	public void statusCheck() {
+	}
+
+	/**
+	 * Lists the current status of the node's storage including space used, etc.
+	 */
+	public void checkStorage() {
+
 	}
 
 	public static class NodeBuilder {
