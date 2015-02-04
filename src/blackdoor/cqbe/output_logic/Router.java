@@ -3,6 +3,7 @@ package blackdoor.cqbe.output_logic;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -195,6 +196,26 @@ public class Router {
 		}else return null;
 	}
 	
+	public byte[] get(Address destination) throws RPCException, IOException{
+		AddressTable neighbors = iterativeLookup(destination);
+		HashMap<byte[], Integer> counts = new HashMap<byte[], Integer>();
+		for(L3Address neighbor : neighbors.values()){
+			byte[] value = getValue(neighbor, destination);
+			if(counts.containsKey(value)){
+				counts.put(value, counts.get(value) + 1);
+			}else{
+				counts.put(value, 1);
+			}
+		}
+		byte[] max = new byte[0];
+		counts.put(max, -1);
+		for(byte[] value : counts.keySet()){
+			if(counts.get(value) > counts.get(max))
+				max = value;
+		}
+		return max;
+	}
+	
 	//TODO use some OOD to associate destination and value. destination might have value in it like an L3Address, or destination can be a Class object that is a subtype of Address, and use that class to build an Oaddr from value.
 	public static boolean primitivePut(L3Address remoteNode, Address destination, byte[] value) throws IOException, RPCException{
 		JSONObject requestObject = null;
@@ -216,6 +237,41 @@ public class Router {
 		}catch(JSONException e){
 			throw new RPCException(JSONRPCError.INVALID_RESULT);
 		}
+	}
+	
+	private static JSONObject getPut(Address destination, byte[] value){
+		L3Address source = getSource();
+		RPCBuilder requestBuilder = new RPCBuilder();
+		try {
+			requestBuilder.setDestinationO(destination);
+			requestBuilder.setSourceIP(source.getLayer3Address());
+			requestBuilder.setSourcePort(source.getPort());
+			requestBuilder.setValue(value);
+			return requestBuilder.buildPUT();
+		} catch (RPCException e) {
+			DBP.printException(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * call put on all nodes near destination. returns the number of nodes that acknowledged storage of value.
+	 * @param destination
+	 * @param value
+	 * @return the number of nodes that acknowledged storage of value.
+	 * @throws RPCException
+	 * @throws IOException
+	 */
+	public int put(Address destination, byte[] value) throws RPCException, IOException{
+		int ret = 0;
+		JSONObject request = getPut(destination, value);
+		JSONObject response;
+		AddressTable neighbors = iterativeLookup(destination);
+		for(L3Address address : neighbors.values()){
+			response = call(address, request);
+			ret += response.getBoolean("result") ? 1 : 0;
+		}
+		return ret;
 	}
 	
 	/**
@@ -268,7 +324,7 @@ public class Router {
 	 * @param destination an overlay address for which nearby layer 3 addresses should be resolved.
 	 * @return an AddressTable filled with the nearest neighbors of destination.
 	 */
-	public AddressTable iterativeLookup(Address destination){//TODO
+	public AddressTable iterativeLookup(Address destination){//TODO rename this
 		AddressTable rrt = bootstrapTable.clone();
 		AddressTable nrt = new AddressTable(destination);
 		HashSet<L3Address> visited= new HashSet<L3Address>();
