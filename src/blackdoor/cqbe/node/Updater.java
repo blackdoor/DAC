@@ -8,6 +8,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.addressing.Address.AddressComparator;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.output_logic.Router;
@@ -93,7 +94,7 @@ public class Updater implements Runnable{
 	public void update() throws UnknownHostException{
 		if(Node.getAddressTable().isEmpty()){
 			//Node has no neighbors, let's fix that.
-			AddressTable temp = Router.iterativeLookup(Node.getInstance().getOverlayAddress());
+			AddressTable temp = r.iterativeLookup(Node.getInstance().getOverlayAddress());
 			Node.getAddressTable().addAll(temp.values());
 		}
 		else
@@ -132,6 +133,7 @@ public class Updater implements Runnable{
 
 	private void reviewStorage(){
 		AddressTable neighborTable = new AddressTable();
+		AddressComparator ac = new Address.AddressComparator(Node.getAddress());
 		for(L3Address a : Node.getAddressTable().values()){
 			try {
 				neighborTable = r.primitiveLookup(a, a);
@@ -148,8 +150,7 @@ public class Updater implements Runnable{
 					continue;
 				}
 				else{
-					if(b.getOverlayAddress() < Node.getAddressTable().lastKey())
-					{
+					if(ac.compare(Node.getAddressTable().lastEntry().getValue(), b) >= 0){
 						//TODO Send get RPC with index 0 to that address
 					}
 				}
@@ -176,8 +177,16 @@ public class Updater implements Runnable{
 				continue;
 			}
 			for(L3Address c : candidates.values()){
-				if(visited.contains(c) || !Router.ping(c) || current.containsValue(c)){
-					continue;
+				try {
+					if(visited.contains(c) || !r.ping(c) || current.containsValue(c)){
+						continue;
+					}
+				} catch (RPCException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				toAdd.add(c);
 			}
@@ -214,28 +223,33 @@ public class Updater implements Runnable{
 	
 		for(L3Address a : add.values())
 		{
-			if(!Router.ping(a))
-			{
-				//If no response is received, move a up in strike priority
-				if(firstStrike.contains(a)){
-					firstStrike.remove(a);
-					secondStrike.add(a);
+			try {
+				if(!r.ping(a))
+				{
+					//If no response is received, move a up in strike priority
+					if(firstStrike.contains(a)){
+						firstStrike.remove(a);
+						secondStrike.add(a);
+					}
+					else if(secondStrike.contains(a)){
+						secondStrike.remove(a);
+						at.add(a);
+					}
+					else{
+						firstStrike.add(a);
+					}
+				} 
+				else
+				{
+					if(firstStrike.contains(a))
+						firstStrike.remove(a);
+					if(secondStrike.contains(a))
+						secondStrike.remove(a);
+					DBP.printdevln("Response Received from " + a);
 				}
-				else if(secondStrike.contains(a)){
-					secondStrike.remove(a);
-					at.add(a);
-				}
-				else{
-					firstStrike.add(a);
-				}
-			} 
-			else
-			{
-				if(firstStrike.contains(a))
-					firstStrike.remove(a);
-				if(secondStrike.contains(a))
-					secondStrike.remove(a);
-				DBP.printdevln("Response Received from " + a);
+			} catch (RPCException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return at;
