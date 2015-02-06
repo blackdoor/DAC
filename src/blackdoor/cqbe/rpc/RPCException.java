@@ -63,7 +63,11 @@ public class RPCException extends Exception {
 		 * The result member of a JSON RPC response did not contain an acceptable type or value.
 		 * This error should not be put into RPC requests.
 		 */
-		 INVALID_RESULT(-32003, "Invalid RPC result");
+		 INVALID_RESULT(-32003, "Invalid RPC result"),
+		/**
+		 * Unable to retriece the corresponding value from storage
+		 */
+		 NODE_STORAGE_ERROR(-32004, "Unable to retrieve this value from storage");
 
 		/**
 		 * get a JSONRPCError java object from a JSONRPC error object

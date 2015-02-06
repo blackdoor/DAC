@@ -37,6 +37,8 @@ public abstract class Rpc {
 			case "SHUTDOWN":
 				break;
 			case "GET":
+				rpcObject = new GetRpc();
+				rpcObject.method = Method.GET;
 				break;
 			case "PING":
 				rpcObject = new PingRpc();
@@ -67,7 +69,9 @@ public abstract class Rpc {
 	   }catch(JSONException e){
 		   throw new RPCException(JSONRPCError.PARSE_ERROR);
 	   }
+
 	   return fromJson(rpcJson);
+
    }
    
    private static void populateCommonFields(Rpc rpcObject, JSONObject rpcJson) throws RPCException{
@@ -146,6 +150,7 @@ public abstract class Rpc {
 	public int getId() {
 		return id;
 	}
+
 
    protected JSONObject getRpcOuterShell(){
 	   JSONObject shell = new JSONObject();
