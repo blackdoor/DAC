@@ -1,21 +1,41 @@
 package blackdoor.cqbe.node.server;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.util.NavigableSet;
 
+import blackdoor.cqbe.rpc.GetRpc;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
+import blackdoor.cqbe.rpc.Rpc;
+import blackdoor.cqbe.storage.StorageController;
+
+
+
+
+
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+
+
+
+
+
+import com.sun.org.apache.xml.internal.security.utils.Base64;
+
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.addressing.FileAddress;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.Node;
 import blackdoor.net.SocketIOWrapper;
@@ -159,10 +179,47 @@ public class RPCHandler {
 
 	/**
 	 * Handles a get request
+	 * @throws AddressException
+	 * @throws UnknownHostException
+	 * @throws RPCException
+	 * if the index feild is true (non-zero), returns list of keys from indicated bucket
+	 * if the index feild is false (zero) and destination matches that of a stored key, returns associated value
+	 * If index is false and destination does not match stored key, return a lookup call
 	 */
-
-	private JSONObject handleGetRequest() {
-		return null;
+	private JSONObject handleGetRequest() throws RPCException, UnknownHostException, AddressException {
+		StorageController storage =  Node.getStorageController();
+		JSONObject responseObject = new JSONObject();
+		GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
+		JSONArray json = new JSONArray();
+		try{
+		int index = rpc.getIndex();
+		if (index != 0){
+			 NavigableSet<Address> keys = storage.getBucket(index);
+			 for (Address key: keys){
+				 json.put(key);
+			 }
+		}
+		if (index == 0){
+			if(storage.containsValue(rpc.getDestination())){
+				FileAddress value = storage.get(rpc.getDestination());//return value associated with that key
+				File file = value.getFile();
+				try{
+					byte[] byteArray = Files.readAllBytes(file.toPath());//new byte[(int)file.length()];
+					json.put(Base64.encode(byteArray));
+				}
+				catch(IOException e){
+					throw new RPCException(JSONRPCError.NODE_STORAGE_ERROR);
+				}
+			}
+			if (!storage.containsValue(rpc.getDestination())){
+				return handleLookupRequest();
+			}
+		}
+		responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(), true, json, null);}
+		catch(JSONException e){
+			errorData = e.getMessage();
+		}
+		return responseObject;
 	}
 
 	/**

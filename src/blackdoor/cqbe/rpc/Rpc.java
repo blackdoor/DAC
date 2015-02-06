@@ -31,6 +31,8 @@ public abstract class Rpc {
 		   case "SHUTDOWN":
 			   break;
 		   case "GET":
+			   rpcObject = new GetRpc();
+			   rpcObject.method = Method.GET;
 			   break;
 		   case "PING":
 			   rpcObject = new PingRpc();
@@ -96,7 +98,7 @@ public abstract class Rpc {
    public int getId() {
        return id;
    }
-
+   
    protected JSONObject getRpcOuterShell(){
 	   JSONObject shell = new JSONObject();
 	   shell.put("jsonrpc", "2.0");

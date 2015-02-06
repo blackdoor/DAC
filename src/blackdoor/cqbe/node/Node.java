@@ -4,12 +4,10 @@ import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
-
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
 import blackdoor.cqbe.node.server.Server;
-
-
+import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 
 /**
@@ -198,6 +196,11 @@ public class Node {
 			Node.singleton = node;
 			return Node.getInstance();
 		}
+	}
+
+	public static StorageController getStorageController() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

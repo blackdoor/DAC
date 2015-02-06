@@ -12,14 +12,13 @@ import blackdoor.cqbe.rpc.*;
 
 public class RpcTest {
 	
-	
-
 	@Test
 	public void testFromJsonString() throws RPCException {
 		RPCBuilder builder = new RPCBuilder();
 		builder.setDestinationO(Address.getFullAddress());
 		builder.setSourceIP(InetAddress.getLoopbackAddress());
 		builder.setSourcePort(1234);
+		builder.setIndex(1);
 		//test lookup
 		LookupRpc lookupRpc = (LookupRpc) Rpc.fromJsonString(builder.buildLookupObject().toJSONString());
 		assertTrue(lookupRpc.getDestination().equals(Address.getFullAddress()));
@@ -28,6 +27,12 @@ public class RpcTest {
 		PingRpc pingRpc = (PingRpc) Rpc.fromJsonString(builder.buildPingObject().toJSONString());
 		assertTrue(pingRpc.getDestination().equals(Address.getFullAddress()));
 		assertTrue(pingRpc.getSource().equals(new L3Address(InetAddress.getLoopbackAddress(), 1234)));
+		//test get
+		GetRpc getRpc = (GetRpc) Rpc.fromJsonString(builder.buildGetObject().toJSONString());
+		getRpc.setIndex(1);
+		assertTrue(getRpc.getDestination().equals(Address.getFullAddress()));
+		assertTrue(getRpc.getSource().equals(new L3Address(InetAddress.getLoopbackAddress(), 1234)));
+		assertEquals(1, getRpc.getIndex());
 	}
 	
 	@Test
@@ -36,6 +41,7 @@ public class RpcTest {
 		builder.setDestinationO(Address.getFullAddress());
 		builder.setSourceIP(InetAddress.getLoopbackAddress());
 		builder.setSourcePort(1234);
+		builder.setIndex(1);
 		//test lookup
 		LookupRpc lookupRpc = builder.buildLookupObject();
 		assertTrue(lookupRpc.getDestination().equals(Address.getFullAddress()));
@@ -44,6 +50,10 @@ public class RpcTest {
 		PingRpc pingRpc = builder.buildPingObject();
 		assertTrue(pingRpc.getDestination().equals(Address.getFullAddress()));
 		assertTrue(pingRpc.getSource().equals(new L3Address(InetAddress.getLoopbackAddress(), 1234)));
+		GetRpc getRpc = builder.buildGetObject();
+		assertTrue(getRpc.getDestination().equals(Address.getFullAddress()));
+		assertTrue(getRpc.getSource().equals(new L3Address(InetAddress.getLoopbackAddress(), 1234)));
+		assertEquals(1, getRpc.getIndex());
 	}
 
 	@Test
@@ -52,13 +62,16 @@ public class RpcTest {
 		builder.setDestinationO(Address.getFullAddress());
 		builder.setSourceIP(InetAddress.getLoopbackAddress());
 		builder.setSourcePort(1234);
+		builder.setIndex(1);
 		//Test Lookup
 		LookupRpc lookupRpc = builder.buildLookupObject();
 		System.out.println(lookupRpc.toJSON().toString(2));
-		
 		//test ping
 		PingRpc pingRpc = builder.buildPingObject();
 		System.out.println(pingRpc.toJSON().toString(2));
+		//test get
+		GetRpc getRpc = builder.buildGetObject();
+		System.out.println(getRpc.toJSON().toString(2));
 	}
 
 }

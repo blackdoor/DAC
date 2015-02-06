@@ -63,9 +63,19 @@ public class RPCBuilder {
 			JSONObject extensions = new JSONObject();
 			params.put("extensions", extensions);
 			rpc.put("params", params);
-			rpc.put("id", id);
+			//rpc.put("id", id);
 			return rpc;
 		}
+	}
+	
+	public GetRpc buildGetObject(){
+		if(destinationO == null || sourceIP == null|| sourcePort == -1|| index ==-1)
+			throw new RPCException.RPCCreationException("not enough parameters set");
+		GetRpc ret = new GetRpc();
+		ret.destination = getDestinationO();
+		ret.source = new L3Address(getSourceIP(), getSourcePort());
+		ret.index = getIndex();
+		return ret;
 	}
 
 	/**
