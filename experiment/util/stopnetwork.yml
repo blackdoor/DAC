@@ -1,0 +1,38 @@
+---
+- hosts: adam
+  gather_facts: no
+  tasks:
+    - name: adam is stopping... 
+      shell: nohup java -jar bin/dh256.jar shutdown -p 57005
+      args:
+         chdir: /home/cube/run.dh256/      
+      environment:
+         PATH: /usr/bin:{{ ansible_env.PATH }}
+- hosts: adam
+  gather_facts: no
+  tasks:
+    - name: other adams is stopping... 
+      shell: nohup ./stopnodes.sh 9 57006 
+      args:
+         chdir: /home/cube/run.dh256/      
+      environment:
+         PATH: /usr/bin:{{ ansible_env.PATH }}
+- hosts: pitower
+  gather_facts: no
+  tasks:
+    - name: Pitower is stopping....
+      shell: nohup ./stopnodes.sh 10 57005 
+      args:
+         chdir: /home/cube/run.dh256/      
+      environment:
+         PATH: /usr/bin:{{ ansible_env.PATH }}
+- hosts: annex
+  gather_facts: no
+  tasks:
+    - name: Annex is stopping... 
+      shell: nohup ./stopnodes.sh 10 57005
+      args:
+         chdir: /home/cube/run.dh256/
+      environment:
+         PATH: /usr/bin:{{ ansible_env.PATH }}
+
