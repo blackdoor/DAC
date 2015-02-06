@@ -24,7 +24,29 @@ public class L3Address extends Address implements Serializable{
 	private InetAddress l3Address = null;
 	private int port = -1;
 	private static L3Address nonNodeAddress = null;
+	protected static final boolean LOOPBACK_IS_NON_NODE = false; 
 	
+	/**
+	 * Returns true if address is definitely not the overlay address of a node
+	 * @param address
+	 * @return true if address is definitely not the overlay address of a node
+	 */
+	public static boolean isNonNodeAddress(L3Address address){
+		if(Address.isNonNodeAddress(address) ||
+				(isLoopbackAddress(address) && LOOPBACK_IS_NON_NODE) ||
+				address.equals(getNonNodeAddress()))
+			return true;
+		return false;
+	}
+	
+	public static boolean isLoopbackAddress(L3Address address){
+		return address.getLayer3Address().isLoopbackAddress();
+	}
+	
+	/**
+	 * Returns an address that other nodes will recognize is not the address of a node
+	 * @return an address that other nodes will recognize is not the address of a node
+	 */
 	public static L3Address getNonNodeAddress(){
 		if(nonNodeAddress != null)
 			return nonNodeAddress;

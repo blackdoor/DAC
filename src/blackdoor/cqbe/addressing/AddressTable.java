@@ -5,11 +5,14 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+
+import javax.naming.OperationNotSupportedException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -133,7 +136,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * Associates the specified L3Address with the overlay address of the specified L3Address in this map (optional operation).
 	 * If the map previously contained a mapping for the L3Address, the old value is replaced by the specified value.
 	 * (A map m is said to contain a mapping for a key k if and only if m.containsKey(k) would return true.)
-	 * In general add(L3Address) should be used instead. This method can be dangerous as it can overfill the table.
+	 * In general add(L3Address) should 		super be used instead. This method can be dangerous as it can overfill the table.
 	 * @param value value to be added to the map
 	 * @return the previous L3Address object at that overlay address, or null if there was L3Address with that overlay.
 	 */
@@ -143,19 +146,24 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 
 	/**
 	 * Same as the put contract for Map, except the key is implied by the value. In other words only the value parameter has any effect.
-	 * @param _
+	 * @param _ does nothing
 	 * @param value
 	 * @return
 	 */
 	@Deprecated
 	public L3Address put(byte[] _, L3Address value){
-		if(value.equals(L3Address.getNonNodeAddress()))
+		if(L3Address.isNonNodeAddress(value) || value.equals(getReferenceAddress()))
 			return null;
 		return super.put(value.getOverlayAddress(), value);
 	}
 
 	public boolean containsValue(L3Address value){
 		return containsKey(value.getOverlayAddress());
+	}
+	
+	@Deprecated
+	public void putAll(Map m){
+		throw new UnsupportedOperationException();
 	}
 	
 	/**
