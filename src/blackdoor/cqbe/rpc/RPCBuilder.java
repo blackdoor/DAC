@@ -71,7 +71,7 @@ public class RPCBuilder {
 	}
 	
 	public GetRpc buildGetObject(){
-		if(destinationO == null || sourceIP == null|| sourcePort == -1|| index ==-1)
+		if(destinationO == null || sourceIP == null|| sourcePort == -1|| index == -1)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		GetRpc ret = new GetRpc();
 		ret.setDestination(getDestinationO());
