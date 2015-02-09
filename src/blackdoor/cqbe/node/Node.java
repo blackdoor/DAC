@@ -25,6 +25,7 @@ public class Node {
 
 	private static Node singleton;
 	private Server server;
+	private Updater updater;
 	private AddressTable addressTable;
 	private StorageController storageController;
 	private volatile int n;
@@ -32,6 +33,7 @@ public class Node {
 
 	private volatile L3Address me;
 	private Thread serverThread;
+	private Thread updaterThread;
 	
 	private static synchronized void checkAndThrow() {
 		if (singleton == null) {
@@ -66,6 +68,10 @@ public class Node {
 	public static int getN() {
 		return getInstance().n;
 	}
+	
+	public Updater getUpdater(){
+		return updater;
+	}
 
 	public static Address getOverlayAddress() {
 		OverlayComparator c = (OverlayComparator) getInstance().addressTable
@@ -88,6 +94,12 @@ public class Node {
 		server = new Server(port);
 		serverThread = new Thread(server);
 		serverThread.start();
+	}
+	
+	private void startUpdater() {
+		updater = new Updater();
+		updaterThread = new Thread(updater);
+		updaterThread.start();
 	}
 
 	/**
@@ -235,7 +247,7 @@ public class Node {
 			}
 			Node.singleton = node;
 			node.startServer(port);
-			// TODO start Updater
+			node.startUpdater();
 			return Node.getInstance();
 		}
 

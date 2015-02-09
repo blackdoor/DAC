@@ -18,8 +18,8 @@ public class ConfigTester {
 		List<String> li = new ArrayList<String>();
 		// where to write stubs
 		String defaultfile = "dflt.txt";
-		String settingfile = "set.txt";
-		String broken = "athis.txt";
+		String settingfile = "session.txt";
+		//String broken = "athis.txt";
 		// write stubs to file
 		li.add(defaultfile);
 		li.add(settingfile);
@@ -40,7 +40,7 @@ public class ConfigTester {
 			System.out.println(e1);
 		}
 
-		CleanUpDoYourShare(li);
+		//CleanUpDoYourShare(li);
 	}
 
 	public static void CleanUpDoYourShare(List<String> files) {
@@ -55,10 +55,9 @@ public class ConfigTester {
 
 	public static JSONObject getSettingsStub() {
 		JSONObject rpc = new JSONObject();
-		rpc.put("jsonrpc", "2.0");
-		rpc.put("value", 200);
-		rpc.put("id", "FAKETESTER");
 		rpc.put("port", 1778);
+		rpc.put("storageDir", "NodeStorage");
+		rpc.put("savefile", "session.txt");
 		return rpc;
 	}
 
