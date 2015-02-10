@@ -252,16 +252,15 @@ public class Updater implements Runnable{
 	 * @return List of neighbors that did not respond.
 	 */
 	public AddressTable pingNeighbors(){
-		Node.getInstance();
 		AddressTable add = Node.getAddressTable();
 		AddressTable at = new AddressTable();
-	
 		for(L3Address a : add.values())
 		{
 			try {
 				if(!Router.ping(a))
 				{
 					//If no response is received, move a up in strike priority
+					DBP.printdevln("No response from " + a);
 					if(firstStrike.contains(a)){
 						//a already has a strike against it, go to second strike.
 						secondStrike.add(a);

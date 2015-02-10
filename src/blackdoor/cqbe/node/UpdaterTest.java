@@ -32,27 +32,9 @@ public class UpdaterTest {
 		n.getUpdater().startUpdater();
 		assertTrue("Timer should be restarted",n.getUpdater().getTimer());
 	}
-	
-	/*
-	@Test
-	public void testUpdateTimerFire() throws NodeException{
-		NodeBuilder bob = new NodeBuilder();
-		bob.setAdam(true);
-		bob.setPort(1234);
-		try {
-			Node n = bob.buildNode();
-			Thread.sleep(1);
-		} catch (RequiredParametersNotSetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	*/
-	
-	/*	
+
+
+	@SuppressWarnings("static-access")
 	@Test
 	public void testUpdateStrikeList() throws NodeException{
 		NodeBuilder bob = new NodeBuilder();
@@ -61,12 +43,20 @@ public class UpdaterTest {
 		Node n = null;
 		try {
 			n = bob.buildNode();
-			Thread.sleep(10000);
+			n.getAddressTable().add(new L3Address(InetAddress.getByName("192.168.1.1"), 8888));
+			n.getAddressTable().add(new L3Address(InetAddress.getByName("192.168.1.2"), 8888));
+			n.getAddressTable().add(new L3Address(InetAddress.getByName("192.168.1.3"), 8888));
+			n.getAddressTable().add(new L3Address(InetAddress.getByName("192.168.1.4"), 8888));
+			
+			Thread.sleep(1000);
 		
 		} catch (RequiredParametersNotSetException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -78,6 +68,8 @@ public class UpdaterTest {
 		System.out.println(firstStrike);
 		try {
 			Thread.sleep(61000);
+			firstStrike = n.getUpdater().getFS();
+			secondStrike = n.getUpdater().getSS();
 			System.out.println("FS Size is: " + firstStrike.size());
 			System.out.println("SS Size is: " + secondStrike.size());
 		} catch (InterruptedException e) {
@@ -86,14 +78,9 @@ public class UpdaterTest {
 		}
 		
 	}
-	*/
+
 	
 	/*
-	public void testStorageReview(){
-		
-	}
-	*/
-	
 	@SuppressWarnings("static-access")
 	public void testUpdateStorage() throws NodeException{
 		NodeBuilder bob = new NodeBuilder();
@@ -135,4 +122,5 @@ public class UpdaterTest {
 		}
 		
 	}
+	*/
 }
