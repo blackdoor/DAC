@@ -60,6 +60,9 @@ public class Address implements Serializable {
         }
     }
 
+    /**
+     * Constructs an Address object with an overlay made up of all 1 bits.
+     */
     public static Address getFullAddress(){
         try {
             return new Address(getFullOverlay());
@@ -70,8 +73,7 @@ public class Address implements Serializable {
     }
 
     /**
-     * Construct an Address object from a String which contains a formatted address representation.
-     * @param address an address in the format given by Address.overlayAddressToString
+     * Construct an Address object from a String which contains a formatted address representation (':' separated hex).
      * @throws AddressException thrown if the address parameter is not in a valid format
      */
     public Address(String address) throws AddressException{
@@ -90,6 +92,10 @@ public class Address implements Serializable {
     	}
     }
     
+    /**
+     * Returns an AddressComparator which has this Address as its reference.
+     * @return an AddressComparator which has this Address as its reference.
+     */
     public AddressComparator getComparator(){
     	return new AddressComparator(this);
     }
@@ -100,7 +106,7 @@ public class Address implements Serializable {
 
     /**
      * returns the overlay address of this Address object as a byte[]
-     * @return a copy of the overlay address of this Address object
+     * @return a deep copy of the overlay address of this Address object
      */
     public byte[] getOverlayAddress() {
         return Arrays.copyOf(overlayAddress, overlayAddress.length);
@@ -192,6 +198,12 @@ public class Address implements Serializable {
         }
     }
 
+	/**
+	 * A comparator for Addresses. Distance between Addresses is defined as the Hamming weight of the first address XOR'd with the second.
+	 * Since two addresses can only have a distance between them a reference point is needed to determine which is greater than the other.
+	 * @author nfischer3
+	 *
+	 */
     public static class AddressComparator implements Comparator<Address> {
 
         private OverlayComparator comp;
@@ -227,9 +239,10 @@ public class Address implements Serializable {
         }
 
         /**
-         * returns negative if arg0 is closer to reference than arg1
-         * positive if arg0 is farther from reference than arg1
+         * Returns negative if arg0 is closer to reference than arg1
+         * positive if o1 is farther from reference than o2
          * 0 if they are equal distant
+         * @return negative if o1 is closer to reference than o2, 0 if they are equal distant, positive if o1 is farther from reference than o2
          */
         public int compare(Address o1, Address o2) {
             return comp.compare(o1.getOverlayAddress(), o2.getOverlayAddress());
