@@ -2,6 +2,7 @@ package blackdoor.cqbe.node.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import blackdoor.cqbe.node.server.ServerException.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -34,17 +35,19 @@ public class Server implements Runnable {
    * Initialize with specific port.
    * 
    * @param port
+ * @throws ServerException 
    */
-  public Server(int port) {
+  public Server(int port) throws ServerException {
     this.port = port;
     blockingQueue = new ArrayBlockingQueue<Runnable>(QUEUE_SIZE);
     pool = getPool();
+    openServerSocket();
   }
 
   /*
    * just for testing this... or example how to run
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws ServerException {
 	DBP.DEV = true;
     Server server = new Server(1778);
     new Thread(server).start();
@@ -61,7 +64,6 @@ public class Server implements Runnable {
     synchronized (this) {
       this.runningThread = Thread.currentThread();
     }
-    openServerSocket();
     while (this.isRunning()) {
       try {
         pool.execute(new AcceptedRPC(this.serverSocket.accept()));
@@ -112,13 +114,13 @@ public class Server implements Runnable {
   /**
  * 
  */
-  private void openServerSocket() {
+  private void openServerSocket() throws ServerException {
     try {
       this.serverSocket = new ServerSocket(this.port);
     } catch (IOException e) {
       running = false;
       DBP.printerror("COULD NOT OPEN SERVERSOCKET on port: " + port);
-      DBP.printException(e);
+      throw new ServerSocketException("COULD NOT OPEN SERVERSOCKET on port: " + port);
     }
   }
 
