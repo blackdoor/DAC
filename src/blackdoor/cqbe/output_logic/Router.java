@@ -12,6 +12,7 @@ import blackdoor.cqbe.rpc.GETResponse;
 import blackdoor.cqbe.rpc.GETResponse.GETResponseFactory;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.rpc.ShutdownRpc;
 import blackdoor.cqbe.rpc.RPCException.*;
 import blackdoor.cqbe.rpc.RPCValidator;
 
@@ -411,8 +412,10 @@ public class Router {
 		return null;
 	}
 
-	public static void shutDown(int port) {
-		// TODO Auto-generated method stub
-		
+	public static void shutDown(int port) throws IOException {
+		SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
+		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
+		//should I read here?
+		io.write(ShutdownRpc.HANDSHAKE);
 	}
 }

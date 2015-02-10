@@ -6,9 +6,7 @@ import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.server.Server;
-
 import blackdoor.cqbe.settings.Config;
-
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 import blackdoor.cqbe.node.NodeException.*;
@@ -124,6 +122,13 @@ public class Node {
 	 */
 	public String[] destroyNode() {
 		return null;
+	}
+	
+	public static void shutdown(){
+		Node inst = getInstance();
+		inst.server.stop();
+		//TODO stop updater
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	/**
