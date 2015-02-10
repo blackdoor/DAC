@@ -5,15 +5,13 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.json.JSONObject;
-
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.Address.AddressComparator;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.output_logic.Router;
-import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 
 
@@ -21,7 +19,7 @@ import blackdoor.util.DBP;
  * Responsibility - Continually update the address table of a node by pinging current AT members, removing non-responsive nodes,
  * 					and finding new neighbors to populate the address table.
  * @author Cyril Van Dyke
- * @version 1.0
+ * @version 1.1
  * 
  */
 
@@ -31,7 +29,7 @@ public class Updater implements Runnable{
 	private HashSet<Address> firstStrike = new HashSet<Address>();
 	private HashSet<Address> secondStrike = new HashSet<Address>();
 	
-	public Updater() throws InterruptedException {
+	public Updater() {
 
 	}
 
@@ -52,9 +50,9 @@ public class Updater implements Runnable{
 	
 	/**
 	 * Timer function that tells Updater when to check for updates
+	 * When updaterTimer fires, update() is run.
 	 * @throws UnknownHostException 
 	 */
-	@SuppressWarnings("unused")
 	private void updateTimer() throws UnknownHostException{
 		update();
 		try{
@@ -67,34 +65,53 @@ public class Updater implements Runnable{
 		}
 	}
 	
+	/**
+	 * Stops updateTimer from firing, preventing update from happening.
+	 */
 	public void stopUpdater(){
 		timer = false;
 	}
 	
+	/**
+	 * Starts updateTimer, allowing updates to occur.
+	 */
 	public void startUpdater(){
 		timer = true;
 	}
 	
+	/**
+	 * Returns the boolean timer.
+	 * @return boolean timer which enables updates to occur.
+	 */
 	public Boolean getTimer(){
 		return timer;
 	}
 	
+	/**
+	 * Returns the firstStrike list, containing all neighbors who currently have 1 strike against them.
+	 * @return HashSet firstStrike
+	 */
 	public HashSet<Address> getFS(){
 		return firstStrike;
 	}
 	
+	/**
+	 * Returns the secondStrike list, containing all neighbors who currently have 2 strikes against them.
+	 * @return HashSet secondStrike
+	 */
 	public HashSet<Address> getSS(){
 		return secondStrike;
 	}
 	
 	/**
-	 * Checks for needed updates then calls appropriate helper functions to update the node
+	 * Checks for needed updates in the Node's AddressTable
+	 * Updates the neighbors of a Node, removing nonresponsive nodes and searching to add new 
 	 * @throws UnknownHostException 
 	 */
 	public void update() throws UnknownHostException{
 		if(Node.getAddressTable().isEmpty()){
 			//Node has no neighbors, let's fix that.
-			AddressTable temp = r.iterativeLookup(Node.getInstance().getOverlayAddress());
+			AddressTable temp = r.iterativeLookup(Node.getOverlayAddress());
 			Node.getAddressTable().addAll(temp.values());
 		}
 		else
@@ -114,29 +131,32 @@ public class Updater implements Runnable{
 				}
 				for(Map.Entry<byte[], L3Address> entry : toRemove.entrySet())
 				{
-					if(toRemove.equals(Node.getInstance().getAddressTable())){
+					if(toRemove.equals(Node.getAddressTable())){
 						//Most likely offline, that's a problem dude.
 						DBP.printerrorln("Node is most likely offline, cannot connect to any neighbors");
 					}
 					else {
-						Node.getInstance();
 						//Remove all nonresponsive nodes
 						Node.getAddressTable().remove(entry.getKey(),entry.getValue());
 					}
 				}
-				Node.getInstance();
-				Node.getAddressTable().addAll(addNewNeighbors(Node.getInstance().getAddressTable(),toRemove).values());
+				Node.getAddressTable().addAll(addNewNeighbors(Node.getAddressTable(),toRemove).values());
 				updateStorage();
+				reviewStorage();
 			}
 		}
 	}
 
+	/**
+	 * Checks to add new AT values to storage using the storagecontroller
+	 * 
+	 */
 	private void reviewStorage(){
 		AddressTable neighborTable = new AddressTable();
 		AddressComparator ac = new Address.AddressComparator(Node.getAddress());
 		for(L3Address a : Node.getAddressTable().values()){
 			try {
-				neighborTable = r.primitiveLookup(a, a);
+				neighborTable = Router.primitiveLookup(a, a);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -152,12 +172,27 @@ public class Updater implements Runnable{
 				else{
 					if(ac.compare(Node.getAddressTable().lastEntry().getValue(), b) >= 0){
 						//TODO Send get RPC with index 0 to that address
+						try {
+							Node.getAddressTable().add((L3Address)Router.getIndex(b,0).get(0));
+						} catch (RPCException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 			}
 		}
 	}
 	
+	/**
+	 * Returns a list of new neighbors to be added to a Node's address table;
+	 * @param current
+	 * @param noResponse: The list of neighbors that did not respond 3 times in a row, to be removed.
+	 * @return 
+	 */
 	public AddressTable addNewNeighbors(AddressTable current,AddressTable noResponse){
 		HashSet<L3Address> visited = new HashSet<L3Address>();
 		AddressTable toAdd = new AddressTable();
@@ -167,7 +202,7 @@ public class Updater implements Runnable{
 				//This might totally be redundant
 			AddressTable candidates = null;
 			try{
-				candidates = Router.primitiveLookup(a, Node.getInstance().getOverlayAddress());
+				candidates = Router.primitiveLookup(a, Node.getOverlayAddress());
 			} catch(IOException ioE) {
 				DBP.printerrorln(ioE);
 			} catch (RPCException e) {
@@ -178,7 +213,7 @@ public class Updater implements Runnable{
 			}
 			for(L3Address c : candidates.values()){
 				try {
-					if(visited.contains(c) || !r.ping(c) || current.containsValue(c)){
+					if(visited.contains(c) || !Router.ping(c) || current.containsValue(c)){
 						continue;
 					}
 				} catch (RPCException e) {
@@ -201,12 +236,12 @@ public class Updater implements Runnable{
 	
 	public void updateStorage(){
 		try {
-			Node.getInstance().getStorageController().deleteThirdBucket();
+			Node.getStorageController().deleteThirdBucket();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Node.getInstance().getStorageController().garbageCollectReferences();
+		Node.getStorageController().garbageCollectReferences();
 		
 	}
 	
@@ -217,30 +252,34 @@ public class Updater implements Runnable{
 	 * @return List of neighbors that did not respond.
 	 */
 	public AddressTable pingNeighbors(){
-		Node.getInstance();
 		AddressTable add = Node.getAddressTable();
 		AddressTable at = new AddressTable();
-	
 		for(L3Address a : add.values())
 		{
 			try {
-				if(!r.ping(a))
+				if(!Router.ping(a))
 				{
 					//If no response is received, move a up in strike priority
+					DBP.printdevln("No response from " + a);
 					if(firstStrike.contains(a)){
-						firstStrike.remove(a);
+						//a already has a strike against it, go to second strike.
 						secondStrike.add(a);
+						firstStrike.remove(a);
 					}
 					else if(secondStrike.contains(a)){
-						secondStrike.remove(a);
+						//a has two strikes against it, move to removal list.
 						at.add(a);
+						secondStrike.remove(a);
+
 					}
 					else{
+						//a doesn't have any strikes against it, add it to the strike list.
 						firstStrike.add(a);
 					}
 				} 
 				else
 				{
+					//a has responded, 
 					if(firstStrike.contains(a))
 						firstStrike.remove(a);
 					if(secondStrike.contains(a))
