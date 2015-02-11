@@ -335,6 +335,7 @@ public class Router {
 			throw new RPCException(JSONRPCError.PARSE_ERROR);
 		}
 		io.close();
+		ret.add(remoteNode);
 		return ret;
 	}
 	
