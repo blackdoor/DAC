@@ -25,6 +25,7 @@ public class Node {
 
 	private static Node singleton;
 	private Server server;
+	private Updater updater;
 	private AddressTable addressTable;
 	private StorageController storageController;
 	private volatile int n;
@@ -32,6 +33,7 @@ public class Node {
 
 	private volatile L3Address me;
 	private Thread serverThread;
+	private Thread updaterThread;
 	
 	private static synchronized void checkAndThrow() {
 		if (singleton == null) {
@@ -89,6 +91,12 @@ public class Node {
 		serverThread = new Thread(server);
 		serverThread.start();
 	}
+	
+	private void startUpdater() {
+		updater = new Updater();
+		updaterThread = new Thread(updater);
+		updaterThread.start();
+	}
 
 	/**
 	 * Configure Address Table based on ip and port
@@ -129,7 +137,7 @@ public class Node {
 	public static void shutdown(){
 		Node inst = getInstance();
 		inst.server.stop();
-		//TODO stop updater
+		inst.updater.stopUpdater();
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 
@@ -243,7 +251,7 @@ public class Node {
 			}
 			Node.singleton = node;
 			node.startServer(port);
-			// TODO start Updater
+			node.startUpdater();
 			return Node.getInstance();
 		}
 

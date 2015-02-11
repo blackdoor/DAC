@@ -122,12 +122,15 @@ public class Router {
 		RPCBuilder requestBuilder = new RPCBuilder();
 		L3Address source = getSource();
 		JSONObject request;
-		
+		try {
 		requestBuilder.setDestinationO(remoteNode);
 		requestBuilder.setSourceIP(source.getLayer3Address());
 		requestBuilder.setSourcePort(source.getPort());
 		request = requestBuilder.buildPING();
 		return RPCValidator.isValidoopResponse(call(remoteNode, request));
+		} catch(Exception e) {
+			return false;
+		}
 	}
 	
 	private static L3Address getSource(){

@@ -157,7 +157,7 @@ public class dh256 {
 			if (out.containsKey("help")) {
 				System.out.println(clp.getHelpText());
 			} else {
-				File file = new File(out.get("file").getValue());
+				File file = new File(out.get("file").getValues().get(0));
 				if (!existsAndReadable(file)) {
 					System.out
 							.println("specified file does not exist or we lack read permissions");
