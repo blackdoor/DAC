@@ -65,11 +65,10 @@ public class RPCHandler {
 	 * @throws IOException 
 	 */
 	public void handle() throws IOException {
-		
 		JSONObject responseObject;
 		try{
 			addRequestSenderToAT();
-			
+			DBP.printdebugln(Node.getAddressTable().values());
 			switch(rpc.getString("method")){
 				case "get":
 					responseObject = handleGetRequest();
@@ -126,6 +125,8 @@ public class RPCHandler {
 	private void addRequestSenderToAT() throws UnknownHostException, JSONException{
 		JSONObject params = rpc.getJSONObject("params"); 
 		L3Address sender = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
+		DBP.printdebugln(rpc);
+		DBP.printdebugln(sender);
 		Node.getAddressTable().add(sender);
 	}
 

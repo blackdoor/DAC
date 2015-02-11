@@ -23,7 +23,6 @@ import blackdoor.util.DBP;
  * 
  * Presence of a file in the storage controller does not guarantee its existence in the file system.
  * Presence of a file in the file system does not guarantee its existence in the storage controller.
- * TODO add handling in case files are deleted from file system but not from controller
  * @author nfischer3
  *
  */
@@ -38,15 +37,25 @@ public class StorageController implements Map<Address, FileAddress> {
 	private Path domain;
 	private AddressTable addressTable;
 
-	public StorageController(Path domain, Address refrence) {
-		buckets = new BucketSchlager(refrence);
-		this.reference = refrence;
+	/**
+	 * 
+	 * @param domain the folder under which files will be tracked. It is invalid to try to add files to this storage controller which are not in domain or a subfolder of domain.
+	 * @param reference 
+	 */
+	public StorageController(Path domain, Address reference) {
+		buckets = new BucketSchlager(reference);
+		this.reference = reference;
 		this.domain = domain;
 		highest = reference;
 		lowest = reference;
 		addressTable = null;
 	}
 
+	/**
+	 * Creates a storage controller which has it's buckets auto mapped based on the content of table.
+	 * @param domain
+	 * @param table
+	 */
 	public StorageController(Path domain, AddressTable table){
 		buckets = new BucketSchlager(table.getReferenceAddress());
 		this.domain = domain;
@@ -92,11 +101,11 @@ public class StorageController implements Map<Address, FileAddress> {
 	}
 
 	private Address getLowest(){
-		return isAutoRemappingEnabled() ? addressTable.firstEntry().getValue() : lowest;
+		return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable.firstEntry().getValue() : lowest;
 	}
 
 	private Address getHighest(){
-		return isAutoRemappingEnabled() ? addressTable.lastEntry().getValue() : highest;
+		return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable.lastEntry().getValue() : highest;
 	}
 	
 	public synchronized void remap(Address nearest, Address farthest){

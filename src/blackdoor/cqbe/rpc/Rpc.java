@@ -74,7 +74,7 @@ public abstract class Rpc {
 
    }
    
-   private static void populateCommonFields(Rpc rpcObject, JSONObject rpcJson) throws RPCException{
+   protected static void populateCommonFields(Rpc rpcObject, JSONObject rpcJson) throws RPCException{
 	   try{
 		   JSONObject params = rpcJson.getJSONObject("params");
 		   rpcObject.source = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
