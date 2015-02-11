@@ -6,9 +6,8 @@ import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.server.Server;
-
+import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.cqbe.settings.Config;
-
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 import blackdoor.cqbe.node.NodeException.*;
@@ -84,7 +83,7 @@ public class Node {
 	protected Node() {
 	}
 
-	private void startServer(int port) {
+	private void startServer(int port) throws ServerException {
 		server = new Server(port);
 		serverThread = new Thread(server);
 		serverThread.start();
@@ -218,10 +217,11 @@ public class Node {
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
 		 * TODO add and start updater
+		 * @throws ServerException 
 		 * 
 		 * @throws Exception
 		 */
-		public Node buildNode() throws NodeException {
+		public Node buildNode() throws NodeException, ServerException {
 			config.saveSessionToFile();
 			if (daemon) {
 				// TODO start a demon prossess depending on platform
