@@ -31,7 +31,7 @@ public class Updater implements Runnable{
 	private HashSet<Address> firstStrike = new HashSet<Address>();
 	private HashSet<Address> secondStrike = new HashSet<Address>();
 	
-	public Updater() throws InterruptedException {
+	public Updater() {
 
 	}
 
