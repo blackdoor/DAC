@@ -19,7 +19,7 @@ public class RpcTest {
 		builder.setDestinationO(Address.getFullAddress());
 		builder.setSourceIP(InetAddress.getLoopbackAddress());
 		builder.setSourcePort(1234);
-		builder.setIndex(1);
+		builder.setIndex(2);
 		//test lookup
 		LookupRpc lookupRpc = builder.buildLookupObject();
 		assertTrue(lookupRpc.getDestination().equals(Address.getFullAddress()));
@@ -35,8 +35,7 @@ public class RpcTest {
 		assertTrue(Arrays.equals(putRpc.getValue(), value));
 		//test get
 		GetRpc getRpc = builder.buildGetObject();
-		builder.setIndex(1);
-		assertEquals(getRpc.getIndex(), 1);
+		assertEquals(getRpc.getIndex(), 2);
 	}
 
 	@Test
@@ -61,7 +60,6 @@ public class RpcTest {
 		assertTrue(Arrays.equals(putRpc.getValue(), value));
 		//test get	
 		GetRpc getRpc = (GetRpc) Rpc.fromJsonString(builder.buildGetObject().toJSONString());
-		getRpc.setIndex(1);
 		assertTrue(getRpc.getDestination().equals(Address.getFullAddress()));
 		assertTrue(getRpc.getSource().equals(new L3Address(InetAddress.getLoopbackAddress(), 1234)));
 		assertEquals(getRpc.getIndex(),1);
@@ -80,13 +78,11 @@ public class RpcTest {
 		//test ping
 		PingRpc pingRpc = builder.buildPingObject();
 		System.out.println(pingRpc.toJSON().toString(2));
-
 		//test put
 		byte[] value = new byte[16];
 		builder.setValue(value);
 		PutRpc putRpc = builder.buildPutObject();
 		System.out.println(putRpc.toJSON().toString(2));
-
 		//test get
 		GetRpc getRpc = builder.buildGetObject();
 		System.out.println(getRpc.toJSON().toString(2));
