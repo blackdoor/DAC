@@ -3,26 +3,26 @@ package blackdoor.cqbe.node.server;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.NavigableSet;
 
-
 import blackdoor.cqbe.rpc.AckResponse;
 import blackdoor.cqbe.rpc.PutRpc;
-
 import blackdoor.cqbe.rpc.GetRpc;
-
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.rpc.Rpc;
+import blackdoor.cqbe.rpc.ShutdownRpc;
 import blackdoor.cqbe.storage.StorageController;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+
 
 
 
@@ -84,8 +84,8 @@ public class RPCHandler {
 					responseObject = handlePingRequest();
 					break;
 				case "shutdown":
-					responseObject = handleShutdown();
-					throw new ShutdownInterrupt();
+					handleShutdown();
+					return;
 				default:
 					io.close();
 					throw new RuntimeException("WTF IS THISSSS??? I'm looking at a method type that I don't recognize! WHERE is the validator? Is it on vacation? Cause it's not validating!");
@@ -268,8 +268,19 @@ public class RPCHandler {
 		return responseObject;
 	}
 	
-	private JSONObject handleShutdown(){
-		return null;
+	private void handleShutdown() throws RPCException, IOException{
+		Socket sock = io.getSocket();
+		if(!sock.getInetAddress().isLoopbackAddress() || !sock.getLocalAddress().isLoopbackAddress()){
+			throw new RPCException(JSONRPCError.NON_LO_SHUTDOWN);
+		}
+		io.write(ShutdownRpc.CHALLENGE);
+		String handshake = io.read();
+		if(!handshake.equals(ShutdownRpc.HANDSHAKE)){
+			DBP.printerrorln("Shutdown request was recieved but sender was unable to handshake. "
+					+ "It is possible that this was an attempted loopback spoofing attack.");
+			return;
+		}
+		Node.shutdown();
 	}
 
 }

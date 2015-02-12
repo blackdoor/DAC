@@ -12,6 +12,7 @@ import blackdoor.cqbe.rpc.GETResponse;
 import blackdoor.cqbe.rpc.GETResponse.GETResponseFactory;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.rpc.ShutdownRpc;
 import blackdoor.cqbe.rpc.RPCException.*;
 import blackdoor.cqbe.rpc.RPCValidator;
 
@@ -121,12 +122,15 @@ public class Router {
 		RPCBuilder requestBuilder = new RPCBuilder();
 		L3Address source = getSource();
 		JSONObject request;
-		
+		try {
 		requestBuilder.setDestinationO(remoteNode);
 		requestBuilder.setSourceIP(source.getLayer3Address());
 		requestBuilder.setSourcePort(source.getPort());
 		request = requestBuilder.buildPING();
 		return RPCValidator.isValidoopResponse(call(remoteNode, request));
+		} catch(Exception e) {
+			return false;
+		}
 	}
 	
 	private static L3Address getSource(){
@@ -331,6 +335,7 @@ public class Router {
 			throw new RPCException(JSONRPCError.PARSE_ERROR);
 		}
 		io.close();
+		ret.add(remoteNode);
 		return ret;
 	}
 	
@@ -428,8 +433,10 @@ public class Router {
 		return null;
 	}
 
-	public static void shutDown(int port) {
-		// TODO Auto-generated method stub
-		
+	public static void shutDown(int port) throws IOException {
+		SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
+		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
+		//should I read here?
+		io.write(ShutdownRpc.HANDSHAKE);
 	}
 }

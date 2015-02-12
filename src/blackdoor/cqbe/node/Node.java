@@ -6,9 +6,9 @@ import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.server.Server;
+import blackdoor.cqbe.node.server.ServerException;
 
 import blackdoor.cqbe.settings.Config;
-
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 import blackdoor.cqbe.node.NodeException.*;
@@ -25,6 +25,7 @@ public class Node {
 
 	private static Node singleton;
 	private Server server;
+	private Updater updater;
 	private AddressTable addressTable;
 	private StorageController storageController;
 	private volatile int n;
@@ -32,6 +33,7 @@ public class Node {
 
 	private volatile L3Address me;
 	private Thread serverThread;
+	private Thread updaterThread;
 	
 	private static synchronized void checkAndThrow() {
 		if (singleton == null) {
@@ -84,10 +86,16 @@ public class Node {
 	protected Node() {
 	}
 
-	private void startServer(int port) {
+	private void startServer(int port) throws ServerException {
 		server = new Server(port);
 		serverThread = new Thread(server);
 		serverThread.start();
+	}
+	
+	private void startUpdater() {
+		updater = new Updater();
+		updaterThread = new Thread(updater);
+		updaterThread.start();
 	}
 
 	/**
@@ -124,6 +132,13 @@ public class Node {
 	 */
 	public String[] destroyNode() {
 		return null;
+	}
+	
+	public static void shutdown(){
+		Node inst = getInstance();
+		inst.server.stop();
+		inst.updater.stopUpdater();
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	/**
@@ -218,10 +233,11 @@ public class Node {
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
 		 * TODO add and start updater
+		 * @throws ServerException 
 		 * 
 		 * @throws Exception
 		 */
-		public Node buildNode() throws NodeException {
+		public Node buildNode() throws NodeException, ServerException {
 			config.saveSessionToFile();
 			if (daemon) {
 				// TODO start a demon prossess depending on platform
@@ -235,7 +251,7 @@ public class Node {
 			}
 			Node.singleton = node;
 			node.startServer(port);
-			// TODO start Updater
+			node.startUpdater();
 			return Node.getInstance();
 		}
 

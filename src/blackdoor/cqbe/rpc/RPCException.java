@@ -72,7 +72,11 @@ public class RPCException extends Exception {
 		/**
 		 * Unable to retriece the corresponding value from storage
 		 */
-		 NODE_STORAGE_ERROR(-32004, "Unable to retrieve this value from storage");
+		 NODE_STORAGE_ERROR(-32004, "Unable to retrieve this value from storage"),
+		 /**
+		  * A shutdown request was received, but it did not come over the loopback interface.
+		  */
+		 NON_LO_SHUTDOWN(-32005, "Shutdown requests must come from the loopback network interface") ;
 
 		/**
 		 * get a JSONRPCError java object from a JSONRPC error object

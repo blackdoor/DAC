@@ -7,9 +7,21 @@ package blackdoor.cqbe.node.server;
  */
 public class ServerException extends Exception {
 
-  public ServerException() {}
+	public ServerException() {
+		super();
+	}
 
-  public ServerException(String e) {
-    super(e);
-  }
+	public ServerException(String e) {
+		super(e);
+	}
+
+	public static class ServerSocketException extends ServerException {
+		public ServerSocketException() {
+			super();
+		}
+
+		public ServerSocketException(String e) {
+			super(e);
+		}
+	}
 }

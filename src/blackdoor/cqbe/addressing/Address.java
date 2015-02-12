@@ -27,6 +27,18 @@ public class Address implements Serializable {
         Arrays.fill(b, (byte) 0xFF);
         return b;
     }
+    
+    /**
+     * Returns true if address is definitely not the overlay address of a node
+     * @param address
+     * @return true if address is definitely not the overlay address of a node
+     */
+    public static boolean isNonNodeAddress(Address address){
+    	if(address.equals(getFullAddress()) ||
+    			address.equals(getNullAddress()))
+    		return true;
+    	return false;
+    }
 
     protected byte[] overlayAddress;
     
