@@ -1,291 +1,157 @@
 package blackdoor.cqbe.node;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import org.json.JSONObject;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import blackdoor.cqbe.addressing.Address;
-import blackdoor.cqbe.addressing.Address.AddressComparator;
 import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.addressing.CASFileAddress;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.output_logic.Router;
-import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.util.DBP;
 
-
-/**
- * Responsibility - Continually update the address table of a node by pinging current AT members, removing non-responsive nodes,
- * 					and finding new neighbors to populate the address table.
- * @author Cyril Van Dyke
- * @version 1.0
- * 
- */
-
-public class Updater implements Runnable{
-	private Router r;
-	volatile Boolean timer;
-	private HashSet<Address> firstStrike = new HashSet<Address>();
-	private HashSet<Address> secondStrike = new HashSet<Address>();
+public class Updater implements Runnable {
 	
-	public Updater() {
-
+	/**
+	 * in seconds
+	 */
+	public static final long updateInterval = 5;
+	
+	private Thread updaterThread;
+	private volatile boolean running;
+	private Map<L3Address, Integer> strikeList;
+	
+	public Updater(){
+		running = true;
+		strikeList = new HashMap<L3Address, Integer>();
 	}
-
 	
 
 	@Override
 	public void run() {
-		try {
-			r = new Router(Node.getAddressTable());
-			timer = true;
-			updateTimer();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(updaterThread == null){
+			updaterThread = Thread.currentThread();
 		}
+		
+		while(running){
+			try {
+				schedule();
+			} catch (InterruptedException e) {
+				DBP.printwarningln("Updater thread interrupted!");
+				run();
+			}
+		}
+		DBP.printwarningln("Updater is stopping!");
 	}
-
 	
-	/**
-	 * Timer function that tells Updater when to check for updates
-	 * @throws UnknownHostException 
-	 */
-	@SuppressWarnings("unused")
-	private void updateTimer() throws UnknownHostException{
+	protected void schedule() throws InterruptedException{
+		updaterThread.sleep(updateInterval * 1000);
 		update();
-		try{
-			while (timer){
-				Thread.sleep(60000);
-				update();
+	}
+	
+	public void stop(){
+		running = false;
+		updaterThread.interrupt();
+	}
+	
+	protected void strike(L3Address addr){
+		if(strikeList.containsKey(addr)){
+			strikeList.put(addr, strikeList.get(addr) + 1);
+			if(strikeList.get(addr) > 2){
+				Node.getAddressTable().remove(addr);
+				//strikeList.remove(addr);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		}else{
+			strikeList.put(addr, 1);
 		}
 	}
 	
-	public void stopUpdater(){
-		timer = false;
-	}
-	
-	public void startUpdater(){
-		timer = true;
-	}
-	
-	public Boolean getTimer(){
-		return timer;
-	}
-	
-	public HashSet<Address> getFS(){
-		return firstStrike;
-	}
-	
-	public HashSet<Address> getSS(){
-		return secondStrike;
-	}
-	
-	/**
-	 * Checks for needed updates then calls appropriate helper functions to update the node
-	 * @throws UnknownHostException 
-	 */
-	public void update() throws UnknownHostException{
-		if(Node.getAddressTable().isEmpty()){
-			//Node has no neighbors, let's fix that.
-			AddressTable temp = r.iterativeLookup(Node.getInstance().getOverlayAddress());
-			Node.getAddressTable().addAll(temp.values());
-		}
-		else
-		{
-			AddressTable toRemove = new AddressTable();
-			toRemove = pingNeighbors();
-			/*if(Node.getInstance().hasComplement())
-			{
-				AddressTable dnrC = new AddressTable();
-				dnrC = pingComplement(Node.getInstance().getComplementTable());
-			}
-			*/
-			if(!toRemove.isEmpty()){
-				if(toRemove.equals(Node.getAddressTable())){
-					//We're probably offline boys...
-					DBP.printerrorln("No one address table responded, Node most likely offline.");
-				}
-				for(Map.Entry<byte[], L3Address> entry : toRemove.entrySet())
-				{
-					if(toRemove.equals(Node.getInstance().getAddressTable())){
-						//Most likely offline, that's a problem dude.
-						DBP.printerrorln("Node is most likely offline, cannot connect to any neighbors");
-					}
-					else {
-						Node.getInstance();
-						//Remove all nonresponsive nodes
-						Node.getAddressTable().remove(entry.getKey(),entry.getValue());
-					}
-				}
-				Node.getInstance();
-				Node.getAddressTable().addAll(addNewNeighbors(Node.getInstance().getAddressTable(),toRemove).values());
-				updateStorage();
-			}
+	protected void forgive(L3Address addr){
+		if(strikeList.containsKey(addr)){
+			strikeList.put(addr, strikeList.get(addr) - 1);
+			if(strikeList.get(addr) <= 0)
+				strikeList.remove(addr);
 		}
 	}
-
-	private void reviewStorage(){
-		AddressTable neighborTable = new AddressTable();
-		AddressComparator ac = new Address.AddressComparator(Node.getAddress());
-		for(L3Address a : Node.getAddressTable().values()){
+	
+	protected void update(){
+		DBP.printdebugln(Node.getAddressTable());
+		/*
+		Router r = new Router(Node.getAddressTable());
+		//alternative method to finding new neighbors (alternative to the foreach loop below)
+		Set<L3Address> cans = Node.getAddressTable().valueSet();
+		cans.addAll(r.iterativeLookup(Node.getOverlayAddress()).valueSet());
+		for(L3Address can : cans){
 			try {
-				neighborTable = r.primitiveLookup(a, a);
+				if(Router.ping(can)){
+					Node.getAddressTable().add(can);
+					forgive(can);
+				}else{
+					strike(can);
+				}
+			} catch (RPCException e) {
+				DBP.printException(e);
+				strike(can);
+			}
+		}
+		*/
+		
+		//find new neighbors
+		for(Entry<byte[], L3Address> neighbor : Node.getAddressTable().entrySet()){
+			try {
+				AddressTable candidates = Router.primitiveLookup(neighbor.getValue(), Node.getOverlayAddress());
+				for(Entry<byte[], L3Address> candidate : candidates.entrySet()){
+					if(Router.ping(candidate.getValue())){
+						Node.getAddressTable().add(candidate.getValue());
+					}else{
+						strike(candidate.getValue());
+					}
+					forgive(candidate.getValue());
+				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				strike(neighbor.getValue());
 			} catch (RPCException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			for(L3Address b : neighborTable.values())
-			{
-				if(Node.getAddressTable().containsValue(b)){
-					continue;
-				}
-				else{
-					if(ac.compare(Node.getAddressTable().lastEntry().getValue(), b) >= 0){
-						//TODO Send get RPC with index 0 to that address
-					}
-				}
+				DBP.printException(e);
 			}
 		}
-	}
-	
-	public AddressTable addNewNeighbors(AddressTable current,AddressTable noResponse){
-		HashSet<L3Address> visited = new HashSet<L3Address>();
-		AddressTable toAdd = new AddressTable();
-		for(L3Address a : current.values()){
-			if(noResponse.containsValue(a))
-				continue;
-				//This might totally be redundant
-			AddressTable candidates = null;
-			try{
-				candidates = Router.primitiveLookup(a, Node.getInstance().getOverlayAddress());
-			} catch(IOException ioE) {
-				DBP.printerrorln(ioE);
-			} catch (RPCException e) {
-				DBP.printerrorln(e);
-			}
-			if(candidates == null){
-				continue;
-			}
-			for(L3Address c : candidates.values()){
-				try {
-					if(visited.contains(c) || !r.ping(c) || current.containsValue(c)){
-						continue;
+		
+		//poll for new storage values
+		for(Entry<byte[], L3Address> neighbor : Node.getAddressTable().entrySet()){
+			try {
+				List<Address> keys = Router.getIndex(neighbor.getValue(), 1);
+				for(Address key : keys){
+					if (!Node.getStorageController().containsKey(key)) {
+						byte[] value = Router.getValue(neighbor.getValue(), key);
+						Node.getStorageController().put(
+								new CASFileAddress(Node.getStorageController()
+										.getDomain(), value));
 					}
-				} catch (RPCException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
-				toAdd.add(c);
+				forgive(neighbor.getValue());
+			} catch (RPCException e) {
+				DBP.printException(e);
+				if(e.getRPCError().equals(JSONRPCError.INVALID_RESULT))
+					strike(neighbor.getValue());
+			} catch (IOException e) {
+				//TODO
+				DBP.printException(e);
 			}
-			visited.add(a);
-			current.addAll(toAdd.values());
-			toAdd.clear();
 		}
-		return current;
-	}
-	
-	
-	
-	public void updateStorage(){
+		
+		//update storage controller
+		Node.getStorageController().garbageCollectReferences();
 		try {
-			Node.getInstance().getStorageController().deleteThirdBucket();
+			Node.getStorageController().deleteThirdBucket();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO probably shouldn't be throwing this, should change in StorageController
 			e.printStackTrace();
 		}
-		Node.getInstance().getStorageController().garbageCollectReferences();
-		
-	}
-	
-	
-	
-	/**
-	 * Pings neighbors, returning list of neighbors that did not respond to ping
-	 * @return List of neighbors that did not respond.
-	 */
-	public AddressTable pingNeighbors(){
-		Node.getInstance();
-		AddressTable add = Node.getAddressTable();
-		AddressTable at = new AddressTable();
-	
-		for(L3Address a : add.values())
-		{
-			try {
-				if(!r.ping(a))
-				{
-					//If no response is received, move a up in strike priority
-					if(firstStrike.contains(a)){
-						firstStrike.remove(a);
-						secondStrike.add(a);
-					}
-					else if(secondStrike.contains(a)){
-						secondStrike.remove(a);
-						at.add(a);
-					}
-					else{
-						firstStrike.add(a);
-					}
-				} 
-				else
-				{
-					if(firstStrike.contains(a))
-						firstStrike.remove(a);
-					if(secondStrike.contains(a))
-						secondStrike.remove(a);
-					DBP.printdevln("Response Received from " + a);
-				}
-			} catch (RPCException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return at;
-		
 	}
 
-
-
-
-	
-	
-	/**
-	 * Similar to pingNeighbors, but pings the members of the optional complement table
-	 * @return List of nonresponsive complements 
-	 */
-/*
-	public AddressTable pingComplement(AddressTable complement){
-		AddressTable at = new AddressTable();
-		L3Address adr = new L3Address();
-		byte[] key = null;
-		
-		for(Map.Entry<byte[], L3Address> entry: complement.entrySet())
-		{
-			if(!r.ping(entry.getValue()))
-			{
-				//If no response is received from ping, add to return table.
-				at.add(entry.getValue());
-			}
-			else
-			{
-				System.out.println("Response Received from " + entry.getKey());
-			}
-		}
-		return at;
-		
-	}
-*/
-	
 }

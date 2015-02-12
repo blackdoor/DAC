@@ -118,7 +118,7 @@ public class Router {
 	 * @throws RPCException 
 	 * @throws IOException 
 	 */
-	public static boolean ping(L3Address remoteNode) throws RPCException, IOException{
+	public static boolean ping(L3Address remoteNode) throws RPCException{
 		RPCBuilder requestBuilder = new RPCBuilder();
 		L3Address source = getSource();
 		JSONObject request;
@@ -128,7 +128,7 @@ public class Router {
 		requestBuilder.setSourcePort(source.getPort());
 		request = requestBuilder.buildPING();
 		return RPCValidator.isValidoopResponse(call(remoteNode, request));
-		} catch(Exception e) {
+		} catch(IOException e) {
 			return false;
 		}
 	}

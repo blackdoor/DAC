@@ -137,7 +137,7 @@ public class Node {
 	public static void shutdown(){
 		Node inst = getInstance();
 		inst.server.stop();
-		inst.updater.stopUpdater();
+		inst.updater.stop();
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 

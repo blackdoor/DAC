@@ -25,8 +25,8 @@ public interface GETResponse {
 				throw new RPCException(JSONRPCError.NODE_SHAT);
 			String b64Value;
 			JSONArray indexOrLookup;
-			b64Value = responseObject.optString("result");
-			if(b64Value != null){ //response contained a value!
+			b64Value = responseObject.optString("result", null);
+			if(b64Value != null && b64Value.charAt(0) != '['){ //response contained a value!
 				GETValueResponse response = new GETValueResponse();
 				try {
 					response.result = Base64.decode(b64Value);
