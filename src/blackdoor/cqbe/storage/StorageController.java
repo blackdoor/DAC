@@ -78,8 +78,12 @@ public class StorageController implements Map<Address, FileAddress> {
 	 * @throws IOException
 	 */
 	public void deleteThirdBucket() throws IOException{
-		for(Address a : getBucket(3)){
-			delete(a);
+		try{
+			for(Address a : getBucket(3)){
+				delete(a);
+			}
+		}catch(NullPointerException e){
+			
 		}
 	}
 	
