@@ -204,46 +204,6 @@ public class Updater implements Runnable{
 		return toAdd;
 	}
 	
-	/**
-	 * Checks to add new AT values to storage using the storageController
-	 * 
-	 */
-	/*private void reviewStorage(){
-		AddressTable neighborTable = new AddressTable();
-		AddressComparator ac = new Address.AddressComparator(Node.getAddress());
-		for(L3Address a : Node.getAddressTable().values()){
-			try {
-				//neighborTable = Router.primitiveLookup(a, a);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (RPCException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			for(L3Address b : neighborTable.values())
-			{
-				if(Node.getAddressTable().containsValue(b)){
-					continue;
-				}
-				else{
-					if(ac.compare(Node.getAddressTable().lastEntry().getValue(), b) >= 0){
-						//TODO Send get RPC with index 0 to that address
-						try {
-							Node.getAddressTable().add((L3Address)Router.getIndex(b,0).get(0));
-						} catch (RPCException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-	}
-	*/
 	
 	public void updateStorage(){
 		try {
