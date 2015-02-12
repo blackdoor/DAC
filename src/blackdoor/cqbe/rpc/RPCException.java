@@ -24,6 +24,18 @@ public class RPCException extends Exception {
 			super(message);
 		}
 	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "RPCException [e=" + e + " " + e.getCode() + " " + e.getMessage() +"]";
+	}
+
+
 
 	/**
 	 * An enumeration of all the possible JSON RPC error objects supported by this system.

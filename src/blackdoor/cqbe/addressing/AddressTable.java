@@ -113,6 +113,10 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		}
 		return absent;
 	}
+	
+	public L3Address remove(L3Address value){
+		return super.remove(value.getOverlayAddress());
+	}
 
 	/**
 	 * Add all addresses in c to this AddressTable.

@@ -171,7 +171,7 @@ public class Updater implements Runnable{
 					DBP.printdevln("Response Received from " + a);
 					
 				}
-			} catch (RPCException | IOException e) {
+			} catch (RPCException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

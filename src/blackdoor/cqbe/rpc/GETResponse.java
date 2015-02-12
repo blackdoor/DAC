@@ -25,8 +25,8 @@ public interface GETResponse {
 				throw new RPCException(JSONRPCError.NODE_SHAT);
 			String b64Value;
 			JSONArray indexOrLookup;
-			b64Value = responseObject.optString("result");
-			if(b64Value != null){ //response contained a value!
+			b64Value = responseObject.optString("result", null);
+			if(b64Value != null && b64Value.charAt(0) != '['){ //response contained a value!
 				GETValueResponse response = new GETValueResponse();
 				try {
 					response.result = Base64.decode(b64Value);
@@ -39,12 +39,14 @@ public interface GETResponse {
 			}else{ // response contained an index or an address table
 				indexOrLookup = responseObject.optJSONArray("result");
 				if(indexOrLookup != null){
-					String index = indexOrLookup.optString(0);
-					if(index != null){ // response contained an index
+					//TODO bug here with behavior of optString
+					JSONObject index = indexOrLookup.optJSONObject(0);
+					if(index == null){ // response contained an index
 						GETIndexResponse response = new GETIndexResponse();
 						ArrayList<Address> result = new ArrayList<>(indexOrLookup.length());
 						for(int i = 0; i < indexOrLookup.length(); i++){
 							try {
+								DBP.printdebugln(indexOrLookup);
 								result.add(new Address(indexOrLookup.getString(i)));
 							} catch (JSONException e) {
 								DBP.printException(e);

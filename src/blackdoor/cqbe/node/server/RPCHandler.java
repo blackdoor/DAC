@@ -69,21 +69,21 @@ public class RPCHandler {
 		JSONObject responseObject;
 		try{
 			addRequestSenderToAT();
-			
-			switch(rpc.getString("method")){
-				case "get":
+			Rpc requestObject = Rpc.fromJson(rpc);
+			switch(requestObject.getMethod()){//rpc.getString("method")){
+				case GET:
 					responseObject = handleGetRequest();
 					break;
-				case "put":
+				case PUT:
 					responseObject = handlePutRequest();
 					break;
-				case "lookup":
+				case LOOKUP:
 					responseObject = handleLookupRequest();
 					break;
-				case "ping":
+				case PING:
 					responseObject = handlePingRequest();
 					break;
-				case "shutdown":
+				case SHUTDOWN:
 					handleShutdown();
 					return;
 				default:
