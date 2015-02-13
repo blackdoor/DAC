@@ -7,7 +7,6 @@ public class GetRpc extends Rpc{
 
 	public GetRpc() {
 		super(Method.GET);
-		setIndex(index);
 	}
 	
 	public int getIndex(){

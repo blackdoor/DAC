@@ -214,10 +214,10 @@ public class RPCHandler {
 		}
 		if (index == 0){
 			if(storage.containsValue(rpc.getDestination())){
-				FileAddress value = storage.get(rpc.getDestination());//return value associated with that key
+				FileAddress value = storage.get(rpc.getDestination());
 				File file = value.getFile();
 				try{
-					byte[] byteArray = Files.readAllBytes(file.toPath());//new byte[(int)file.length()];
+					byte[] byteArray = Files.readAllBytes(file.toPath());
 					json.put(Base64.encode(byteArray));
 				}
 				catch(IOException e){

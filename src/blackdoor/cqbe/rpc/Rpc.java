@@ -26,8 +26,7 @@ public abstract class Rpc {
 				rpcObject = new PutRpc();
 				PutRpc rpcObjectCast = (PutRpc) rpcObject;
 				try {
-					rpcObjectCast.value = Base64.decode(rpcJson.getJSONObject("params")
-							.getString("value"));
+					rpcObjectCast.value = Base64.decode(rpcJson.getJSONObject("params").getString("value"));
 				} catch (Base64DecodingException e) {
 					throw new RPCException(JSONRPCError.INVALID_BASE64);
 				} catch (JSONException e) {
@@ -40,6 +39,13 @@ public abstract class Rpc {
 			case "GET":
 				rpcObject = new GetRpc();
 				rpcObject.method = Method.GET;
+				GetRpc rpcObjectGet = (GetRpc) rpcObject;
+				try{
+					rpcObjectGet.index = rpcJson.getJSONObject("params").getInt("index");
+				}
+				catch (JSONException e){
+					throw new RPCException(JSONRPCError.INVALID_PARAMS);
+				}
 				break;
 			case "PING":
 				rpcObject = new PingRpc();
