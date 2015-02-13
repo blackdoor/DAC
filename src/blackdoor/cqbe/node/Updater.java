@@ -127,7 +127,7 @@ public class Updater implements Runnable{
 				}
 			}
 		}
-		updateStorage();
+		//updateStorage();
 	}
 
 	/**

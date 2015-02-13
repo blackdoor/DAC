@@ -177,7 +177,7 @@ public class dh256 {
 					router = Router.fromDefaultLocalNode();
 				}
 				int numberStored = router.put(fileAddress, fileBytes);
-				if(numberStored < 0)
+				if(numberStored > 0)
 					System.out.println("file added successfully by "+ numberStored +" nodes with address: " + fileAddress.overlayAddressToString());
 				else
 					System.out.println("the file was not added");
@@ -229,7 +229,7 @@ public class dh256 {
 			if (parsedArgs.containsKey("help")) {
 				System.out.println(clp.getHelpText());
 			}
-			if (parsedArgs.containsKey("fileOAddress")){
+			if (parsedArgs.containsKey("fileoaddress")){
 				Router router;
 				if (parsedArgs.containsKey("bootstrap")) {
 					String bootstrap = parsedArgs.get("bootstrap").getValues().get(0);
@@ -241,7 +241,7 @@ public class dh256 {
 				} else {
 					router = Router.fromDefaultLocalNode();
 				}
-				Address a = new Address(parsedArgs.get("fileOAddress").getValues().get(0));
+				Address a = new Address(parsedArgs.get("fileoaddress").getValues().get(0));
 				byte[] response = router.get(a);
 				File fileDir = new File(parsedArgs.get("dir").getValue());
 				new CASFileAddress(fileDir, response);
