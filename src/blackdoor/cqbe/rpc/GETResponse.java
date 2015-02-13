@@ -39,7 +39,6 @@ public interface GETResponse {
 			}else{ // response contained an index or an address table
 				indexOrLookup = responseObject.optJSONArray("result");
 				if(indexOrLookup != null){
-					//TODO bug here with behavior of optString
 					JSONObject index = indexOrLookup.optJSONObject(0);
 					if(index == null){ // response contained an index
 						GETIndexResponse response = new GETIndexResponse();
@@ -58,7 +57,7 @@ public interface GETResponse {
 						}
 						response.result = result;
 						return response;
-					}else{
+					}else{//response contained an address table
 						try{
 							AddressTable result = AddressTable.fromJSONArray(indexOrLookup);
 							GETLookupResponse response = new GETLookupResponse();

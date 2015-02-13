@@ -34,7 +34,7 @@ public abstract class FileAddress extends Address {
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
+	 *
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -48,7 +48,7 @@ public abstract class FileAddress extends Address {
 		} else if (!f.equals(other.f))
 			return false;
 		return true;
-	}
+	}*/
     
     
     

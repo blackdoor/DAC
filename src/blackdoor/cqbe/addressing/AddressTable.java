@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -27,7 +28,7 @@ import blackdoor.util.DBP;
  * @author Nathan Fischer
  * @version v1.0.0 - Nov 19, 2014
  */
-public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable {
+public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable, Iterable<L3Address> {
 	public static final int MAX_SIZE = 256;
 
 	/**
@@ -221,6 +222,11 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		}
 	}
 	
+	@Override
+	public Iterator iterator() {
+		return values().iterator();
+	}
+	
 	/**
 	 * Probably complexity O(n) to build this set (depending on JVM implementation), but returns the same items as values() (which is constant time to build). 
 	 * This set is not backed by the table so changes to the set will not be reflected in the table.
@@ -263,6 +269,8 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		return ret + "size()=" + size() + ", isEmpty()=" + isEmpty()
 				+ ", comparator()=" + comparator() + "]";
 	}
+
+	
 	
 	
 }
