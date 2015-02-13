@@ -195,30 +195,30 @@ public class RPCHandler {
 	 * @throws AddressException
 	 * @throws UnknownHostException
 	 * @throws RPCException
-	 * if the index feild is true (non-zero), returns list of keys from indicated bucket
-	 * if the index feild is false (zero) and destination matches that of a stored key, returns associated value
+	 * if the index field is true (non-zero), returns list of keys from indicated bucket
+	 * if the index field is false (zero) and destination matches that of a stored key, returns associated value
 	 * If index is false and destination does not match stored key, return a lookup call
 	 */
 	private JSONObject handleGetRequest() throws RPCException, UnknownHostException, AddressException {
 		StorageController storage =  Node.getStorageController();
 		JSONObject responseObject = new JSONObject();
 		GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
-		JSONArray json = new JSONArray();
+		String result = null;
 		try{
 		int index = rpc.getIndex();
 		if (index != 0){
 			 NavigableSet<Address> keys = storage.getBucket(index);
 			 for (Address key: keys){
-				 json.put(key);
+				 result = key.toString();
 			 }
 		}
 		if (index == 0){
 			if(storage.containsValue(rpc.getDestination())){
-				FileAddress value = storage.get(rpc.getDestination());//return value associated with that key
+				FileAddress value = storage.get(rpc.getDestination());
 				File file = value.getFile();
 				try{
-					byte[] byteArray = Files.readAllBytes(file.toPath());//new byte[(int)file.length()];
-					json.put(Base64.encode(byteArray));
+					byte[] byteArray = Files.readAllBytes(file.toPath());
+					result = Base64.encode(byteArray);
 				}
 				catch(IOException e){
 					throw new RPCException(JSONRPCError.NODE_STORAGE_ERROR);
@@ -228,7 +228,7 @@ public class RPCHandler {
 				return handleLookupRequest();
 			}
 		}
-		responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(), true, json, null);}
+		responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(), true, result , null);}
 		catch(JSONException e){
 			errorData = e.getMessage();
 		}
