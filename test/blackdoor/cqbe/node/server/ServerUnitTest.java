@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import blackdoor.cqbe.addressing.L3Address;
+import blackdoor.cqbe.node.server.Server;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.net.SocketIOWrapper;
 
@@ -24,7 +25,7 @@ public class ServerUnitTest {
 	private final int SERVER_PORT = 1776;
 
 	@Test
-	public void testRun() throws InterruptedException {
+	public void testRun() throws InterruptedException, ServerException {
 		Server server = new Server(SERVER_PORT);
 		new Thread(server).start();
 		Thread.sleep(100);
@@ -38,7 +39,7 @@ public class ServerUnitTest {
 	}
 
 	@Test
-	public void testBasicInteraction() throws InterruptedException {
+	public void testBasicInteraction() throws InterruptedException, ServerException {
 		Server server = new Server(SERVER_PORT);
 		new Thread(server).start();
 		Thread.sleep(10);
@@ -58,7 +59,7 @@ public class ServerUnitTest {
 	}
 
 	@Test
-	public void testThreadPoolMax() throws InterruptedException {
+	public void testThreadPoolMax() throws InterruptedException, ServerException {
 		Server server = new Server(SERVER_PORT);
 		new Thread(server).start();
 		Thread.sleep(10);
