@@ -1,0 +1,1 @@
+{"port":1234,"savefile":"session.txt","storageDir":"NodeStorage"}
