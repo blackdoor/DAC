@@ -138,7 +138,7 @@ public class Node {
 		Node inst = getInstance();
 		inst.server.stop();
 		inst.updater.stopUpdater();
-		throw new UnsupportedOperationException("not yet implemented");
+		//throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	/**
@@ -256,7 +256,7 @@ public class Node {
 		}
 
 		private void loadDefaultSettings() {
-			config = new Config(new File("dflt.txt"));
+			config = new Config(new File("default.config"));
 			this.setPort((int) config.get("port"));
 			this.setStorageDir((String) config.get("storageDir"));
 		}
