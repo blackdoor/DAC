@@ -3,7 +3,6 @@ package blackdoor.cqbe.addressing;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -13,12 +12,9 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import blackdoor.cqbe.addressing.AddressException.MissingLayer3Exception;
 import blackdoor.util.DBP;
 
 
@@ -29,7 +25,9 @@ import blackdoor.util.DBP;
  * @version v1.0.0 - Nov 19, 2014
  */
 public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable, Iterable<L3Address> {
-	public static final int MAX_SIZE = 256;
+	public static final int DEFAULT_MAX_SIZE = 256;
+	
+	private int maxSize = DEFAULT_MAX_SIZE;
 
 	/**
 	 * Constructs an AddressTable which will sort entries based on their distance to Address.nullOverlay
@@ -54,6 +52,14 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 			e.printStackTrace();
 		}
 		throw new RuntimeException();
+	}
+	
+	public void setMaxSize(int s){
+		this.maxSize = s;
+	}
+	
+	public int getMaxSize(){
+		return maxSize;
 	}
 	
 	/**
@@ -108,14 +114,25 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		L3Address absent = putIfAbsent(value.getOverlayAddress(), value);
 		if(absent == null){
 			absent = put(null, value);
-			if(size() >= MAX_SIZE){
+			if(size() >= maxSize){
 				return pollLastEntry().getValue();
 			}
 		}
 		return absent;
 	}
 	
-	public L3Address remove(L3Address value){
+	public L3Address get(Address address){
+		return super.get(address.getOverlayAddress());//TODO change to get shallow overlay address
+	}
+	
+	public L3Address putIfAbsent(byte[] _, L3Address value){
+		if (!contains(value))
+		       return put(value);
+		   else
+		       return get(value);
+	}
+	
+	public L3Address remove(Address value){
 		return super.remove(value.getOverlayAddress());
 	}
 
@@ -175,11 +192,12 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 			return null;
 		return super.put(value.getOverlayAddress(), value);
 	}
-
-	public boolean containsValue(L3Address value){
-		return containsKey(value.getOverlayAddress());
+	
+	public boolean contains(Address a){
+		return super.containsKey(a.overlayAddress);
 	}
 	
+
 	@Deprecated
 	public void putAll(Map m){
 		throw new UnsupportedOperationException();
@@ -212,8 +230,8 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * @return true if the table was affected by this call
 	 */
 	public boolean trim() {
-		if(size() > MAX_SIZE){
-			while(size() > MAX_SIZE){
+		if(size() > maxSize){
+			while(size() > maxSize){
 				pollLastEntry();
 			}
 			return true;
@@ -223,7 +241,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	}
 	
 	@Override
-	public Iterator iterator() {
+	public Iterator<L3Address> iterator() {
 		return values().iterator();
 	}
 	
@@ -253,11 +271,10 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 
 	public String toString(){
 		String ret = "AddressTable [\n";
-		Set<Entry<byte[], L3Address>> order = this.entrySet();
-		for(Entry<byte[], L3Address> entry : order){
+		//Set<Entry<byte[], L3Address>> order = this.entrySet();
+		for(L3Address entry : this){
 			//try {
-				ret += entry.getValue().overlayAddressToString() + "\n"
-						+ "\t" + entry.getValue().l3ToString() + "\n";
+				ret += '\t' + entry.toString() + "\n";
 			/*}
 			catch (MissingLayer3Exception e) {
 				DBP.printerrorln("One of the addresses in the address table did not have a layer 3 address. "
