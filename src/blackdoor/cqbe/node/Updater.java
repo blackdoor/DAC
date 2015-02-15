@@ -123,7 +123,8 @@ public class Updater implements Runnable{
 				for(Map.Entry<byte[], L3Address> entry : toRemove.entrySet())
 				{
 					//Remove all nonresponsive nodes
-					Node.getAddressTable().remove(entry.getKey(),entry.getValue());
+					DBP.printdemoln("Removing unresponsive " + entry.getValue() + " from address table");
+					Node.getAddressTable().remove(entry.getValue());
 				}
 			}
 		}
@@ -197,8 +198,9 @@ public class Updater implements Runnable{
 				DBP.printerrorln(e);
 			}
 			for(L3Address c : candidates.values()){
-				if(Node.getAddressTable().containsValue(c))
+				if(Node.getAddressTable().contains(c))
 					continue;
+				DBP.printdemoln("Adding " + c + " to address table from updater");
 				toAdd.add(c);
 			}
 		return toAdd;

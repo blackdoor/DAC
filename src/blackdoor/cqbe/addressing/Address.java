@@ -4,6 +4,7 @@ import blackdoor.util.DBP;
 import blackdoor.util.Misc;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.StringTokenizer;
@@ -154,7 +155,7 @@ public class Address implements Serializable {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof Address))
 			return false;
 		Address other = (Address) obj;
 		if (!Arrays.equals(getOverlayAddress(), other.getOverlayAddress()))
@@ -182,6 +183,11 @@ public class Address implements Serializable {
         public int compare(byte[] arg0, byte[] arg1) {
             int ref0Distance = Misc.getHammingDistance(arg0, ref);
             int ref1Distance = Misc.getHammingDistance(arg1, ref);
+            if(ref1Distance == ref0Distance){
+            	BigInteger num1 = new BigInteger(1, arg1);
+            	BigInteger num0 = new BigInteger(1, arg0);
+            	return num0.compareTo(num1);
+            }
             return ref0Distance - ref1Distance;
         }
 
