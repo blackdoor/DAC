@@ -150,7 +150,7 @@ public class L3Address extends Address implements Serializable{
 	 * @return the ip and port in the format ip : port
 	 */
 	public String l3ToString(){
-		return l3Address.getHostAddress() + " : " + port;
+		return l3Address.getHostAddress() + ":" + port;
 	}
 
 	/* (non-Javadoc)
@@ -158,16 +158,7 @@ public class L3Address extends Address implements Serializable{
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		L3Address other = (L3Address) obj;
-		if (!Arrays.equals(overlayAddress, other.overlayAddress))
-			return false;
-		return true;
+		return super.equals(obj);
 	}
 
 	/* (non-Javadoc)
@@ -175,7 +166,6 @@ public class L3Address extends Address implements Serializable{
 	 */
 	@Override
 	public String toString() {
-		return "L3Address [overlayAddress=" + overlayAddressToString()
-				+ ", l3Address : port = " + l3ToString() + "]";
+		return "L3Address [l3Address = " + l3ToString() + ", overlayAddress=" + overlayAddressToString() + "]";
 	}
 }
