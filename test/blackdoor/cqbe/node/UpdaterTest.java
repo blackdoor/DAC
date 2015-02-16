@@ -15,6 +15,11 @@ import blackdoor.cqbe.node.NodeException.RequiredParametersNotSetException;
 public class UpdaterTest {
 	
 	
+	@Test 
+	public void testUpdater(){
+		
+	}
+	
 	@Test
 	public void testUpdateTimerVolatility() throws RequiredParametersNotSetException, InterruptedException {
 		NodeBuilder bob = new NodeBuilder();
