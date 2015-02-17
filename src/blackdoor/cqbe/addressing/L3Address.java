@@ -152,6 +152,10 @@ public class L3Address extends Address implements Serializable{
 	public String l3ToString(){
 		return l3Address.getHostAddress() + ":" + port;
 	}
+	
+	public int hashCode() {
+		return super.hashCode();
+	};
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
