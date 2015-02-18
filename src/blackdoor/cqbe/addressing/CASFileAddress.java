@@ -16,7 +16,7 @@ public class CASFileAddress extends FileAddress {
 	
 	public CASFileAddress(File f) throws IOException {
 		super.f = f;
-		overlayAddress = Hash.getFileHash(f);
+		setOverlayAddress(Hash.getFileHash(f));
 	}
 	
 	/**
@@ -29,7 +29,7 @@ public class CASFileAddress extends FileAddress {
 	public CASFileAddress(File f, byte[] bin) throws IOException{
 		Files.write(f.toPath(), bin, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 		super.f = f;
-		overlayAddress = Hash.getFileHash(f);
+		setOverlayAddress(Hash.getFileHash(f));
 	}
 	
 	/**
