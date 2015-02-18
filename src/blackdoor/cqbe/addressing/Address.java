@@ -1,6 +1,5 @@
 package blackdoor.cqbe.addressing;
 
-import blackdoor.util.DBP;
 import blackdoor.util.Misc;
 
 import java.io.Serializable;
@@ -19,11 +18,11 @@ public class Address implements Serializable {
     /**
      * The size of an overlay address, in bytes.
      */
-    public static final int ADDRESS_SIZE = 32;
+    public static final int DEFAULT_ADDRESS_SIZE = 16;
 
-    private static byte[] getNullOverlay() {return new byte[ADDRESS_SIZE];}
+    private static byte[] getNullOverlay() {return new byte[DEFAULT_ADDRESS_SIZE];}
     private static byte[] getFullOverlay(){
-        byte[] b = new byte[ADDRESS_SIZE];
+        byte[] b = new byte[DEFAULT_ADDRESS_SIZE];
         Arrays.fill(b, (byte) 0xFF);
         return b;
     }
@@ -40,7 +39,7 @@ public class Address implements Serializable {
     	return false;
     }
 
-    protected byte[] overlayAddress;
+    private byte[] overlayAddress;
     
     protected Address() {
     	this.overlayAddress = getNullOverlay();
@@ -51,12 +50,14 @@ public class Address implements Serializable {
      * @param overlayAddress a byte array representing an overlay address
      * @throws AddressException if overlayAddress is not the correct size (of the same length as ADDRESS_SIZE)
      */
-    public Address(byte[] overlayAddress) throws AddressException {
-        if (overlayAddress.length != ADDRESS_SIZE){
+    public Address(byte[] overlayAddress){
+        /*if (overlayAddress.length != ADDRESS_SIZE){
             throw new AddressException("overlay address is " + overlayAddress.length + " bytes and needs to be "
                     + ADDRESS_SIZE + " bytes.");
         }
         this.overlayAddress = overlayAddress;
+        */
+    	setOverlayAddress(overlayAddress);
     }
 
     /**
@@ -64,24 +65,14 @@ public class Address implements Serializable {
      * Equivalent to calling Address(new byte[ADDRESS_SIZE])
      */
     public static Address getNullAddress(){
-        try {
-            return new Address(getNullOverlay());
-        } catch (AddressException e) {
-            DBP.printException(e);
-            return null;
-        }
+        return new Address(getNullOverlay());
     }
 
     /**
      * Constructs an Address object with an overlay made up of all 1 bits.
      */
     public static Address getFullAddress(){
-        try {
-            return new Address(getFullOverlay());
-        } catch (AddressException e) {
-            DBP.printException(e);
-            return null;
-        }
+         return new Address(getFullOverlay());
     }
 
     /**
@@ -92,10 +83,10 @@ public class Address implements Serializable {
     	//Address this = new Address();
     	this.overlayAddress = getNullOverlay();
     	StringTokenizer tk = new StringTokenizer(address, ":");
-    	if(tk.countTokens() != Address.ADDRESS_SIZE)
+    	if(tk.countTokens() != Address.DEFAULT_ADDRESS_SIZE)
     		throw new AddressException("String representation of Address is improperly formatted. Wrong number of elements");
     	try{
-    		for(int i = 0; i < Address.ADDRESS_SIZE; i++){
+    		for(int i = 0; i < Address.DEFAULT_ADDRESS_SIZE; i++){
     			this.overlayAddress[i] = Integer.decode("0x" + tk.nextToken()).byteValue();
     		}
     		//return a;
@@ -112,16 +103,31 @@ public class Address implements Serializable {
     	return new AddressComparator(this);
     }
     
-    protected void setOverlayAddress(byte[] overlayAddress){
-    	this.overlayAddress = overlayAddress;
-    }
-
     /**
      * returns the overlay address of this Address object as a byte[]
      * @return a deep copy of the overlay address of this Address object
      */
     public byte[] getOverlayAddress() {
         return Arrays.copyOf(overlayAddress, overlayAddress.length);
+    }
+    
+    /**
+     * same as getOverlayAddress, but returns the actual byte array instead of a deep copy.
+     * changes to the return will affect the address
+     * @return actual byte array for the overlay address instead of a deep copy.
+     */
+    protected byte[] getShallowOverlayAddress(){
+    	return overlayAddress;
+    }
+    
+    /**
+     * http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
+     * @param address the output of a CSHF digest
+     */
+    protected void setOverlayAddress(byte[] address){
+    	if(address.length < DEFAULT_ADDRESS_SIZE)
+    		throw new RuntimeException("Can't set overlay address, given bytes are shorter than address size.");
+    	overlayAddress = Arrays.copyOf(address, DEFAULT_ADDRESS_SIZE);
     }
 
     /**
@@ -221,16 +227,11 @@ public class Address implements Serializable {
         private OverlayComparator comp;
 
         public AddressComparator(Address refrence) {
-            this.comp = new OverlayComparator(refrence.getOverlayAddress());
+            this.comp = new OverlayComparator(refrence.getShallowOverlayAddress());
         }
 
         public Address getRefrenceAddress() {
-            try {
-                return new Address(comp.getReferenceAddress());
-            } catch (AddressException e) {
-                DBP.printException(e);
-            }
-            return null;
+            return new Address(comp.getReferenceAddress());
         }
 
         @Override
@@ -257,7 +258,7 @@ public class Address implements Serializable {
          * @return negative if o1 is closer to reference than o2, 0 if they are equal distant, positive if o1 is farther from reference than o2
          */
         public int compare(Address o1, Address o2) {
-            return comp.compare(o1.getOverlayAddress(), o2.getOverlayAddress());
+            return comp.compare(o1.getShallowOverlayAddress(), o2.getShallowOverlayAddress());
         }
 
         @Override

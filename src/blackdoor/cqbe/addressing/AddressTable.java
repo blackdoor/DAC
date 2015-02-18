@@ -48,12 +48,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 
 	public Address getReferenceAddress(){
 		Address.OverlayComparator c = (Address.OverlayComparator) comparator();
-		try {
-			return new Address(c.getReferenceAddress());
-		} catch (AddressException e) {
-			e.printStackTrace();
-		}
-		throw new RuntimeException();
+		return new Address(c.getReferenceAddress());
 	}
 	
 	/**

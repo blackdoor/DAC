@@ -125,7 +125,7 @@ public class L3Address extends Address implements Serializable{
 		byte[] overlay = new byte[l3Bytes.length + portBytes.length];
 		System.arraycopy(l3Bytes, 0, overlay, 0, l3Bytes.length);
 		System.arraycopy(portBytes, 0, overlay, l3Bytes.length, portBytes.length);
-		overlayAddress = Hash.getSHA256(overlay, true);
+		setOverlayAddress(Hash.getSHA256(overlay, true));
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class L3Address extends Address implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		L3Address other = (L3Address) obj;
-		if (!Arrays.equals(overlayAddress, other.overlayAddress))
+		if (!Arrays.equals(getShallowOverlayAddress(), other.getShallowOverlayAddress()))
 			return false;
 		return true;
 	}
