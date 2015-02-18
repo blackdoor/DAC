@@ -20,6 +20,7 @@ public class NodeUnitTester {
 
 	@Test
 	public void testNodeBuilder() {
+		//Build Adam Node
 		NodeBuilder adamNode = new NodeBuilder();
 		adamNode.setAdam(true);
 		adamNode.setPort(1778);
@@ -29,28 +30,30 @@ public class NodeUnitTester {
 		} catch (Exception e) {
 			fail("Did not build node");
 		}
+		
+		//Join Adam Node with Second Node
 		NodeBuilder secondNode = new NodeBuilder();
 		secondNode.setAdam(false);
 		InetAddress addr = null;
 		try {
-			addr = InetAddress.getByName("127.0.0.1");
+			//This should be your IP address from checkip.amazonaws.com
+			addr = InetAddress.getByName("147.222.45.95");
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			fail("Wrong IP Address");
 		}
 		L3Address bootstrapNode = new L3Address(addr, 1778);
-		secondNode.setPort(1778);
+		secondNode.setPort(1779);
 		secondNode.setBootstrapNode(bootstrapNode);
 		Node s = null;
 		try {
 			s = secondNode.buildNode();
 		} catch (NodeException e) {
-			// TODO Auto-generated catch block
 			fail("Did not build node");
 		} catch (ServerException e) {
-			// TODO Auto-generated catch block
-			fail("Did not build server successfully");
+			System.out.println("We didn't do it Reddit");
 		}
+		
 	}
 
 }
