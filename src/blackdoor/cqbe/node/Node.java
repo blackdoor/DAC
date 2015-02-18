@@ -73,14 +73,8 @@ public class Node {
 		OverlayComparator c = (OverlayComparator) getInstance().addressTable
 				.comparator();
 
-		try {
-			return new Address(c.getReferenceAddress());
-		} catch (AddressException e) {
-			DBP.printerrorln("The address in the OverlayComparator is not valid for building a new Address object");
-			DBP.printerrorln("THIS IS BAAAAADDDD GO TO GITHUB AND OPEN AN ISSUE NOOWWW!!!");
-			DBP.printException(e);
-		}
-		return null;
+		return new Address(c.getReferenceAddress());
+
 	}
 
 	protected Node() {
