@@ -109,8 +109,8 @@ public class RPCHandler {
 		}
 
 		try{
-			DBP.printdevln("in handle");
-			DBP.printdevln("about to write response " + responseObject);
+			//DBP.printdevln("in handle");
+			//DBP.printdevln("about to write response " + responseObject);
 			io.write(responseObject.toString());
 		}finally{
 			io.close();
@@ -127,7 +127,7 @@ public class RPCHandler {
 		JSONObject params = rpc.getJSONObject("params"); 
 		L3Address sender = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
 		if(!Node.getAddressTable().contains(sender))
-			DBP.printdemoln("Adding " + sender + " to address table from handler");
+			DBP.printdemoln("Adding " + sender.l3ToString() + " to address table from handler");
 		Node.getAddressTable().add(sender);
 	}
 

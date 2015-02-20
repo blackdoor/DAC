@@ -29,6 +29,7 @@ public class dh256 {
 	 *            command line args
 	 */
 	public static void main(String[] args) {
+		DBP.DEMO = true;
 		try {
 			CommandLineParser clp = new CommandLineParser();
 			clp.setExecutableName("dh256");

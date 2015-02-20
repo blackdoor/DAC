@@ -1,225 +1,248 @@
 package blackdoor.cqbe.node;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import blackdoor.cqbe.addressing.Address;
-import blackdoor.cqbe.addressing.Address.AddressComparator;
 import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.addressing.CASFileAddress;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.output_logic.Router;
 import blackdoor.cqbe.rpc.RPCException;
-import blackdoor.cqbe.storage.StorageController;
+import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.util.DBP;
 
-
-/**
- * Responsibility - Continually update the address table of a node by pinging current AT members, removing non-responsive nodes,
- * 					and finding new neighbors to populate the address table.
- * @author Cyril Van Dyke
- * @version 1.1
- * 
- */
-
-public class Updater implements Runnable{
-	private Router r;
-	volatile Boolean timer;
-	private HashSet<Address> firstStrike = new HashSet<Address>();
-	private HashSet<Address> secondStrike = new HashSet<Address>();
+public class Updater implements Runnable {
 	
-	public Updater() {
-
+	/**
+	 * in seconds
+	 */
+	public static final long updateInterval = 5;
+	
+	public static final int PARALLELISM = 8;
+	
+	private Thread updaterThread;
+	private volatile boolean running;
+	private Map<L3Address, Integer> strikeList;
+	
+	public Updater(){
+		running = true;
+		strikeList = new ConcurrentHashMap<L3Address, Integer>();
 	}
-
 	
 
 	@Override
 	public void run() {
-		try {
-			r = new Router(Node.getAddressTable());
-			timer = true;
-			Node.getAddressTable().addAll(r.iterativeLookup(Node.getOverlayAddress()).values());
-			updateTimer(); 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(updaterThread == null){
+			updaterThread = Thread.currentThread();
 		}
-	}
-
-	
-	/**
-	 * Timer function that tells Updater when to check for updates
-	 * When updaterTimer fires, update() is run.
-	 * @throws UnknownHostException 
-	 */
-	private void updateTimer() throws UnknownHostException{
-		update();
-		try{
-			while (timer){
-				Thread.sleep(6000);
-				update();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Stops updateTimer from firing, preventing update from happening.
-	 */
-	public void stopUpdater(){
-		timer = false;
-	}
-	
-	/**
-	 * Starts updateTimer, allowing updates to occur.
-	 */
-	public void startUpdater(){
-		timer = true;
-	}
-	
-	/**
-	 * Returns the boolean timer.
-	 * @return boolean timer which enables updates to occur.
-	 */
-	public Boolean getTimer(){
-		return timer;
-	}
-	
-	/**
-	 * Returns the firstStrike list, containing all neighbors who currently have 1 strike against them.
-	 * @return HashSet firstStrike
-	 */
-	public HashSet<Address> getFS(){
-		return firstStrike;
-	}
-	
-	/**
-	 * Returns the secondStrike list, containing all neighbors who currently have 2 strikes against them.
-	 * @return HashSet secondStrike
-	 */
-	public HashSet<Address> getSS(){
-		return secondStrike;
-	}
-	
-	/**
-	 * Checks for needed updates in the Node's AddressTable
-	 * Updates the neighbors of a Node, removing nonresponsive nodes and searching to add new 
-	 * @throws UnknownHostException 
-	 */
-	public void update() throws UnknownHostException{
-		DBP.printdebug(Node.getAddressTable().size());
-		if(Node.getAddressTable().isEmpty()){
-			//Node has no neighbors, must populate AddressTable
-			Node.getAddressTable().addAll(r.iterativeLookup(Node.getOverlayAddress()).values());
-		}
-		else
-		{
-			AddressTable toRemove = new AddressTable();
-			toRemove = pingNeighbors();
-			if(!toRemove.isEmpty()){
-				for(Map.Entry<byte[], L3Address> entry : toRemove.entrySet())
-				{
-					//Remove all nonresponsive nodes
-					DBP.printdemoln("Removing unresponsive " + entry.getValue() + " from address table");
-					Node.getAddressTable().remove(entry.getValue());
-				}
-			}
-		}
-		//updateStorage();
-	}
-
-	/**
-	 * Pings neighbors, returning list of neighbors that did not respond to ping
-	 * @return List of neighbors that did not respond.
-	 */
-	public AddressTable pingNeighbors(){
-		AddressTable add = Node.getAddressTable();
-		AddressTable at = new AddressTable();
-		for(L3Address a : add.values())
-		{
+		
+		while(running){
 			try {
-				if(!Router.ping(a))
-				{
-					//If no response is received, move a up in strike priority
-					DBP.printdevln("No response from " + a);
-					if(firstStrike.contains(a)){
-						//a already has a strike against it, go to second strike.
-						secondStrike.add(a);
-						firstStrike.remove(a);
-					}
-					else if(secondStrike.contains(a)){
-						//a has two strikes against it, move to removal list.
-						at.add(a);
-						secondStrike.remove(a);
-
-					}
-					else{
-						//a doesn't have any strikes against it, add it to the strike list.
-						firstStrike.add(a);
-					}
-				} 
-				else
-				{
-					//a has responded, decrement strike-value
-					if(firstStrike.contains(a))
-						firstStrike.remove(a);
-					else if(secondStrike.contains(a))
-						secondStrike.remove(a);
-					Node.getAddressTable().addAll(addNewNeighbors(a).values());
-					DBP.printdevln("Response Received from " + a);
-					
-				}
+				schedule();
+			} catch (InterruptedException e) {
+				DBP.printwarningln("Updater thread interrupted!");
+				run();
+			}
+		}
+		DBP.printwarningln("Updater is stopping!");
+	}
+	
+	protected void schedule() throws InterruptedException{
+		Thread.sleep(updateInterval * 1000);
+		update();
+	}
+	
+	public void stop(){
+		running = false;
+		updaterThread.interrupt();
+	}
+	
+	protected void strike(L3Address addr){
+		//DBP.printdemoln("striking " + addr);
+		if(strikeList.containsKey(addr)){
+			strikeList.put(addr, strikeList.get(addr) + 1);
+			if(strikeList.get(addr) > 2){
+				if(Node.getAddressTable().contains(addr))
+					DBP.printdemoln("Removing " + addr.l3ToString() + " from table");
+				Node.getAddressTable().remove(addr);
+				strikeList.remove(addr);
+			}
+		}else{
+			strikeList.put(addr, 1);
+		}
+	}
+	
+	protected void forgive(L3Address addr){
+		if(strikeList.containsKey(addr)){
+			strikeList.put(addr, strikeList.get(addr) - 1);
+			if(strikeList.get(addr) <= 0)
+				strikeList.remove(addr);
+		}
+	}
+	
+	protected void update() throws InterruptedException{
+		DBP.printdebugln(Node.getAddressTable());
+		//DBP.printdemoln(Node.getAddressTable().size());
+		//find new neighbors
+	
+		Set<L3Address> every1ISee = Collections.newSetFromMap(new ConcurrentHashMap<L3Address, Boolean>());
+		Router r = new Router(Node.getAddressTable());
+		BlockingQueue<L3Address> q = new LinkedBlockingQueue<L3Address>();
+		every1ISee.addAll(Node.getAddressTable().values());
+		every1ISee.addAll(r.iterativeLookup(Node.getOverlayAddress()).values());
+		q.addAll(every1ISee);
+		ArrayList<Thread> pool = new ArrayList<Thread>();
+		
+		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
+			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, true, this));
+			pool.add(t);
+			t.start();
+		}
+		
+		for(Thread t : pool){
+			t.join();
+		}
+		
+		/*
+		 * serial code below replaced by parallel code above
+		Set<L3Address> temp = new HashSet<L3Address>();
+		for(L3Address node : every1ISee){
+			try {
+				temp.addAll(Router.primitiveLookup(node, Node.getOverlayAddress()).values());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				DBP.printException(e);
 			} catch (RPCException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				DBP.printException(e);
 			}
 		}
-		return at;
+		every1ISee.addAll(temp);
+		temp = null;
+		*/
+		pool.clear();
+		q.clear();
+		q.addAll(every1ISee);
+		pool = new ArrayList<Thread>();
 		
-	}
-	
-	/**
-	 * Returns a list of new neighbors to be added to a Node's address table;
-	 * @param current
-	 * @param noResponse: The list of neighbors that did not respond 3 times in a row, to be removed.
-	 * @return 
-	 */
-	public AddressTable addNewNeighbors(L3Address a){
-		AddressTable toAdd = new AddressTable();
-		AddressTable candidates = new AddressTable();
-			try{
-				candidates = Router.primitiveLookup(a, Node.getOverlayAddress());
-			} catch(IOException ioE) {
-				DBP.printerrorln(ioE);
+		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
+			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, false, this));
+			pool.add(t);
+			t.start();
+		}
+		
+		for(Thread t : pool){
+			t.join();
+		}
+		
+		/* serial code below replaced by parallel code above
+		for(L3Address node : every1ISee){
+			try {
+				if(Router.ping(node)){
+					if(!Node.getAddressTable().contains(node))
+						DBP.printdemoln("Adding " + node + " to table from updater");
+					Node.getAddressTable().add(node);
+					forgive(node);
+				}else{
+					strike(node);
+				}
 			} catch (RPCException e) {
-				DBP.printerrorln(e);
+				// TODO determine if exception was somehow not node's fault, else strike node
+				DBP.printException(e);
 			}
-			for(L3Address c : candidates.values()){
-				if(Node.getAddressTable().contains(c))
-					continue;
-				DBP.printdemoln("Adding " + c + " to address table from updater");
-				toAdd.add(c);
+		}
+		*/
+		
+		//poll for new storage values
+		for(L3Address neighbor : Node.getAddressTable()){
+			try {
+				List<Address> keys = Router.getIndex(neighbor, 1);
+				for(Address key : keys){
+					if (!Node.getStorageController().containsKey(key)
+							&& Node.getOverlayAddress()
+									.getComparator()
+									.compare(key, Node.getStorageController().getHighest()) <= 0) {
+						byte[] value = Router.getValue(neighbor, key);
+						Node.getStorageController().put(
+								new CASFileAddress(Node.getStorageController()
+										.getDomain(), value));
+					}
+				}
+				// too much forgiving: forgive(neighbor);
+			} catch (RPCException e) {
+				DBP.printException(e);
+				if(e.getRPCError().equals(JSONRPCError.INVALID_RESULT))
+					strike(neighbor);
+			} catch (IOException e) {
+				//TODO
+				DBP.printException(e);
 			}
-		return toAdd;
-	}
-	
-	
-	public void updateStorage(){
+		}
+		
+		//update storage controller
+		Node.getStorageController().garbageCollectReferences();
 		try {
-			if(Node.getAddressTable().size() > 0)
-				Node.getStorageController().deleteThirdBucket();
+			Node.getStorageController().deleteThirdBucket();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// TODO probably shouldn't be throwing this, should change in StorageController
 			e.printStackTrace();
 		}
-		Node.getStorageController().garbageCollectReferences();
-		
 	}
 	
-	
-	
-	
+	private static class AddressUpdateThread implements Runnable{
+		
+		BlockingQueue<L3Address> q;
+		Set<L3Address> everyone;
+		boolean seek;
+		Updater ref;
+		
+		public AddressUpdateThread(BlockingQueue<L3Address> q, Set<L3Address> everyone, boolean seek, Updater ref) {
+			this.q = q;
+			this.everyone = everyone;
+			this.seek = seek;
+			this.ref = ref;
+		}
+
+		@Override
+		public void run() {
+			for(L3Address node = q.poll(); node != null; node = q.poll()){
+				if(seek){
+					try {
+						AddressTable nn = Router.primitiveLookup(node, Node.getOverlayAddress());
+						everyone.addAll(nn.values());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						DBP.printException(e);
+					} catch (RPCException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}else{
+					try {
+						if(Router.ping(node)){
+							if(!Node.getAddressTable().contains(node))
+								DBP.printdemoln("Adding " + node.l3ToString() + " to table from updater");
+							Node.getAddressTable().add(node);
+							ref.forgive(node);
+						}else{
+							ref.strike(node);
+						}
+					} catch (RPCException e) {
+						// TODO determine if exception was somehow not node's fault, else strike node
+						DBP.printException(e);
+					}
+				}
+			}
+		}
+	}
 }

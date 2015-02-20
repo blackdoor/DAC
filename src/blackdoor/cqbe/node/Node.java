@@ -28,7 +28,7 @@ public class Node {
 	private Updater updater;
 	private AddressTable addressTable;
 	private StorageController storageController;
-	private volatile int n;
+	private volatile int n = Address.ADDRESS_SIZE;
 	private volatile int o;
 
 	private volatile L3Address me;
@@ -131,7 +131,7 @@ public class Node {
 	public static void shutdown(){
 		Node inst = getInstance();
 		inst.server.stop();
-		inst.updater.stopUpdater();
+		inst.updater.stop();
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 
