@@ -17,12 +17,11 @@ import org.json.JSONObject;
 /**
  * 
  * @author Cj Buresch
- * @version v0.1.1 - Jan 22, 2015
+ * @version v0.1.2 - Feb 22, 2015
  */
 public class Config extends ConcurrentHashMap<String, Object> {
 
 	private Object writeLock = new Object();
-	private final String savefile_keyname = "savefile";
 
 	/**
 	 * Makes session settings available to the node classes.
@@ -50,25 +49,41 @@ public class Config extends ConcurrentHashMap<String, Object> {
 	 * @throws ConfigurationException
 	 */
 	public void loadSettings(File settings) throws ConfigurationException {
-		JSONObject jo = read(settings);
+		JSONObject jo = ConfigReadOnly.read(settings);
 		Iterator<String> keys = jo.keys();
-		String tmp = "";
+		String tmp;
 		while (keys.hasNext()) {
 			tmp = keys.next();
-			put(tmp, jo.get(tmp));
+			super.put(standardizeKey(tmp), jo.get(tmp));
 		}
 	}
 
+	/**
+	 * Returns value for the key in the settings.
+	 * <p>
+	 * Also ensures that keys follow the standard config file conventions.
+	 */
+	@Override
+	public Object get(Object key) {
+		return super.get(standardizeKey((String) key));
+	}
+
+	/**
+	 * Places a value for the key in the settings.
+	 * <p>
+	 * Also ensures that things follows the config file conventions.
+	 */
 	@Override
 	public Object put(String key, Object value) {
-		// TODO do we want it to save to file here?
-		return super.put(key, value);
+		Object tmp = super.put(standardizeKey(key), value);
+		saveSessionToFile();
+		return tmp;
 	}
 
 	@Override
 	public void putAll(Map<? extends String, ? extends Object> m) {
-		// TODO do we want it to save to file here?
 		super.putAll(m);
+		saveSessionToFile();
 	}
 
 	/**
@@ -83,33 +98,17 @@ public class Config extends ConcurrentHashMap<String, Object> {
 	 */
 	public void saveSessionToFile() throws ConfigurationException {
 		synchronized (writeLock) {
-			// TODO check to see if they are any different than default??
 			JSONObject tmp = new JSONObject();
 			for (Map.Entry<String, Object> e : entrySet()) {
 				tmp.put(e.getKey(), e.getValue());
 			}
 			try {
-				write(new File((String) this.get(savefile_keyname)), tmp);
+				//TODO timestamp savefile or something
+				write(new File((String) this.get("save_file")), tmp);
 			} catch (NullPointerException e) {
 				throw new SettingSaveException();
 			}
 		}
-	}
-
-	private JSONObject read(File in) throws ConfigurationException {
-		String content = null;
-		JSONObject jo = null;
-		try {
-			byte[] chars;
-			chars = Files.readAllBytes(in.toPath());
-			content = new String(chars);
-			jo = new JSONObject(content);
-		} catch (IOException e) {
-			throw new SettingNotFoundException();
-		} catch (JSONException e) {
-			throw new SettingFormatException();
-		}
-		return jo;
 	}
 
 	private void write(File out, JSONObject jo) throws ConfigurationException {
@@ -122,6 +121,73 @@ public class Config extends ConcurrentHashMap<String, Object> {
 		} catch (IOException e) {
 			throw new SettingSaveException();
 		}
+	}
 
+	private static String standardizeKey(String key) {
+		return key.toLowerCase().replace(' ', '_');
+	}
+
+	/**
+	 * Allows for settings to be grabbed from a config file without
+	 * instantiating a Configuration object.
+	 * <p>
+	 * 
+	 * @author Cj Buresch
+	 * @version 0.0.1 -- Feb 21, 2015
+	 */
+	public static class ConfigReadOnly {
+
+		/**
+		 * Returns a single setting from a setting file.
+		 * <p>
+		 * Primarily for people who are feeling super lazy. Does a couple
+		 * checks, but in the event that things go wrong, it will throw a
+		 * configuration exception.
+		 * 
+		 * @param filename
+		 * @param setting
+		 * @return
+		 * @throws ConfigurationException
+		 */
+		public static Object get(String filename, String setting)
+				throws ConfigurationException {
+			File file = new File(filename);
+			return get(file, setting);
+		}
+
+		/**
+		 * Returns a single setting from a setting file.
+		 * <p>
+		 * For people who are feeling less lazy and already have a file.
+		 * 
+		 * @param file
+		 * @param setting
+		 * @return
+		 * @throws ConfigurationException
+		 */
+		public static Object get(File file, String setting)
+				throws ConfigurationException {
+			JSONObject jo = read(file);
+			if (jo.has(standardizeKey(setting)))
+				return jo.get(standardizeKey(setting));
+			else
+				throw new SettingNotFoundException();
+		}
+
+		private static JSONObject read(File file) {
+			String content = null;
+			JSONObject jo = null;
+			try {
+				byte[] chars;
+				chars = Files.readAllBytes(file.toPath());
+				content = new String(chars);
+				jo = new JSONObject(content);
+			} catch (IOException e) {
+				throw new ConfigFileNotFoundException();
+			} catch (JSONException e) {
+				throw new ConfigFileFormatException();
+			}
+			return jo;
+		}
 	}
 }

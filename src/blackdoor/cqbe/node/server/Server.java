@@ -2,7 +2,10 @@ package blackdoor.cqbe.node.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+
+import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.node.server.ServerException.*;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -17,126 +20,126 @@ import blackdoor.util.DBP;
  * <p>
  * 
  * @author Cj Buresch
- * @version v0.1.0 - Nov 17, 2014
+ * @version v0.1.1 - Feb 22, 2015
  */
 public class Server implements Runnable {
 
-  // private int port = Config.Port(); not yet working
-  private int port;
-  private ServerSocket serverSocket;
-  private boolean running = false;
-  private ThreadPoolExecutor pool;
-  private BlockingQueue<Runnable> blockingQueue;
-  private Thread runningThread = null;
-  private final int QUEUE_SIZE = 256;//?
+	private int port;
+	private ServerSocket serverSocket;
+	private boolean running = false;
+	private ThreadPoolExecutor pool;
+	private BlockingQueue<Runnable> blockingQueue;
+	private Thread runningThread = null;
+	private final int QUEUE_SIZE = 180;
 
+	/**
+	 * Initialize with default port.
+	 * 
+	 * @throws ServerException
+	 */
+	public Server() throws ServerException {
+		this((int) Node.getInstance().getConfig().get("port"));
+	}
 
-  /**
-   * Initialize with specific port.
-   * 
-   * @param port
- * @throws ServerException 
-   */
-  public Server(int port) throws ServerException {
-    this.port = port;
-    blockingQueue = new ArrayBlockingQueue<Runnable>(QUEUE_SIZE);
-    pool = getPool();
-    openServerSocket();
-  }
+	/**
+	 * Initialize with specific port.
+	 * 
+	 * @param port
+	 * @throws ServerException
+	 */
+	public Server(int port) throws ServerException {
+		this.port = port;
+		blockingQueue = new ArrayBlockingQueue<Runnable>(QUEUE_SIZE);
+		pool = getPool();
+		openServerSocket();
+	}
 
-  /*
-   * just for testing this... or example how to run
-   */
-  public static void main(String[] args) throws ServerException {
-	DBP.DEV = true;
-    Server server = new Server(1778);
-    new Thread(server).start();
-  }
+	/**
+	 * Starts the node server.
+	 * <p>
+	 * 
+	 */
+	@Override
+	public void run() {
+		running = true;
+		synchronized (this) {
+			this.runningThread = Thread.currentThread();
+		}
+		while (this.isRunning()) {
+			try {
+				pool.execute(new AcceptedRPC(this.serverSocket.accept()));
+			} catch (IOException e) {
+				DBP.printerror("Could not accept socket connection!");
+				DBP.printException(e);
+			}
+		}
+	}
 
-  /**
-   * Starts the node server.
-   * <p>
-   * 
-   */
-  @Override
-  public void run() {
-    running = true;
-    synchronized (this) {
-      this.runningThread = Thread.currentThread();
-    }
-    while (this.isRunning()) {
-      try {
-        pool.execute(new AcceptedRPC(this.serverSocket.accept()));
-      } catch (IOException e) {
-        DBP.printerror("Could not accept socket connection!");
-        DBP.printException(e);
-      }
-    }
-  }
+	/**
+	 * Stops the running node server.
+	 * <p>
+	 * 
+	 */
+	public synchronized void stop() {
+		running = false;
+		pool.shutdown(); // Disable new tasks from being submitted
+		try {
+			// Wait a while for existing tasks to terminate
+			if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+				pool.shutdownNow(); // Cancel currently executing tasks
+			if (!serverSocket.isClosed())
+				this.serverSocket.close();
+		} catch (IOException e) {
+			DBP.printerror("Error closing Socket.");
+			DBP.printException(e);
+		} catch (InterruptedException ie) {
+			DBP.printerror("Error shutting down threadpool.");
+			DBP.printException(ie);
+			// (Re-)Cancel if current thread also interrupted
+			pool.shutdownNow();
+			// Preserve interrupt status
+			Thread.currentThread().interrupt();
+		}
+	}
 
-  /**
-   * Stops the running node server.
-   * <p>
-   * 
-   */
-  public synchronized void stop() {
-    running = false;
-    pool.shutdown(); // Disable new tasks from being submitted
-    try {
-      // Wait a while for existing tasks to terminate
-      if (!pool.awaitTermination(60, TimeUnit.SECONDS))
-        pool.shutdownNow(); // Cancel currently executing tasks
-      if (!serverSocket.isClosed())
-        this.serverSocket.close();
-    } catch (IOException e) {
-      DBP.printerror("Error closing Socket.");
-      DBP.printException(e);
-    } catch (InterruptedException ie) {
-      DBP.printerror("Error shutting down threadpool.");
-      DBP.printException(ie);
-      // (Re-)Cancel if current thread also interrupted
-      pool.shutdownNow();
-      // Preserve interrupt status
-      Thread.currentThread().interrupt();
-    }
-  }
+	/**
+	 * Returns the boolean status of the node server.
+	 * <p>
+	 * 
+	 * @return
+	 */
+	public synchronized boolean isRunning() {
+		return this.running;
+	}
 
-  /**
-   * Returns the boolean status of the node server.
-   * <p>
-   * 
-   * @return
-   */
-  public synchronized boolean isRunning() {
-    return this.running;
-  }
-
-  /**
+	/**
  * 
  */
-  private void openServerSocket() throws ServerException {
-    try {
-      this.serverSocket = new ServerSocket(this.port);
-    } catch (IOException e) {
-      running = false;
-      DBP.printerror("COULD NOT OPEN SERVERSOCKET on port: " + port);
-      throw new ServerSocketException("COULD NOT OPEN SERVERSOCKET on port: " + port);
-    }
-  }
+	private void openServerSocket() throws ServerException {
+		try {
+			this.serverSocket = new ServerSocket(this.port);
+		} catch (IOException e) {
+			running = false;
+			DBP.printerror("COULD NOT OPEN SERVERSOCKET on port: " + port);
+			throw new ServerSocketException(
+					"COULD NOT OPEN SERVERSOCKET on port: " + port);
+		}
+	}
 
-  /**
-   * 
-   * @return
-   */
-  private ThreadPoolExecutor getPool() {
-    int cpus = Runtime.getRuntime().availableProcessors();
-    DBP.printdevln("Server Detects " + cpus + " cores.");
-    int core = 5 * cpus;
-    int max = 15 * cpus;
-    int timeout = 60;
-    TimeUnit time = TimeUnit.SECONDS;
-    ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, timeout, time, blockingQueue);
-    return tmp;
-  }
+	/**
+	 * 
+	 * @return
+	 */
+	private ThreadPoolExecutor getPool() {
+		int cpus = Runtime.getRuntime().availableProcessors();
+		DBP.printdevln("Server Detects " + cpus + " cores.");
+		int core = 5 * cpus;
+		int max = 15 * cpus;
+		int timeout = 60;
+		TimeUnit time = TimeUnit.SECONDS;
+		ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, timeout,
+				time, blockingQueue);
+		return tmp;
+	}
 
 }

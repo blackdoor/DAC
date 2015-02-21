@@ -3,13 +3,16 @@ package blackdoor.cqbe.settings;
 import static org.junit.Assert.*;
 
 import java.io.File;
+
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import blackdoor.cqbe.settings.Config.ConfigReadOnly;
 import blackdoor.cqbe.settings.ConfigurationException.*;
 import blackdoor.cqbe.unit.TestAssistant;
 
@@ -61,19 +64,38 @@ public class ConfigUnitTest {
 	}
 
 	@Test
+	public void testReadOnly() {
+		try {
+			int testport = (int) ConfigReadOnly.get(defaultfile, "port");
+			assertEquals("Test ReadOnly", 9999, testport);
+		} catch (ConfigurationException e) {
+			fail("Read Only Fail");
+		}
+	}
+
+	@Test
+	public void testConfigNotFoundException() {
+		exception.expect(ConfigFileNotFoundException.class);
+		Config con = new Config(new File("this is not a file"));
+	}
+
+	@Ignore
+	@Test
 	public void testSettingNotFoundException() {
 		exception.expect(SettingNotFoundException.class);
-		Config con = new Config(new File("this is not a file"));
+		Config con = new Config(defaultfile);
+		Object ob = con.get("this is not in the config");
 	}
 
 	@Test
 	public void testSettingFormatException() throws Exception {
-		exception.expect(SettingFormatException.class);
+		exception.expect(ConfigFileFormatException.class);
 		File settingsbadformat = folder.newFile("badformat.json");
 		ta.writeFile(settingsbadformat, "????????????&$%^$%^$%");
 		Config con = new Config(settingsbadformat);
 	}
 
+	@Ignore
 	@Test
 	public void testSettingSaveException() throws Exception {
 		exception.expect(SettingSaveException.class);
@@ -82,8 +104,8 @@ public class ConfigUnitTest {
 
 			@Override
 			public void doWithLockedFile(File file) throws Exception {
-					Config con = new Config(defaultfile);
-					con.saveSessionToFile();
+				Config con = new Config(defaultfile);
+				con.saveSessionToFile();
 			}
 		}.execute(savefile);
 	}
@@ -101,7 +123,7 @@ public class ConfigUnitTest {
 	private JSONObject getDefultSettings() {
 		JSONObject rpc = new JSONObject();
 		rpc.put("id", "default");
-		rpc.put("savefile", savefile.toString());
+		rpc.put("save_file", savefile.toString());
 		rpc.put("port", 9999);
 		return rpc;
 	}
