@@ -19,14 +19,26 @@ public class ConfigurationException extends RuntimeException {
 		super(e);
 	}
 
-	public static class SettingNotFoundException extends ConfigurationException {
-		public SettingNotFoundException() {
+	public static class ConfigFileNotFoundException extends
+			ConfigurationException {
+		public ConfigFileNotFoundException() {
 			super();
 		}
 	}
 
-	public static class SettingFormatException extends ConfigurationException {
-		public SettingFormatException() {
+	public static class SettingNotFoundException extends ConfigurationException {
+		public SettingNotFoundException() {
+			super();
+		}
+
+		public SettingNotFoundException(String string) {
+			super(string);
+		}
+	}
+
+	public static class ConfigFileFormatException extends
+			ConfigurationException {
+		public ConfigFileFormatException() {
 			super();
 		}
 	}

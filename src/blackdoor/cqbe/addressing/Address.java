@@ -1,5 +1,6 @@
 package blackdoor.cqbe.addressing;
 
+import blackdoor.cqbe.settings.Config;
 import blackdoor.util.Misc;
 
 import java.io.Serializable;
@@ -19,7 +20,7 @@ public class Address implements Serializable {
     /**
      * The size of an overlay address, in bytes.
      */
-    public static final int DEFAULT_ADDRESS_SIZE = 16;
+    public static final int DEFAULT_ADDRESS_SIZE = (int) Config.getReadOnly("default_address_size","default.config");
 
     private static byte[] getNullOverlay() {return new byte[DEFAULT_ADDRESS_SIZE];}
     private static byte[] getFullOverlay(){
