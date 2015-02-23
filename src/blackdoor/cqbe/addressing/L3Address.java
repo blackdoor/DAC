@@ -125,7 +125,9 @@ public class L3Address extends Address implements Serializable{
 		byte[] overlay = new byte[l3Bytes.length + portBytes.length];
 		System.arraycopy(l3Bytes, 0, overlay, 0, l3Bytes.length);
 		System.arraycopy(portBytes, 0, overlay, l3Bytes.length, portBytes.length);
-		setOverlayAddress(Hash.getSHA256(overlay, true));
+
+		setOverlayAddress(Hash.getSHA256(overlay, false));
+
 	}
 
 	/**
