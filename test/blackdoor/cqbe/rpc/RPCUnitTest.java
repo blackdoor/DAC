@@ -54,15 +54,6 @@ public class RPCUnitTest {
 			assertTrue(getrpc.getSource().equals(
 					new L3Address(InetAddress.getLoopbackAddress(), SRC_PORT)));
 			assertEquals(getrpc.getIndex(), 2);
-			///bad rpc*/
-			/*
-			getrpc = (GetRpc) getBadMockRPC(Method.GET);
-			assertFalse(getrpc.getDestination().equals(
-					Address.getFullAddress()));
-			assertFalse(getrpc.getSource().equals(
-					new L3Address(InetAddress.getLoopbackAddress(), SRC_PORT)));
-			assert(getrpc.getIndex(), 2);
-			*/
 		} catch (RPCException e) {
 			fail("Get was not built properly");
 		}
