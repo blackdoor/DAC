@@ -39,6 +39,14 @@ public abstract class Rpc {
 				return rpcObject;
 			case "GET":
 				rpcObject = new GetRpc();
+				GetRpc rpcGetObject = (GetRpc) rpcObject;
+				try {
+					rpcGetObject.index = rpcJson.getJSONObject("params")
+							.getInt("index");
+				}
+				catch (JSONException e){
+					throw new RPCException(JSONRPCError.INVALID_PARAMS);
+				}
 				rpcObject.method = Method.GET;
 				break;
 			case "PING":
