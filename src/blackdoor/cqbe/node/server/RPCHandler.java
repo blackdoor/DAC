@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableSet;
 
 import blackdoor.cqbe.rpc.AckResponse;
@@ -21,6 +23,8 @@ import blackdoor.cqbe.storage.StorageController;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+
 
 
 
@@ -206,13 +210,15 @@ public class RPCHandler {
 		JSONObject responseObject = new JSONObject();
 		GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
 		String result = null;
+		List<Address> key_set= new ArrayList<Address>();
 		try{
 		int index = rpc.getIndex();
 		if (index != 0){
 			 NavigableSet<Address> keys = storage.getBucket(index);
 			 for (Address key: keys){
-				 result = key.toString();
+				 key_set.add(key);
 			 }
+			 result = key_set.toString();
 		}
 		if (index == 0){
 			if(storage.containsValue(rpc.getDestination())){
