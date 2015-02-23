@@ -57,6 +57,14 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		return maxSize;
 	}
 	
+	public L3Address first(){
+		return this.firstEntry().getValue();
+	}
+	
+	public L3Address last(){
+		return this.lastEntry().getValue();
+	}
+	
 	/**
 	 * Returns an AddressTable built from a JSONArray. Elements of the JSON array should be in a format parsable by L3Address
 	 * @param arr
@@ -189,7 +197,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	}
 	
 	public boolean contains(Address a){
-		return super.containsKey(a.overlayAddress);
+		return super.containsKey(a.getShallowOverlayAddress());
 	}
 	
 

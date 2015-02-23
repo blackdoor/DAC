@@ -28,15 +28,18 @@ public class CLITester {
 			address = InetAddress.getByName(in.readLine());
 		
 		DBP.DEMO= true;
-		DBP.ERROR = true;
+		DBP.DEV = true;
+		DBP.ERROR = false;
 		DBP.WARNING = true;
 		addSettings();
 		//String[] args2 = {"retrieve", "AC:B6:6E:9D:13:FE:13:D0:BE:AA:E2:D8:1F:BA:95:02:4E:B9:BE:72:2D:6F:F2:A0:67:FF:88:BC:1C:0A:C6:2C", "-d", "yay.txt", "-b","localhost:1778"};
 		//String[] args2 = {"insert","NodeStorage/lol_file.txt","-b","localhost:1778"};
 		//String[] args2 = {"join","-p","1778","-a"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1779"};
-		String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1781"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1782"};
+		String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1783"};
 		dh256.main(args2);
 
 	}
