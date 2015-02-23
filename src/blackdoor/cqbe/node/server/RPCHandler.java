@@ -206,42 +206,41 @@ public class RPCHandler {
 	 * If index is false and destination does not match stored key, return a lookup call
 	 */
 	private JSONObject handleGetRequest() throws RPCException, UnknownHostException, AddressException {
-		StorageController storage =  Node.getStorageController();
-		JSONObject responseObject = new JSONObject();
-		GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
-		String result = null;
-		List<Address> key_set= new ArrayList<Address>();
-		try{
+	StorageController storage = Node.getStorageController();
+	JSONObject responseObject = new JSONObject();
+	GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
+	try {
 		int index = rpc.getIndex();
-		if (index != 0){
-			 NavigableSet<Address> keys = storage.getBucket(index);
-			 for (Address key: keys){
-				 key_set.add(key);
-			 }
-			 result = key_set.toString();
+		if (index != 0) {
+			JSONArray result = new JSONArray();
+			NavigableSet<Address> keys = storage.getBucket(index);
+			for (Address key : keys) {
+				result.put(key.overlayAddressToString());
+			}
+			responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(), true, result , null);
 		}
-		if (index == 0){
-			if(storage.containsValue(rpc.getDestination())){
+		if (index == 0) {
+			if (storage.containsValue(rpc.getDestination())) {
 				FileAddress value = storage.get(rpc.getDestination());
 				File file = value.getFile();
-				try{
+				try {
 					byte[] byteArray = Files.readAllBytes(file.toPath());
-					result = Base64.encode(byteArray);
-				}
-				catch(IOException e){
+					String result = Base64.encode(byteArray);
+					responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(), true, result , null);
+				} catch (IOException e) {
 					throw new RPCException(JSONRPCError.NODE_STORAGE_ERROR);
 				}
 			}
-			if (!storage.containsValue(rpc.getDestination())){
+			if (!storage.containsValue(rpc.getDestination())) {
 				return handleLookupRequest();
 			}
 		}
-		responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(), true, result , null);}
-		catch(JSONException e){
-			errorData = e.getMessage();
-		}
-		return responseObject;
+	} catch (JSONException e) {
+		errorData = e.getMessage();
 	}
+	return responseObject;
+}
+
 
 	/**
 	 *
