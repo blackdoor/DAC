@@ -28,7 +28,7 @@ public class Node {
 	private Updater updater;
 	private AddressTable addressTable;
 	private StorageController storageController;
-	private volatile int n = Address.ADDRESS_SIZE;
+	private volatile int n = Address.DEFAULT_ADDRESS_SIZE;
 	private volatile int o;
 
 	private volatile L3Address me;
