@@ -177,7 +177,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * (A map m is said to contain a mapping for a key k if and only if m.containsKey(k) would return true.)
 	 * In general add(L3Address) should 		super be used instead. This method can be dangerous as it can overfill the table.
 	 * @param value value to be added to the map
-	 * @return the previous L3Address object at that overlay address, or null if there was L3Address with that overlay.
+	 * @return the previous L3Address object at that overlay address, or null if there was not an L3Address with that overlay.
 	 */
 	public L3Address put(L3Address value){
 		return put(null, value);

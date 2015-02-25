@@ -132,9 +132,12 @@ public class RPCHandler {
 	private void addRequestSenderToAT() throws UnknownHostException{
 		JSONObject params = rpc.getJSONObject("params"); 
 		L3Address sender = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
-		L3Address result = Node.getAddressTable().add(sender);
-		if(!result.equals(sender))
-			DBP.printdemoln("Adding " + sender + " to address table from handler");
+		if(!L3Address.isNonNodeAddress(sender))
+		{
+			L3Address result = Node.getAddressTable().add(sender);
+			if(!sender.equals(result))
+				DBP.printdemoln("Adding " + sender + " to address table from handler");
+		}
 	}
 
 	/**
