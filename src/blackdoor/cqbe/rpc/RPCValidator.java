@@ -105,9 +105,7 @@ public class RPCValidator {
 		}
 		if (!jCall.getString("jsonrpc").equals("2.0"))
 			return "invalid";
-		if (!params.has("sourceO") || !params.has("sourceIP")
-				|| !params.has("sourcePort") || !params.has("destinationO")
-				|| !params.has("extensions")) {
+		if (!params.has("sourceIP") || !params.has("sourcePort") || !params.has("destinationO")) {
 			return "params";
 		}
 		if (methodName.equalsIgnoreCase("PUT") && !params.has("value")) {
@@ -131,6 +129,8 @@ public class RPCValidator {
 		// Check for validity of params
 		// Not really sure how to do this with overlay addresses yet lawl
 		String ip = params.getString("sourceIP");
+		if(ip.equals("localhost"))
+			return "valid";
 		int port = params.getInt("sourcePort");
 		final String PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 		Pattern pattern = Pattern.compile(PATTERN);

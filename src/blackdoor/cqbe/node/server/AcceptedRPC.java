@@ -34,7 +34,7 @@ public class AcceptedRPC implements Runnable {
 	@Override
 	public void run() {
 		String input = read();
-		shutdownSocketInput();
+		//shutdownSocketInput();
 		RPCValidator rv = new RPCValidator(input, io);
 		rv.handle();
 		closeSocket();

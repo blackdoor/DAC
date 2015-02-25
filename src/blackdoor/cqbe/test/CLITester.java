@@ -39,7 +39,8 @@ public class CLITester {
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1781"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1782"};
-		String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1783"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1783"};
+		String[] args2 = {"shutdown", "-p", "1778"};
 		dh256.main(args2);
 
 	}
