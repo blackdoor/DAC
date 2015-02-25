@@ -15,7 +15,7 @@ public class ShutdownRpc extends Rpc {
 	protected ShutdownRpc(){
 		super(Method.SHUTDOWN);
 		super.setDestination(Address.getNullAddress());
-		super.setSource(new L3Address(InetAddress.getLoopbackAddress(), -1));
+		super.setSource(new L3Address(InetAddress.getLoopbackAddress(), 0));
 	}
 	
 	protected ShutdownRpc(String json) throws RPCException {

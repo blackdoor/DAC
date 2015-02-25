@@ -46,7 +46,7 @@ public class dh256 {
 				case "retrieve":
 					dh256.retrieve(args2);
 					break;
-				case "leave":
+				case "shutdown":
 					dh256.shutdown(args2);
 					break;
 				case "join":

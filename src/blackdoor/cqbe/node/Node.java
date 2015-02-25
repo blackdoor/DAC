@@ -132,7 +132,6 @@ public class Node {
 		Node inst = getInstance();
 		inst.server.stop();
 		inst.updater.stop();
-		throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	/**

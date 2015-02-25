@@ -24,7 +24,7 @@ public class L3Address extends Address implements Serializable{
 	private InetAddress l3Address = null;
 	private int port = -1;
 	private static L3Address nonNodeAddress = null;
-	protected static final boolean LOOPBACK_IS_NON_NODE = false; 
+	protected static final boolean LOOPBACK_IS_NON_NODE = true; 
 	
 	/**
 	 * Returns true if address is definitely not the overlay address of a node
