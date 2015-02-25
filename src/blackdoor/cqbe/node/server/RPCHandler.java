@@ -111,9 +111,11 @@ public class RPCHandler {
 			DBP.printException(e);
 		}
 
+
 		try {
 			// DBP.printdevln("in handle");
 			// DBP.printdevln("about to write response " + responseObject);
+
 			io.write(responseObject.toString());
 		} finally {
 			io.close();
