@@ -212,6 +212,17 @@ public class Address implements Serializable {
                     '}';
         }
     }
+	
+	public Address getComplement(){
+		BigInteger b = new BigInteger(this.getOverlayAddress());
+		try {
+			return new Address(b.xor(new BigInteger(Address.getFullOverlay())).toByteArray());
+		} catch (AddressException e) {
+			// TODO Auto-generated catch block
+			DBP.printerror(e);
+		}
+		return null;
+	}
 
 	/**
 	 * A comparator for Addresses. Distance between Addresses is defined as the Hamming weight of the first address XOR'd with the second.

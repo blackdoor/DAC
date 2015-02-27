@@ -109,7 +109,10 @@ public class StorageController implements Map<Address, FileAddress> {
 	}
 
 	private Address getHighest(){
-		return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable.lastEntry().getValue() : highest;
+		if(this.addressTable.size() < AddressTable.DEFAULT_MAX_SIZE)
+			return isAutoRemappingEnabled() ? this.getReferenceAddress().getComplement(): highest;
+		else
+			return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable.lastEntry().getValue() : highest;
 	}
 	
 	public synchronized void remap(Address nearest, Address farthest){
@@ -132,8 +135,6 @@ public class StorageController implements Map<Address, FileAddress> {
 		case 2:
 			return buckets.buckets.subSet(getLowest(), getHighest());
 		case 3:
-			//if(this.size() < AddressTable.DEFAULT_MAX_SIZE)
-				//TODO Return tailset of complement of reference address
 			return buckets.buckets.tailSet(getHighest());
 		default:
 			throw new RuntimeException(i + " is not a valid bucket number");
