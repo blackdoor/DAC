@@ -19,6 +19,7 @@ import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.output_logic.Router;
 import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
+import blackdoor.cqbe.settings.Config;
 import blackdoor.util.DBP;
 
 public class Updater implements Runnable {
@@ -26,10 +27,8 @@ public class Updater implements Runnable {
 	/**
 	 * in seconds
 	 */
-	public static final long updateInterval = 5;
-	
-	public static final int PARALLELISM = 8;
-	
+	public static final long updateInterval = (long) Config.getReadOnly("node_update_interval","default.config");
+	public static int PARALLELISM = (int) Config.getReadOnly("node_update_parallelism","default.config");
 	private Thread updaterThread;
 	private volatile boolean running;
 	private Map<L3Address, Integer> strikeList;

@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import blackdoor.cqbe.settings.Config.ConfigReadOnly;
 import blackdoor.util.DBP;
 
 
@@ -25,7 +26,7 @@ import blackdoor.util.DBP;
  * @version v1.0.0 - Nov 19, 2014
  */
 public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable, Iterable<L3Address> {
-	public static final int DEFAULT_MAX_SIZE = 256;
+	public static final int DEFAULT_MAX_SIZE = (int) ConfigReadOnly.get("default.config", "address_table_max_size");
 	
 	private int maxSize = DEFAULT_MAX_SIZE;
 

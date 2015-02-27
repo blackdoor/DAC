@@ -26,6 +26,7 @@ public class Node {
 	private static Node singleton;
 	private Server server;
 	private Updater updater;
+	private Config config;
 	private AddressTable addressTable;
 	private StorageController storageController;
 	private volatile int n = Address.DEFAULT_ADDRESS_SIZE;
@@ -34,7 +35,7 @@ public class Node {
 	private volatile L3Address me;
 	private Thread serverThread;
 	private Thread updaterThread;
-	
+
 	private static synchronized void checkAndThrow() {
 		if (singleton == null) {
 			throw new ExceptionInInitializerError(
@@ -55,12 +56,15 @@ public class Node {
 		return getInstance().me;
 	}
 
+	public Config getConfig() {
+		return getInstance().config;
+	}
+
 	public static StorageController getStorageController() {
 		return getInstance().storageController;
 	}
 
-	protected static Node getInstance() {
-
+	public static Node getInstance() {
 		checkAndThrow();
 		return singleton;
 	}
@@ -85,7 +89,7 @@ public class Node {
 		serverThread = new Thread(server);
 		serverThread.start();
 	}
-	
+
 	private void startUpdater() {
 		updater = new Updater();
 		updaterThread = new Thread(updater);
@@ -100,8 +104,7 @@ public class Node {
 	 * @param local
 	 *            is whether or not you want to use local ip or WAN ip
 	 */
-	private void configureAddressing(int port)
-			throws NodeException {
+	private void configureAddressing(int port) throws NodeException {
 		InetAddress address;
 		try {
 
@@ -116,7 +119,6 @@ public class Node {
 			throw new CantGetAddress();
 		}
 	}
-	
 
 	/**
 	 * Closes the node and returns a list of folders containing node data
@@ -127,8 +129,8 @@ public class Node {
 	public String[] destroyNode() {
 		return null;
 	}
-	
-	public static void shutdown(){
+
+	public static void shutdown() {
 		Node inst = getInstance();
 		inst.server.stop();
 		inst.updater.stop();
@@ -160,7 +162,7 @@ public class Node {
 		 * Create a new NodeBuilder with no preset settings
 		 */
 		public NodeBuilder() {
-			loadDefaultSettings();
+			config = new Config(new File("default.config"));
 			daemon = false;
 			adam = false;
 		}
@@ -185,18 +187,20 @@ public class Node {
 		 */
 		public void setStorageDir(String storageDir) {
 			this.storageDir = storageDir;
-			config.put("storageDir", storageDir);
+			config.put("storage_directory", storageDir);
 		}
 
 		/**
-		 * Sets the settings file directory Passed from DART.Join
+		 * Sets the settings file Passed from DART.Join
 		 * 
 		 * @param directory
 		 *            - Directory to be used by created node
 		 */
-		public void setSettings(String settingsDir) {
-			loadSettings("settingsDir");
+		public void setSettings(String filename) {
+			config.loadSettings(new File(filename));
 
+			this.setPort((int) config.get("port"));
+			this.setStorageDir((String) config.get("storage_directory"));
 		}
 
 		/**
@@ -226,7 +230,8 @@ public class Node {
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
 		 * TODO add and start updater
-		 * @throws ServerException 
+		 * 
+		 * @throws ServerException
 		 * 
 		 * @throws Exception
 		 */
@@ -246,22 +251,6 @@ public class Node {
 			node.startServer(port);
 			node.startUpdater();
 			return Node.getInstance();
-		}
-
-		private void loadDefaultSettings() {
-			config = new Config(new File("dflt.txt"));
-			this.setPort((int) config.get("port"));
-			this.setStorageDir((String) config.get("storageDir"));
-		}
-
-		private void loadSettings(String dir) {
-			config.loadSettings(new File(dir));
-			if (config.containsKey("port")) {
-				this.setPort((int) config.get("port"));
-			}
-			if (config.containsKey("storageDir")) {
-				this.setStorageDir((String) config.get("storageDir"));
-			}
 		}
 
 	}
