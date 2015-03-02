@@ -3,6 +3,7 @@ package blackdoor.cqbe.rpc;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -61,7 +62,18 @@ public class RPCUnitTest {
 
 	@Test
 	public void testPUT() {
-		fail("Not yet implemented");
+		PutRpc putRpc;
+		try {
+			putRpc = (PutRpc) getGoodMockRPC(Method.PUT);
+			assertTrue(putRpc.getDestination().equals(
+					Address.getFullAddress()));
+			assertTrue(putRpc.getSource().equals(
+					new L3Address(InetAddress.getLoopbackAddress(), SRC_PORT)));
+			System.out.println(putRpc.getValue().toString());
+			assertTrue(Arrays.equals(putRpc.getValue(), new byte[16]));
+		} catch (RPCException e) {
+			fail("Put was not built properly");
+		}
 	}
 
 	@Test
@@ -126,12 +138,18 @@ public class RPCUnitTest {
 		builder.setIndex(2);
 		// Test Lookup
 		LookupRpc lookupRpc = builder.buildLookupObject();
-
+		System.out.println(lookupRpc.toJSON().toString(2));
 		// test ping
 		PingRpc pingRpc = builder.buildPingObject();
+		System.out.println(pingRpc.toJSON().toString(2));
+		//test put
+		PutRpc putRpc = builder.buildPutObject();
+		System.out.println(putRpc.toJSON().toString(2));
 		//test get
 		GetRpc getRpc = builder.buildGetObject();
 		System.out.println(getRpc.toJSON().toString(2));
+		//test shutdown
+		System.out.println(ShutdownRpc.getShutdownRPC().toJSON().toString(2));
 	}
 
 	public Rpc getGoodMockRPC(Rpc.Method method) throws RPCException {
@@ -147,6 +165,8 @@ public class RPCUnitTest {
 			rpc = builder.buildGetObject();
 			break;
 		case PUT:
+			byte[] value = new byte[16];
+			builder.setValue(value);
 			rpc = builder.buildPutObject();
 			break;
 		case LOOKUP:
