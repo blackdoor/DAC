@@ -56,7 +56,7 @@ public class Node {
 		return getInstance().me;
 	}
 
-	public Config getConfig() {
+	public static Config getConfig() {
 		return getInstance().config;
 	}
 
@@ -163,6 +163,8 @@ public class Node {
 		 */
 		public NodeBuilder() {
 			config = new Config(new File("default.config"));
+			this.setPort((int) config.get("port"));
+			this.setStorageDir((String) config.get("storage_directory"));
 			daemon = false;
 			adam = false;
 		}
@@ -247,6 +249,7 @@ public class Node {
 			if (!adam && bootstrapNode != null) {
 				node.addressTable.add(bootstrapNode);
 			}
+			node.config = config;
 			Node.singleton = node;
 			node.startServer(port);
 			node.startUpdater();
