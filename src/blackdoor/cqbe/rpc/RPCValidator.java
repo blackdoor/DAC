@@ -46,6 +46,7 @@ public class RPCValidator {
 						validity.equals("parse") ? -1 : new JSONObject(call)
 								.getInt("id"));
 				io.write(error.toString());
+				System.out.println(error.toString());
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -53,7 +54,7 @@ public class RPCValidator {
 		}
 	}
 
-	public JSONObject buildError(String errorStyle, int id) {
+	public static JSONObject buildError(String errorStyle, int id) {
 		JSONObject error = null;
 		Integer _id = id == -1 ? null : id;
 		if (errorStyle.equals("parse"))
@@ -105,16 +106,17 @@ public class RPCValidator {
 		}
 		if (!jCall.getString("jsonrpc").equals("2.0"))
 			return "invalid";
-		if (!params.has("sourceO") || !params.has("sourceIP")
-				|| !params.has("sourcePort") || !params.has("destinationO")
-				|| !params.has("extensions")) {
+		if (!params.has("sourceIP") || !params.has("sourcePort") || !params.has("destinationO")) {
 			return "params";
 		}
 		if (methodName.equalsIgnoreCase("PUT") && !params.has("value")) {
 			return "params";
 		}
-		if (methodName.equalsIgnoreCase("GET") && !params.has("index")) {
-			return "params";
+		if (methodName.equalsIgnoreCase("GET")){
+				if(!params.has("index"))
+					return "params";
+				else if((params.getInt("index") != 1)&&(params.getInt("index") != 2)&&(params.getInt("index") != 3))
+					return "params";
 		}
 		if (methodName.equalsIgnoreCase("SHUTDOWN")
 				&& !params.has("sourcePort")) {
@@ -131,6 +133,8 @@ public class RPCValidator {
 		// Check for validity of params
 		// Not really sure how to do this with overlay addresses yet lawl
 		String ip = params.getString("sourceIP");
+		if(ip.equals("localhost"))
+			return "valid";
 		int port = params.getInt("sourcePort");
 		final String PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 		Pattern pattern = Pattern.compile(PATTERN);

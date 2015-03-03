@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import org.json.JSONObject;
+import org.json.JSONString;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,6 +32,9 @@ public class RPCValidatorCompare {
 	JSONObject invalidRpcGet;
 	JSONObject rpcValidPut;
 	JSONObject invalidRpcPut;
+	JSONObject rpcValidPing;
+	JSONObject invalidRpcPing;
+	JSONObject rpcValidShutdown;
 	
 	@Before
 	public void setUp() throws Exception 
@@ -44,45 +48,14 @@ public class RPCValidatorCompare {
 		rpcValidLookup = builder.buildLOOKUP();
 		rpcValidGet = builder.buildGET();
 		rpcValidPut = builder.buildPUT();
+		rpcValidPing = builder.buildPING();
 		invalidRpcLookup = builder.buildLOOKUP();
-		invalidRpcGet = builder.buildGET();
+		//builder.setIndex(5);
+		//invalidRpcGet = builder.buildGET();
 		invalidRpcPut = builder.buildPUT();
-	}
-	
-
-	@Test
-	public void testValid1() throws RPCException, IOException, ServerException {
-	Server server = new Server(1776);
-	new Thread(server).start();
-	SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), 1776));
-	
-	//Testing a valid GET call
-	Rpc rpc = new RPCUnitTest().getGoodMockRPC(Method.LOOKUP);
-	RPCValidator validator = new RPCValidator(rpc.toJSONString(), io);
-	String rpcValid = rpc.toJSON().toString(2);
-	System.out.print(rpc.toJSON().toString(2));
-	assertEquals("valid", validator.isValid(rpcValid));
-	validator.handle();
-	server.stop();
-	
-	
-	//Testing an invalid LOOKUP call
-	Rpc rpc2 = new RPCUnitTest().getBadMockRPC(Method.LOOKUP);
-	RPCValidator validator2 = new RPCValidator(rpc.toJSONString(), io);
-	String rpcValid2 = rpc.toJSON().toString(2);
-	System.out.print(rpc.toJSON().toString(2));
-	assertNotEquals("valid", validator2.isValid(rpcValid2));
-	validator.handle();
-	server.stop();
-	}
-	
-	@Test
-	public void testHandle() throws RPCException, IOException, ServerException{
-	Server server = new Server(1776);
-	new Thread(server).start();
-	SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), 1776));
-	Rpc rpc3 = new RPCUnitTest().getGoodMockRPC(Method.LOOKUP);
-	RPCValidator valid = new RPCValidator(rpc3.toString(), io);
+		invalidRpcPing = builder.buildPING();
+		rpcValidShutdown = builder.buildSHUTDOWN();
+		
 	}
 	
 	@Test
@@ -90,10 +63,8 @@ public class RPCValidatorCompare {
 		assertEquals("should be valid LOOKUP", "valid", RPCValidator.isValid(rpcValidLookup.toString()));
 		assertEquals("should be valid GET", "valid", RPCValidator.isValid(rpcValidGet.toString()));
 		assertEquals("should be valid PUT", "valid", RPCValidator.isValid(rpcValidPut.toString()));
-		
-		System.out.println(rpcValidPut.toString(2));
-		//TODO must add a checker to see if the index is 1, 2, or 3 THIS SHOULD NOT BE VALID
-		assertEquals("should be invalid GET", "valid", RPCValidator.isValid(rpcValidGet.toString()));
+		assertEquals("should be valid PING", "valid", RPCValidator.isValid(rpcValidPing.toString()));
+		assertEquals("should be valid SHUTDOWN", "valid", RPCValidator.isValid(rpcValidShutdown.toString()));
 	}
 	
 	@Test
@@ -103,17 +74,33 @@ public class RPCValidatorCompare {
 		System.out.print(invalidRpcLookup.toString(2));
 		//Rpc invalid = Rpc.fromJson(invalidRpcLookup);
 		//Both should have -32601, method not found
-		//System.out.print(RPCValidator.buildError(RPCValidator.isValid(invalidRpcLookup.toString(2)), invalidRpcLookup.getInt("id")));
-		//assertEquals(RPCValidator.buildError(RPCValidator.isValid(invalidRpcLookup.toString()), invalidRpcLookup.getInt("id")), Rpc.fromJson(invalidRpcLookup));
+		JSONObject thing = RPCValidator.buildError(
+				RPCValidator.isValid(invalidRpcLookup.toString()),
+				invalidRpcLookup.getInt("id"));
+		JSONRPCError err = JSONRPCError.fromJSON(thing.getJSONObject("error"));
+		JSONRPCError err2 = null;
+		try{
+			Rpc.fromJson(invalidRpcLookup);
+		}catch(RPCException e){
+			err2 = e.getRPCError();
+		}
+		System.out.println(err.toString());
+		assertEquals(err, err2);
 	}
 	
 	@Test
 	public void testParamsError() throws RPCException{
+		//Shouldn't there be a fixed # of params?
 		invalidRpcLookup.put("THisIsWrong", true);
-		//This should throw exception but does not!
-		Rpc invalid = Rpc.fromJson(invalidRpcLookup);
-		//System.out.print(RPCValidator.buildError(RPCValidator.isValid(invalidRpcLookup.toString(2)), invalidRpcLookup.getInt("id")));
-		//rename NODE SHAT ITSELF?
+		JSONObject paramError = RPCValidator.buildError(RPCValidator.isValid(invalidRpcLookup.toString()), invalidRpcLookup.getInt("id"));
+		JSONRPCError err2 = null;
+		JSONRPCError err = JSONRPCError.fromJSON(paramError.getJSONObject("error"));
+		try{
+			Rpc invalid = Rpc.fromJson(invalidRpcLookup);
+			}catch(RPCException e){
+			err2 = e.getRPCError();
+		}
+		assertEquals(err, err2);
 	}
 		
 	@Test
@@ -123,22 +110,45 @@ public class RPCValidatorCompare {
 		builder.setDestinationO(Address.getNullAddress());
 		builder.setSourceIP(InetAddress.getLocalHost());
 		builder.setSourcePort(1234);
-		builder.setIndex(1);
-		//testing no index
-		invalidRpcGet = builder.buildGET();
-		System.out.println(invalidRpcGet.toString(2));	
-		System.out.print(RPCValidator.buildError(RPCValidator.isValid(invalidRpcGet.toString(2)), invalidRpcGet.getInt("id")));
-		
-		//testing invalid index
 		builder.setIndex(-1);
-		invalidRpcGet = builder.buildGET();
-		//Rpc invalidIndex = Rpc.fromJson(invalidRpcGet);//throws params exception
-		//returns NODE SHAT ITSELF
-		System.out.print(RPCValidator.buildError(RPCValidator.isValid(invalidRpcGet.toString(2)), invalidRpcGet.getInt("id")));
-		//assertEquals(RPCValidator.buildError(RPCValidator.isValid(invalidRpcGet.toString()), invalidRpcGet.getInt("id")), Rpc.fromJson(invalidRpcGet));
+		//testing invalid index;
+		invalidRpcLookup.remove("method");
+		invalidRpcLookup.put("method", Method.GET);
+		//now invalidRpcLookup is essentially a GET without an index
+		JSONObject indexError = RPCValidator.buildError(RPCValidator.isValid(invalidRpcLookup.toString()),
+		invalidRpcLookup.getInt("id"));
+		JSONRPCError err = JSONRPCError.fromJSON(indexError.getJSONObject("error"));
+		JSONRPCError err2 = null;
+		try{
+		   invalidRpcGet= builder.buildGET();
+		   Rpc.fromJson(invalidRpcGet);
+		}catch(RPCException e){
+			err2 = e.getRPCError();
+		}
+		assertEquals(err, err2);
+		}
+	
+@Test
+public void testBase64Error(){
+	
+	
+	invalidRpcPing.remove("method");
+	invalidRpcPing.put("method",  Method.PUT);
+	invalidRpcPing.put("value", "thiswontwork");
+	System.out.println(invalidRpcPing);
+	JSONObject base64Error = RPCValidator.buildError(RPCValidator.isValid(invalidRpcPing.toString()),
+			invalidRpcPut.getInt("id"));
+	JSONRPCError err2 = null;
+	JSONRPCError err = JSONRPCError.fromJSON(base64Error.getJSONObject("error"));
+	try{
+		Rpc.fromJson(invalidRpcPut);
+	}catch(RPCException e){
+		err2 = e.getRPCError();
 	}
-			
+	assertEquals(err, err2);
 	}
+}
+
 	
 	
 	
