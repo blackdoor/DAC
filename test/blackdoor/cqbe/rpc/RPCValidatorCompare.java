@@ -56,6 +56,7 @@ public class RPCValidatorCompare {
 		invalidRpcPing = builder.buildPING();
 		rpcValidShutdown = builder.buildSHUTDOWN();
 		
+		
 	}
 	
 	@Test
@@ -88,6 +89,7 @@ public class RPCValidatorCompare {
 		assertEquals(err, err2);
 	}
 	
+	
 	@Test
 	public void testParamsError() throws RPCException{
 		//Shouldn't there be a fixed # of params?
@@ -102,6 +104,7 @@ public class RPCValidatorCompare {
 		}
 		assertEquals(err, err2);
 	}
+	
 		
 	@Test
 	public void testIndexError() throws RPCException, UnknownHostException
@@ -126,17 +129,20 @@ public class RPCValidatorCompare {
 			err2 = e.getRPCError();
 		}
 		assertEquals(err, err2);
-		}
+	}
 	
+	
+//needs to be fixed
 @Test
-public void testBase64Error(){
-	
-	
-	invalidRpcPing.remove("method");
-	invalidRpcPing.put("method",  Method.PUT);
-	invalidRpcPing.put("value", "thiswontwork");
-	System.out.println(invalidRpcPing);
-	JSONObject base64Error = RPCValidator.buildError(RPCValidator.isValid(invalidRpcPing.toString()),
+public void testBase64Error()
+	{
+	//invalidRpcPing.remove("method");
+	//invalidRpcPing.put("method",  Method.PUT);
+	JSONObject params = invalidRpcPut.getJSONObject("params");
+	params.put("value", "hi");
+	invalidRpcPut.put("params", params);
+	System.out.println(invalidRpcPut.toString(2));
+	JSONObject base64Error = RPCValidator.buildError(RPCValidator.isValid(invalidRpcPut.toString()),
 			invalidRpcPut.getInt("id"));
 	JSONRPCError err2 = null;
 	JSONRPCError err = JSONRPCError.fromJSON(base64Error.getJSONObject("error"));
@@ -147,6 +153,39 @@ public void testBase64Error(){
 	}
 	assertEquals(err, err2);
 	}
+
+@Test
+public void invalidAddress()
+{
+	JSONObject params = rpcValidGet.getJSONObject("params");
+	params.put("destinationO", "notYoAddress");
+	rpcValidGet.put("params", params);
+	System.out.println(rpcValidGet.toString(2));
+	JSONObject addressError = RPCValidator.buildError(RPCValidator.isValid(rpcValidGet.toString()),
+			rpcValidGet.getInt("id"));
+	JSONRPCError err2 = null;
+	JSONRPCError err = JSONRPCError.fromJSON(addressError.getJSONObject("error"));
+	try{
+		Rpc.fromJson(rpcValidGet);
+	}catch(RPCException e){
+		err2 = e.getRPCError();
+	}
+	assertEquals(err, err2);
+	}
+
+
+@Test
+public void invalidRequest()
+{
+	JSONObject rpcJson = rpcValidGet.getJSONObject("params");
+	JSONRPCError err = null;
+	try{
+		Rpc.fromJson(rpcJson);
+	}catch(RPCException e){
+		err = e.getRPCError();
+	}
+	System.out.println(err);
+}
 }
 
 	
