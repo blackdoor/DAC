@@ -14,6 +14,7 @@ import blackdoor.cqbe.rpc.GetRpc;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
+import blackdoor.cqbe.rpc.ResultRpcResponse;
 import blackdoor.cqbe.rpc.Rpc;
 import blackdoor.cqbe.rpc.ShutdownRpc;
 import blackdoor.cqbe.storage.StorageController;
@@ -201,8 +202,8 @@ public class RPCHandler {
 		} catch (IOException e) {
 			throw new RPCException(JSONRPCError.NODE_SHAT);
 		}
-		AckResponse response = new AckResponse(rpc.getId());
-		return response.toJSON();
+		AckResponse result = new AckResponse();
+		return new ResultRpcResponse(rpc.getId(), result).toJSON();
 	}
 
 	/**

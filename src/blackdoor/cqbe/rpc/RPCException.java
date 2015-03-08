@@ -88,7 +88,18 @@ public class RPCException extends Exception {
 		 /**
 		  * A shutdown request was received, but it did not come over the loopback interface.
 		  */
-		 NON_LO_SHUTDOWN(-32005, "Shutdown requests must come from the loopback network interface") ;
+		 NON_LO_SHUTDOWN(-32005, "Shutdown requests must come from the loopback network interface"),
+		 /**
+		  * Response object from node was not a valid JSON-RPC 2.0 response.
+		  * This error should never go into a response.
+		  */
+		 INVALID_RESPONSE(-32006, "Response object from node was not a valid JSON-RPC 2.0 response"),
+		 /*
+		  * Result type indicator was missing
+		  * Were you trying to parse a response created by an older version using a newer parser? Older parsers are fowards compatible but new parsers are not backwards compatible.
+		  * This error should never go into a response.
+		  */
+		 MISSING_RESULT_TYPE(-32007, "Result type indicator was missing");
 
 		/**
 		 * get a JSONRPCError java object from a JSONRPC error object
