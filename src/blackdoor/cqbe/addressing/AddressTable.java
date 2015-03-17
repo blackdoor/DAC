@@ -26,7 +26,7 @@ import blackdoor.util.DBP;
  * @version v1.0.0 - Nov 19, 2014
  */
 public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable, Iterable<L3Address> {
-	public static final int DEFAULT_MAX_SIZE = (int) Config.getReadOnly("default.config", "address_table_max_size");
+	public static final int DEFAULT_MAX_SIZE = (int) Config.getReadOnly("address_table_max_size", "default.config");
 	
 	private int maxSize = DEFAULT_MAX_SIZE;
 

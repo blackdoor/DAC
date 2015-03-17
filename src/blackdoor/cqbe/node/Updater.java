@@ -27,7 +27,7 @@ public class Updater implements Runnable {
 	/**
 	 * in seconds
 	 */
-	public static final long updateInterval = (long) Config.getReadOnly("node_update_interval","default.config");
+	public static final long updateInterval = (int) Config.getReadOnly("node_update_interval","default.config");
 	public static int PARALLELISM = (int) Config.getReadOnly("node_update_parallelism","default.config");
 	private Thread updaterThread;
 	private volatile boolean running;

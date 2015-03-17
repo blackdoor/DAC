@@ -7,10 +7,10 @@ import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.server.Server;
 import blackdoor.cqbe.node.server.ServerException;
-
 import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
+import blackdoor.util.DBP.SingletonAlreadyInitializedException;
 import blackdoor.cqbe.node.NodeException.*;
 
 import java.net.*;
@@ -56,7 +56,7 @@ public class Node {
 		return getInstance().me;
 	}
 
-	public Config getConfig() {
+	public static Config getConfig() {
 		return getInstance().config;
 	}
 
@@ -153,6 +153,7 @@ public class Node {
 
 		private int port;
 		private String storageDir;
+		private String logDir;
 		private boolean daemon;
 		private boolean adam;
 		private L3Address bootstrapNode;
@@ -163,6 +164,9 @@ public class Node {
 		 */
 		public NodeBuilder() {
 			config = new Config(new File("default.config"));
+			this.setPort((int) config.get("port"));
+			this.setStorageDir((String) config.get("storage_directory"));
+			this.setLogDir((String) config.get("log_directory"));
 			daemon = false;
 			adam = false;
 		}
@@ -201,6 +205,7 @@ public class Node {
 
 			this.setPort((int) config.get("port"));
 			this.setStorageDir((String) config.get("storage_directory"));
+			this.setLogDir((String) config.get("log_directory"));
 		}
 
 		/**
@@ -226,20 +231,27 @@ public class Node {
 		public void setBootstrapNode(L3Address bootstrapNode) {
 			this.bootstrapNode = bootstrapNode;
 		}
+		
+		public void setLogDir(String logDir) {
+			this.logDir = logDir;
+			config.put("log_directory", logDir);
+		}
 
 		/**
 		 * Builds a node based on the current list of settings attributed to it.
 		 * TODO add and start updater
 		 * 
 		 * @throws ServerException
+		 * @throws SingletonAlreadyInitializedException 
 		 * 
 		 * @throws Exception
 		 */
-		public Node buildNode() throws NodeException, ServerException {
+		public Node buildNode() throws NodeException, ServerException, SingletonAlreadyInitializedException {
 			config.saveSessionToFile();
 			if (daemon) {
 				// TODO start a demon prossess depending on platform
 			}
+			DBP.setLogFileLocation(logDir);
 			Node node = new Node();
 			node.configureAddressing(port);
 			node.storageController = new StorageController(new File(
@@ -247,6 +259,7 @@ public class Node {
 			if (!adam && bootstrapNode != null) {
 				node.addressTable.add(bootstrapNode);
 			}
+			node.config = config;
 			Node.singleton = node;
 			node.startServer(port);
 			node.startUpdater();

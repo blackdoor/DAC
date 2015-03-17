@@ -86,6 +86,8 @@ public class dh256 {
 					.setMultipleAllowed(false));
 			clp.addArgument(new Argument().setLongOption("dir").setOption("d")
 					.setMultipleAllowed(false).setTakesValue(true));
+			clp.addArgument(new Argument().setLongOption("log").setOption("l")
+					.setMultipleAllowed(false).setTakesValue(true));
 			clp.addArgument(new Argument().setLongOption("settings")
 					.setOption("s").setMultipleAllowed(false)
 					.setTakesValue(true));
@@ -113,6 +115,10 @@ public class dh256 {
 				if (out.containsKey("dir")) {
 					String dir = out.get("dir").getValues().get(0);
 					node.setStorageDir(dir);
+				}
+				if (out.containsKey("log")) {
+					String log = out.get("log").getValues().get(0);
+					node.setLogDir(log);
 				}
 				if (out.containsKey("daemon")) {
 					node.setDaemon(true);
