@@ -11,6 +11,7 @@ import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.node.Node.NodeBuilder;
 import blackdoor.cqbe.node.server.ServerException;
+import blackdoor.util.DBP.SingletonAlreadyInitializedException;
 
 public class NodeTest {
 	
@@ -19,7 +20,7 @@ public class NodeTest {
 		createNode();
 	}
 
-	private void createNode() throws NodeException, ServerException {
+	private void createNode() throws NodeException, ServerException, SingletonAlreadyInitializedException {
 		NodeBuilder node = new NodeBuilder();
 		node.setAdam(true);
 		node.buildNode();

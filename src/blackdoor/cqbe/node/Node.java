@@ -251,7 +251,8 @@ public class Node {
 			if (daemon) {
 				// TODO start a demon prossess depending on platform
 			}
-			DBP.setLogFileLocation(logDir);
+			if (!logDir.equals(""))
+				DBP.setLogFileLocation(logDir);
 			Node node = new Node();
 			node.configureAddressing(port);
 			node.storageController = new StorageController(new File(
