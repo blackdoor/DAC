@@ -17,8 +17,10 @@ import java.net.*;
 import java.io.*;
 
 /**
- * 
  * @author nfischer3
+ * This class is the node structure that DH256 builds itself upon.
+ * The Node is the user-end point that accesses the DH256 network and forms the hypercube overlay structure
+ * Nodes contain an updater, server, addresstable, and storagecontroller.
  *
  */
 public class Node {
@@ -84,12 +86,20 @@ public class Node {
 	protected Node() {
 	}
 
+	/**
+	 * Spawns a thread to be dedicated to the server and starts the server on this thread.
+	 * @param port - The port for which the server should be started on.
+	 * @throws ServerException - The server cannot be initialized correctly.
+	 */
 	private void startServer(int port) throws ServerException {
 		server = new Server(port);
 		serverThread = new Thread(server);
 		serverThread.start();
 	}
 
+	/**
+	 * Spawns a thread to be dedicated to the updater and starts the updater on this thread.
+	 */
 	private void startUpdater() {
 		updater = new Updater();
 		updaterThread = new Thread(updater);
@@ -228,10 +238,18 @@ public class Node {
 			adam = status;
 		}
 
+		/**
+		 * Sets the bootstrap node that the to-be-created node will join onto.
+		 * @param bootstrapNode
+		 */
 		public void setBootstrapNode(L3Address bootstrapNode) {
 			this.bootstrapNode = bootstrapNode;
 		}
 		
+		/**
+		 * Sets the directory in which log files will be stored on the machine.
+		 * @param logDir
+		 */
 		public void setLogDir(String logDir) {
 			this.logDir = logDir;
 			config.put("log_directory", logDir);

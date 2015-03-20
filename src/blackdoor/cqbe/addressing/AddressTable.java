@@ -54,14 +54,23 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		this.maxSize = s;
 	}
 	
+	/**
+	 * @return The defined maximum size of the address table, which will be less than or equal to 256.
+	 */
 	public int getMaxSize(){
 		return maxSize;
 	}
 	
+	/**
+	 * @return The L3Address corresponding to the first entry in the address table defined by firstEntry()
+	 */
 	public L3Address first(){
 		return this.firstEntry().getValue();
 	}
 	
+	/**
+	 * @return The L3Address corresponding to the last entry in the address table defined by lastEntry()
+	 */
 	public L3Address last(){
 		return this.lastEntry().getValue();
 	}
@@ -129,6 +138,12 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		return super.get(address.getOverlayAddress());//TODO change to get shallow overlay address
 	}
 	
+	/**
+	 * Puts the specified value into the table if this value is not already present in the table
+	 * The values is placed in the address table if it is not present currently, but returns it if it is present. 
+	 * @param Byte[] _ - does nothing
+	 * @param value - The L3Address to be put in the table if absent.
+	 */
 	public L3Address putIfAbsent(byte[] _, L3Address value){
 		if (!contains(value))
 		       return put(value);
@@ -136,6 +151,10 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		       return get(value);
 	}
 	
+	/**
+	 * Removes the given value from the Address Table
+	 * @param value - The Address value to be removed by the function.
+	 */
 	public L3Address remove(Address value){
 		return super.remove(value.getOverlayAddress());
 	}
@@ -188,7 +207,6 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * Same as the put contract for Map, except the key is implied by the value. In other words only the value parameter has any effect.
 	 * @param _ does nothing
 	 * @param value
-	 * @return
 	 */
 	@Deprecated
 	public L3Address put(byte[] _, L3Address value){

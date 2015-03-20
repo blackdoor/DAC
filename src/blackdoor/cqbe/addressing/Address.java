@@ -171,6 +171,11 @@ public class Address implements Serializable {
         return overlayAddressToString();
     }
 
+    
+    /**
+     * This class is a comparator for Overlay Addresses. The class is comprised of various overridden comparator functions
+     * such that they properly compare Overlay Addresses in the form of byte arrays. 
+     */
 	public static class OverlayComparator implements Comparator<byte[]> {
         private byte[] ref;
 
@@ -183,6 +188,9 @@ public class Address implements Serializable {
             return ref;
         }
 
+        /* (non-Javadoc)
+    	 * @see java.lang.Object#compare()
+    	 */
         @Override
         public int compare(byte[] arg0, byte[] arg1) {
             int ref0Distance = Misc.getHammingDistance(arg0, ref);
@@ -195,6 +203,9 @@ public class Address implements Serializable {
             return ref0Distance - ref1Distance;
         }
 
+        /* (non-Javadoc)
+    	 * @see java.lang.Object#equals()
+    	 */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -207,6 +218,9 @@ public class Address implements Serializable {
             return true;
         }
 
+        /* (non-Javadoc)
+    	 * @see java.lang.Object#hashCode()
+    	 */
         @Override
         public int hashCode() {
             return Arrays.hashCode(ref);
@@ -238,6 +252,9 @@ public class Address implements Serializable {
             return new Address(comp.getReferenceAddress());
         }
 
+        /* (non-Javadoc)
+    	 * @see java.lang.Object#equals()
+    	 */        
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -250,6 +267,9 @@ public class Address implements Serializable {
             return true;
         }
 
+        /* (non-Javadoc)
+    	 * @see java.lang.Object#hashCode()
+    	 */
         @Override
         public int hashCode() {
             return comp.hashCode();
