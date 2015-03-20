@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import blackdoor.cqbe.settings.Config;
+import blackdoor.cqbe.settings.ConfigurationException.ConfigFileNotFoundException;
 import blackdoor.util.DBP;
 
 
@@ -26,7 +27,17 @@ import blackdoor.util.DBP;
  * @version v1.0.0 - Nov 19, 2014
  */
 public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> implements Serializable, Iterable<L3Address> {
-	public static final int DEFAULT_MAX_SIZE = (int) Config.getReadOnly("address_table_max_size", "default.config");
+
+	public static final int DEFAULT_MAX_SIZE;
+	static{
+		int temp;
+		try{
+			temp = (int) Config.getReadOnly("address_table_max_size", "default.config");
+		}catch(ConfigFileNotFoundException e){
+			temp = 128;
+		}
+		DEFAULT_MAX_SIZE = temp;
+	}
 	
 	private int maxSize = DEFAULT_MAX_SIZE;
 

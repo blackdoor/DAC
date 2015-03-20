@@ -7,17 +7,22 @@ import org.json.JSONObject;
  * @author nfischer3
  *
  */
-public class AckResponse extends RpcResponse {
-
-	public AckResponse(int id) {
-		super(id, true);
+public class AckResponse extends JSONRPCResult{
+	
+	public AckResponse(){
+		super(ResultType.ACK);
 	}
 
 	@Override
 	public JSONObject toJSON() {
-		JSONObject response = super.getRpcOuterShell();
+		JSONObject response = shell();
 		response.put("result", true);
 		return response;
+	}
+
+	@Override
+	public Boolean getValue() {
+		return true;
 	}
 
 }
