@@ -22,6 +22,12 @@ import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.settings.Config;
 import blackdoor.util.DBP;
 
+/**
+ * @author Cyril Van Dyke
+ * @version 1.1
+ * This class operates on a dedicated thread and maintains the 
+ *
+ */
 public class Updater implements Runnable {
 	
 	/**
