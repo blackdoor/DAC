@@ -9,6 +9,9 @@ import java.nio.file.Files;
 import java.util.NavigableSet;
 
 import blackdoor.cqbe.rpc.AckResponse;
+import blackdoor.cqbe.rpc.IndexResult;
+import blackdoor.cqbe.rpc.PingRpc;
+import blackdoor.cqbe.rpc.PongResult;
 import blackdoor.cqbe.rpc.PutRpc;
 import blackdoor.cqbe.rpc.GetRpc;
 import blackdoor.cqbe.rpc.RPCBuilder;
@@ -16,7 +19,10 @@ import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.rpc.ResultRpcResponse;
 import blackdoor.cqbe.rpc.Rpc;
+import blackdoor.cqbe.rpc.RpcResponse;
 import blackdoor.cqbe.rpc.ShutdownRpc;
+import blackdoor.cqbe.rpc.TableResult;
+import blackdoor.cqbe.rpc.ValueResult;
 import blackdoor.cqbe.storage.StorageController;
 
 import org.json.JSONArray;
@@ -61,7 +67,7 @@ public class RPCHandler {
 	 */
 	public void handle() throws IOException {
 
-		JSONObject responseObject;
+		RpcResponse responseObject;
 		try {
 			addRequestSenderToAT();
 			Rpc requestObject = Rpc.fromJson(rpc);
@@ -178,10 +184,13 @@ public class RPCHandler {
 
 	/**
 	 * Handles a ping request
+	 * @throws RPCException 
 	 */
-	private JSONObject handlePingRequest() {
-		return RPCBuilder.RPCResponseFactory(rpc.getInt("id"), true, "pong",
-				null);
+	private RpcResponse handlePingRequest() throws RPCException 
+	{
+		PingRpc rpc = (PingRpc) Rpc.fromJson(this.rpc);
+		PongResult pongResult = new PongResult();
+		return new ResultRpcResponse(rpc.getId(), pongResult);
 	}
 
 	/**
@@ -189,7 +198,7 @@ public class RPCHandler {
 	 * 
 	 * @throws RPCException
 	 */
-	private JSONObject handlePutRequest() throws RPCException {
+	private RpcResponse handlePutRequest() throws RPCException {
 		StorageController storageController = Node.getStorageController();
 		PutRpc rpc = (PutRpc) Rpc.fromJson(this.rpc);
 		// TODO look at settings and find out how large of a value we are
@@ -203,7 +212,7 @@ public class RPCHandler {
 			throw new RPCException(JSONRPCError.NODE_SHAT);
 		}
 		AckResponse result = new AckResponse();
-		return new ResultRpcResponse(rpc.getId(), result).toJSON();
+		return new ResultRpcResponse(rpc.getId(), result);
 	}
 
 	/**
@@ -218,21 +227,20 @@ public class RPCHandler {
 	 *             value If index is false and destination does not match stored
 	 *             key, return a lookup call
 	 */
-	private JSONObject handleGetRequest() throws RPCException,
+	private RpcResponse handleGetRequest() throws RPCException,
 			UnknownHostException, AddressException {
 		StorageController storage = Node.getStorageController();
-		JSONObject responseObject = new JSONObject();
+		ResultRpcResponse responseObject = null;
 		GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
 		try {
 			int index = rpc.getIndex();
 			if (index != 0) {
-				JSONArray result = new JSONArray();
 				NavigableSet<Address> keys = storage.getBucket(index);
-				for (Address key : keys) {
+				IndexResult result1 = new IndexResult(keys);
+				/*for (Address key : keys) {
 					result.put(key.overlayAddressToString());
-				}
-				responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(),
-						true, result, null);
+				}*/
+				responseObject = new ResultRpcResponse(rpc.getId(), result1);
 			}
 			if (index == 0) {
 				if (storage.containsValue(rpc.getDestination())) {
@@ -240,9 +248,8 @@ public class RPCHandler {
 					File file = value.getFile();
 					try {
 						byte[] byteArray = Files.readAllBytes(file.toPath());
-						String result = Base64.encode(byteArray);
-						responseObject = RPCBuilder.RPCResponseFactory(
-								rpc.getId(), true, result, null);
+						ValueResult result = new ValueResult(byteArray);
+						responseObject = new ResultRpcResponse(rpc.getId(), result);
 					} catch (IOException e) {
 						throw new RPCException(JSONRPCError.NODE_STORAGE_ERROR);
 					}
@@ -264,9 +271,9 @@ public class RPCHandler {
 	 * @throws UnknownHostException
 	 * @throws RPCException
 	 */
-	private JSONObject handleLookupRequest() throws AddressException,
+	private RpcResponse handleLookupRequest() throws AddressException,
 			UnknownHostException, RPCException {
-		JSONObject responseObject;
+		RpcResponse responseObject;
 		try {
 			JSONObject params = rpc.getJSONObject("params");
 			Address dest = new Address(params.getString("destinationO"));// TODO
