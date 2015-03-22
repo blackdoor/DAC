@@ -45,7 +45,8 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	 * Constructs an AddressTable which will sort entries based on their distance to Address.nullOverlay
 	 */
 	public AddressTable() {
-		this(Address.getNullAddress());
+		super(Address.NaturalByteArrayComparator.INSTANCE);
+		setMaxSize(Integer.MAX_VALUE);
 	}
 
 	/**
@@ -57,6 +58,9 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 	}
 
 	public Address getReferenceAddress(){
+		if(comparator() == Address.NaturalByteArrayComparator.INSTANCE){
+			return Address.getNullAddress();
+		}
 		Address.OverlayComparator c = (Address.OverlayComparator) comparator();
 		return new Address(c.getReferenceAddress());
 	}

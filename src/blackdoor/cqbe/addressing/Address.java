@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
  * This class is the superclass of all addresses that might be encountered in an overlay network.
  * That is, all addresses have an overlay address.
  */
-public class Address implements Serializable {
+public class Address implements Serializable{
 
     /**
      * The size of an overlay address, in bytes.
@@ -169,6 +169,16 @@ public class Address implements Serializable {
 
     public String toString(){
         return overlayAddressToString();
+    }
+    
+    public enum NaturalByteArrayComparator implements Comparator<byte[]>{
+		INSTANCE;
+
+		@Override
+		public int compare(byte[] arg0, byte[] arg1) {
+			return new BigInteger(arg0).compareTo(new BigInteger(arg1));
+		}
+    	
     }
 
 	public static class OverlayComparator implements Comparator<byte[]> {

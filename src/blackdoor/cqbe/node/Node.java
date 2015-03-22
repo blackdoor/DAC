@@ -21,7 +21,8 @@ import java.io.*;
  * @author nfischer3
  *
  */
-public class Node {
+public enum Node {
+	INSTANCE;
 
 	private static Node singleton;
 	private Server server;
@@ -79,9 +80,6 @@ public class Node {
 
 		return new Address(c.getReferenceAddress());
 
-	}
-
-	protected Node() {
 	}
 
 	private void startServer(int port) throws ServerException {
@@ -253,7 +251,8 @@ public class Node {
 			}
 			if (!logDir.equals(""))
 				DBP.setLogFileLocation(logDir);
-			Node node = new Node();
+			Node.singleton = Node.INSTANCE;// node = new Node();
+			Node node = Node.INSTANCE;
 			node.configureAddressing(port);
 			node.storageController = new StorageController(new File(
 					this.storageDir).toPath(), node.addressTable);
