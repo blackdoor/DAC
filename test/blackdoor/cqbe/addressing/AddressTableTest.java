@@ -33,6 +33,15 @@ public class AddressTableTest {
 		table.trim();
 		assertEquals(table.size(), 10);
 	}
+	
+	@Test
+	public void testBigTable() throws Exception{
+		AddressTable table = new AddressTable();
+		for(int i = 1; i < AddressTable.DEFAULT_MAX_SIZE * 1.5; i++){
+			table.add(new L3Address(InetAddress.getByName("192.168.1.101"), i));
+		}
+		assertTrue(table.size() > AddressTable.DEFAULT_MAX_SIZE);
+	}
 
 	@Test
 	public void testFromJSONArray() {
