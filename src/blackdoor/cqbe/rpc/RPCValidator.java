@@ -27,30 +27,31 @@ public class RPCValidator {
 	private String call;
 	private SocketIOWrapper io;
 
-	public RPCValidator(String rpcCall, SocketIOWrapper oStream) {
+	public RPCValidator(String rpcCall, SocketIOWrapper io) {
 		call = rpcCall;
-		io = oStream;
+		this.io = io;
 	}
 
-	public void handle() {
+	public JSONObject handle() {
 		String validity = isValid(call);
+		JSONObject jo = null;
 		try {
 			if (validity.equals("valid")) {
 				// Handle the call by passing off to the handler.
 				// String methodCalled = call.getString("method");
-				RPCHandler handler = new RPCHandler(io, new JSONObject(call));
-				handler.handle();
+				RPCHandler handler = new RPCHandler(new JSONObject(call), io);
+				jo = handler.handle();
 			} else {
-				JSONObject error = buildError(
+				jo = buildError(
 						validity,
 						validity.equals("parse") ? -1 : new JSONObject(call)
 								.getInt("id"));
-				io.write(error.toString());
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			DBP.printException(e1);
 		}
+		return jo;
 	}
 
 	public JSONObject buildError(String errorStyle, int id) {
