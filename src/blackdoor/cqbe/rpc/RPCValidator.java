@@ -14,7 +14,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.node.server.RPCHandler;
-
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
 /**
@@ -36,27 +35,30 @@ public class RPCValidator {
 
 	public RpcResponse handle(String rpcRequest) {
 		RpcResponse response = null;
+		Rpc request = null;
 		try {
-			Rpc request = Rpc.fromJsonString(rpcRequest);
+			request = Rpc.fromJsonString(rpcRequest);
 			if (isValid(request)) {
 				RPCHandler handler = new RPCHandler(io);
 				response = handler.handle(request);
-
-			} else {
+			} else
 				response = buildError(request);
-			}
 		} catch (RPCException e) {
-			// problem putting the rpc into the rpc object --
-			// so a parsing problem probably....
-
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//problems unpacking 
+			response = new ErrorRpcResponse(request,e.getRPCError());
+		} catch (IOException e) {
+			// TODO What do? shutdown had issues..... 
 		}
-
 		return response;
 	}
 
-	public RpcResponse buildError(Rpc erpc) {
+	public RpcResponse buildError(Rpc request) {
+		//ErrorRpcResponse response =
+		if(!hasValidAddress(request))
+			return  new ErrorRpcResponse(request,RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);;
+		if(!hasValidSourceport(request))
+			//TODO probably need a more specific exception here.... 
+			return  new ErrorRpcResponse(request,RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);;
 		return null;
 	}
 
@@ -68,27 +70,33 @@ public class RPCValidator {
 	 * @return String detailing whether the JSONObject is valid or not.
 	 */
 	public boolean isValid(Rpc request) {
-		Rpc
-		// Check for validity of params
-		// Not really sure how to do this with overlay addresses yet lawl
-		String ip = params.getString("sourceIP");
-		if(ip.equals("localhost"))
-			return "valid";
-		int port = params.getInt("sourcePort");
-		final String PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
-		Pattern pattern = Pattern.compile(PATTERN);
-		Matcher matcher = pattern.matcher(ip);
-		if (!matcher.matches()) {
-			return "params";
-		}
+		if(!hasValidAddress(request))
+			return false;
+		if(!hasValidSourceport(request))
+			return false;
+//		Rpc
+//		// Check for validity of params
+//		// Not really sure how to do this with overlay addresses yet lawl
+//		String ip = params.getString("sourceIP");
+//		if(ip.equals("localhost"))
+//			return "valid";
+//		int port = params.getInt("sourcePort");
+//		final String PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+//		Pattern pattern = Pattern.compile(PATTERN);
+//		Matcher matcher = pattern.matcher(ip);
+//		if (!matcher.matches()) {
+//			return "params";
+//		}
 		return true;
 	}
 
 	public boolean hasValidAddress(Rpc request) {
+		//TODO what makes a valid address????
 		return true;
 	}
 
 	public boolean hasValidSourceport(Rpc request) {
+		//TODO hardcoded port values???
 		int port = request.getSource().getPort();
 		if (port < 0 || port > 61001) {
 			return false;
