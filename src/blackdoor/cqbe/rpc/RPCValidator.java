@@ -18,7 +18,7 @@ import blackdoor.cqbe.node.server.RPCHandler;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
 /**
- * 
+ * This class validates RPC calls and checks that they follow accepted convention for an RPC Call
  * @author Cyril Van Dyke
  * @version 0.0.4 12/03/2014
  *

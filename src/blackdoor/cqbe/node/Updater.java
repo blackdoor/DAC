@@ -25,8 +25,8 @@ import blackdoor.util.DBP;
 /**
  * @author Cyril Van Dyke
  * @version 1.1
- * This class operates on a dedicated thread and maintains the 
- *
+ * This class operates on a dedicated thread and maintains the AddressTable of the node that spawns it.
+ * The Updater adds and removes Addresses from the AddressTable based on their responses to RPC Pings.
  */
 public class Updater implements Runnable {
 	
@@ -62,16 +62,30 @@ public class Updater implements Runnable {
 		DBP.printwarningln("Updater is stopping!");
 	}
 	
+	/**
+	 * The schedule function fires every time an amount of seconds has passed.
+	 * This amount of time is defined by updateInterval.
+	 * When the schedule function fires, Update is called.
+	 * @throws InterruptedException
+	 */
 	protected void schedule() throws InterruptedException{
 		Thread.sleep(updateInterval * 1000);
 		update();
 	}
 	
+	/**
+	 * Stops the updater from functioning, which interrupts the thread of the updater.
+	 */
 	public void stop(){
 		running = false;
 		updaterThread.interrupt();
 	}
 	
+	/**
+	 * Raises an L3Address's placement in the strikelist
+	 * If the address already has two strikes against it, the address is removed from the addresstable.
+	 * @param addr - The address to be moved up in the strike list.
+	 */
 	protected void strike(L3Address addr){
 		//DBP.printdemoln("striking " + addr);
 		if(strikeList.containsKey(addr)){
@@ -87,6 +101,11 @@ public class Updater implements Runnable {
 		}
 	}
 	
+	/**
+	 * Lowers an addresses placement in the strikelist
+	 * If the address has no more remaining strikes against it, the address is removed from the strikelist.
+	 * @param addr - The address to be lowered in the strike list.
+	 */
 	protected void forgive(L3Address addr){
 		if(strikeList.containsKey(addr)){
 			strikeList.put(addr, strikeList.get(addr) - 1);
@@ -95,6 +114,13 @@ public class Updater implements Runnable {
 		}
 	}
 	
+	/**
+	 * The primary function of the Updater class
+	 * This function checks for a response for all addresses in the address table.
+	 * Nonresponsive addresses are put on the strike list or removed.
+	 * If the addressTable is not full after removals, Update calls function to refill the addressTable.
+	 * @throws InterruptedException
+	 */
 	protected void update() throws InterruptedException{
 		DBP.printdebugln(Node.getAddressTable());
 		//DBP.printdemoln(Node.getAddressTable().size());
@@ -203,6 +229,7 @@ public class Updater implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
 	
 	private static class AddressUpdateThread implements Runnable{
 		
