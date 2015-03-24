@@ -257,7 +257,7 @@ public class RPCHandler {
 	}
 
 	/**
-	 *
+	 * Takes a lookup request returns the AddressTable requested.
 	 * @return A JSON response object to be sent back over the socket/stream
 	 * @throws AddressException
 	 * @throws UnknownHostException
@@ -303,6 +303,11 @@ public class RPCHandler {
 		return responseObject;
 	}
 
+	/**
+	 * Takes a shutdown request and shuts down the target node.
+	 * @throws IOException
+	 * @throws RPCException
+	 */	
 	private void handleShutdown() throws RPCException, IOException {
 		Socket sock = io.getSocket();
 		if (!sock.getInetAddress().isLoopbackAddress()

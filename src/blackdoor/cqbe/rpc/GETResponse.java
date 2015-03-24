@@ -19,6 +19,11 @@ import blackdoor.util.DBP;
 public interface GETResponse {
 	public Object getResult();
 	
+	/**
+	 * A Factory structure that builds Get RPC responses.
+	 * Different GET responses are built based upon the request.
+	 *
+	 */
 	public static class GETResponseFactory{
 		public static GETResponse multipleReturnTypeDerp(JSONObject responseObject) throws RPCException{
 			if(!RPCValidator.isValidoopResponse(responseObject))

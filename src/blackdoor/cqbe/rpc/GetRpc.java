@@ -2,6 +2,10 @@ package blackdoor.cqbe.rpc;
 
 import org.json.JSONObject;
 
+/**
+ * A GETRpc subclass built upon the RPC Class.
+ * A GET Rpc requests something from another node, which will be returned in the response RPC.
+ */
 public class GetRpc extends Rpc{
 	protected int index;
 

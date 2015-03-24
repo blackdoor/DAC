@@ -113,8 +113,9 @@ public class Server implements Runnable {
 	}
 
 	/**
- * 
- */
+	 * Opens the socket on the server, returns ServerException errors if this cannot be done.
+	 * @throws ServerException
+	 */
 	private void openServerSocket() throws ServerException {
 		try {
 			this.serverSocket = new ServerSocket(this.port);
@@ -128,7 +129,7 @@ public class Server implements Runnable {
 
 	/**
 	 * 
-	 * @return
+	 * @return a ThreadPoolExecutor that is the thread pool of the Server
 	 */
 	private ThreadPoolExecutor getPool() {
 		int cpus = Runtime.getRuntime().availableProcessors();

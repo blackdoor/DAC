@@ -111,10 +111,10 @@ public class Router {
 	}
 	
 	/**
-	 * 
+	 * Pings an address to see if it is still responsive on the network, expecting a pong response.
 	 * @param remoteNode
 	 * @param destination
-	 * @return true if pong
+	 * @return true if pong, false if no response.
 	 * @throws RPCException 
 	 * @throws IOException 
 	 */
@@ -235,6 +235,15 @@ public class Router {
 		return max;
 	}
 	
+	/**
+	 * Stores the byte array value into the destination Address's storage if possible.
+	 * @param remoteNode
+	 * @param destination
+	 * @param value
+	 * @return True if the value was correctly put into the destination AddressTable
+	 * @throws IOException
+	 * @throws RPCException
+	 */
 	//TODO use some OOD to associate destination and value. destination might have value in it like an L3Address, or destination can be a Class object that is a subtype of Address, and use that class to build an Oaddr from value.
 	public static boolean primitivePut(L3Address remoteNode, Address destination, byte[] value) throws IOException, RPCException{
 		JSONObject requestObject = null;
