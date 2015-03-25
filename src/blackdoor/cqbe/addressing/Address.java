@@ -6,6 +6,7 @@ import blackdoor.util.Misc;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.StringTokenizer;
 
@@ -220,6 +221,13 @@ public class Address implements Serializable {
         }
     }
 
+	public Address getComplement(){
+		BitSet a = new BitSet();
+		a = BitSet.valueOf(this.getOverlayAddress());
+		a.xor(BitSet.valueOf(Address.getFullOverlay()));
+		return new Address(a.toByteArray());
+	}
+	
 	/**
 	 * A comparator for Addresses. Distance between Addresses is defined as the Hamming weight of the first address XOR'd with the second.
 	 * Since two addresses can only have a distance between them a reference point is needed to determine which is greater than the other.
