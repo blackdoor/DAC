@@ -50,7 +50,6 @@ public class Updater implements Runnable {
 				schedule();
 			} catch (InterruptedException e) {
 				DBP.printwarningln("Updater thread interrupted!");
-				run();
 			}
 		}
 		DBP.printwarningln("Updater is stopping!");
