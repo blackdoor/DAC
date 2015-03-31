@@ -12,7 +12,7 @@ public class TableResult extends JSONRPCResult {
 	
 	private AddressTable table;
 
-	protected TableResult(AddressTable table) {
+	public TableResult(AddressTable table) {
 		super(ResultType.AT);
 		this.table = table;
 	}

@@ -1,11 +1,6 @@
 package blackdoor.cqbe.rpc;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
@@ -33,6 +28,11 @@ public class RPCValidator {
 		this.io = io;
 	}
 
+	/**
+	 * 
+	 * @param rpcRequest
+	 * @return
+	 */
 	public RpcResponse handle(String rpcRequest) {
 		RpcResponse response = null;
 		Rpc request = null;
@@ -44,21 +44,19 @@ public class RPCValidator {
 			} else
 				response = buildError(request);
 		} catch (RPCException e) {
-			//problems unpacking 
-			response = new ErrorRpcResponse(request,e.getRPCError());
+			// problems unpacking
+			response = new ErrorRpcResponse(request, e.getRPCError());
 		} catch (IOException e) {
-			// TODO What do? shutdown had issues..... 
+			// TODO What do? shutdown had issues.....
 		}
 		return response;
 	}
 
 	public RpcResponse buildError(Rpc request) {
-		//ErrorRpcResponse response =
-		if(!hasValidAddress(request))
-			return  new ErrorRpcResponse(request,RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);;
-		if(!hasValidSourceport(request))
-			//TODO probably need a more specific exception here.... 
-			return  new ErrorRpcResponse(request,RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);;
+		// ErrorRpcResponse response =
+		if (!hasValidAddress(request) || !hasValidSourceport(request))
+			return new ErrorRpcResponse(request,
+					RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
 		return null;
 	}
 
@@ -70,33 +68,32 @@ public class RPCValidator {
 	 * @return String detailing whether the JSONObject is valid or not.
 	 */
 	public boolean isValid(Rpc request) {
-		if(!hasValidAddress(request))
+		// TODO there are probably more things that make an RPC valid that arent
+		// being checked here...
+		if (!hasValidAddress(request))
 			return false;
-		if(!hasValidSourceport(request))
+		if (!hasValidSourceport(request))
 			return false;
-//		Rpc
-//		// Check for validity of params
-//		// Not really sure how to do this with overlay addresses yet lawl
-//		String ip = params.getString("sourceIP");
-//		if(ip.equals("localhost"))
-//			return "valid";
-//		int port = params.getInt("sourcePort");
-//		final String PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
-//		Pattern pattern = Pattern.compile(PATTERN);
-//		Matcher matcher = pattern.matcher(ip);
-//		if (!matcher.matches()) {
-//			return "params";
-//		}
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public boolean hasValidAddress(Rpc request) {
-		//TODO what makes a valid address????
+		// TODO what makes a valid address????
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public boolean hasValidSourceport(Rpc request) {
-		//TODO hardcoded port values???
+		// TODO hardcoded port values???
 		int port = request.getSource().getPort();
 		if (port < 0 || port > 61001) {
 			return false;

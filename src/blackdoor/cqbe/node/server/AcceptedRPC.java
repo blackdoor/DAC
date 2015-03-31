@@ -31,10 +31,12 @@ public class AcceptedRPC implements Runnable {
  */
 	@Override
 	public void run() {
-		RPCValidator rv = new RPCValidator(io);
-		RpcResponse result = rv.handle(read());
-		write(result);
+		RPCHandler rv = new RPCHandler(io);
+		RpcResponse result;
 		try {
+			String request = read();
+			result = rv.handle(request);
+			write(result);
 			io.close();
 		} catch (IOException e) {
 			DBP.printerror("Problem closing socket...");
@@ -63,7 +65,7 @@ public class AcceptedRPC implements Runnable {
 	 */
 	private void write(RpcResponse result) {
 		try {
-			if(result != null)
+			if (result != null)
 				io.write(result);
 		} catch (IOException e) {
 			DBP.printerror("Problem writing to Socket...");
