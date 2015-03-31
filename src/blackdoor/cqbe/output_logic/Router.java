@@ -1,26 +1,22 @@
 package blackdoor.cqbe.output_logic;
 
+import blackdoor.cqbe.addressing.Address;
+import blackdoor.cqbe.addressing.AddressTable;
+import blackdoor.cqbe.addressing.L3Address;
+import blackdoor.cqbe.node.Node;
+import blackdoor.cqbe.rpc.*;
+import blackdoor.cqbe.rpc.GETResponse.GETResponseFactory;
+import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
+import blackdoor.cqbe.settings.Config;
+import blackdoor.net.SocketIOWrapper;
+import blackdoor.util.DBP;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import blackdoor.cqbe.node.Node;
-import blackdoor.cqbe.rpc.GETResponse;
-import blackdoor.cqbe.rpc.GETResponse.GETResponseFactory;
-import blackdoor.cqbe.rpc.RPCBuilder;
-import blackdoor.cqbe.rpc.RPCException;
-import blackdoor.cqbe.rpc.ShutdownRpc;
-import blackdoor.cqbe.rpc.RPCException.*;
-import blackdoor.cqbe.rpc.RPCValidator;
-
-import org.json.*;
-
-import blackdoor.cqbe.addressing.*;
-import blackdoor.net.SocketIOWrapper;
-import blackdoor.util.DBP;
+import java.util.*;
 
 /**
  * Responsibility - Handles routing through the overlay network, resolution of overlay addresses, sending RPCs and resolving replies
@@ -28,6 +24,8 @@ import blackdoor.util.DBP;
  *
  */
 public class Router {
+	
+	public static int PARALLELISM = (int) Config.getReadOnly("node_update_parallelism","default.config");
 	
 	private AddressTable bootstrapTable;
 
@@ -339,47 +337,113 @@ public class Router {
 		return ret;
 	}
 	
+	public AddressTable iterativeLookup(Address destination, int α, int n){
+		return iterativeLookup(destination, α, n, AddressTable.DEFAULT_MAX_SIZE * 2);
+	}
+	
+	public AddressTable iterativeLookup(Address destination, int α, int n, int Ω){
+		AddressTable rt = new AddressTable(destination);
+		AddressTable q = new AddressTable(destination);
+		Set<Address> visited = Collections.synchronizedSet(new HashSet<Address>());
+		List<Thread> pool = new LinkedList<Thread>();
+
+		q.setMaxSize(Ω);
+		rt.setMaxSize(n);
+		
+		q.addAll(this.bootstrapTable.values());
+		
+		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM; i++){
+			Thread t = new Thread(new IterativeLookupThread(destination, α, n, rt, q, visited));
+			pool.add(t);
+			t.start();
+		}
+		
+		for(boolean interrupted = true; interrupted;){
+			interrupted = false;
+			try {
+				for(Thread t : pool){
+					
+						t.join();	
+				}
+			} catch (InterruptedException e) {
+				interrupted = true;
+			}
+		}
+		
+		return rt;
+	}
+	
+	private class IterativeLookupThread implements Runnable{
+		
+		AddressTable rt;
+		AddressTable q;
+		Set<Address> visited;
+		Address destination;
+		int α; 
+		int n;
+		
+		public IterativeLookupThread(Address destination, int α, int n, AddressTable rt, AddressTable q,
+				Set<Address> visited) {
+			super();
+			this.rt = rt;
+			this.q = q;
+			this.visited = visited;
+			this.destination = destination;
+			this.α = α;
+			this.n = n;
+		}
+
+		@Override
+		public void run() {
+			boolean empty = false;
+			
+			
+			for(L3Address address = q.pollFirstEntry().getValue(); address != null || !empty; address = q.pollFirstEntry().getValue()){
+				AddressTable response;
+				visited.add(address);
+				
+				try {
+					response = primitiveLookup(address, destination);
+					rt.add(address);
+					response.values().removeAll(visited);
+					
+					if(rt.size() >= n){
+						AddressTable tmp = new AddressTable(destination);
+						tmp.setMaxSize(α);
+						tmp.addAll(response.values());
+						response = tmp;
+					}
+					
+					q.addAll(response.values());				
+										
+				} catch (IOException | RPCException e1) {
+					DBP.printException(e1);
+					DBP.printwarningln(address + " did not respond during iterative lookup.");
+				}
+				
+				if(address == null){
+					empty = true;
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						DBP.printException(e);
+					}
+				}else{
+					empty = false;
+				}
+			}
+			
+		}
+		
+	}
+	
 	/**
 	 * Resolve the network layer addresses and ports of neighbors to destination by routing through the network.
 	 * @param destination an overlay address for which nearby layer 3 addresses should be resolved.
 	 * @return an AddressTable filled with the nearest neighbors of destination.
 	 */
 	public AddressTable iterativeLookup(Address destination){//TODO rename this
-		AddressTable rrt = bootstrapTable.clone();
-		AddressTable nrt = new AddressTable(destination);
-		HashSet<L3Address> visited= new HashSet<L3Address>();
-		boolean changed = true;
-		while(changed){
-			for(L3Address a : rrt.values()){
-				if(visited.contains(a))
-					continue;
-				AddressTable candidates = null; // candidates for the NRT returned by a
-				//visit a, get addresses
-				try{
-					candidates = primitiveLookup(a, destination);
-				}catch(IOException ioE){
-					DBP.printerrorln(ioE);
-				}catch (RPCException e) {
-					// catch exceptions where a responds over socket, but not with valid lookup response
-					DBP.printerrorln(e);
-				}
-				//remove from rrt if a does not respond
-				if(candidates == null){
-					rrt.remove(a);
-					continue;
-				}
-				//add addresses to NRT
-				for(L3Address c : candidates.values()){
-					if(visited.contains(c))
-						continue;
-					nrt.add(c);
-				}
-				visited.add(a);
-			}
-			changed = rrt.addAll(nrt.values());
-			nrt.clear();
-		}
-		return rrt;
+		return iterativeLookup(destination, AddressTable.DEFAULT_MAX_SIZE, AddressTable.DEFAULT_MAX_SIZE);
 	}
 	
 	/**

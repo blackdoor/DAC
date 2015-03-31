@@ -1,4 +1,4 @@
-package blackdoor.cqbe.test;
+package blackdoor.cqbe.node.server;
 
 import java.io.PrintWriter;
 import java.net.InetAddress;

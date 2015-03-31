@@ -1,4 +1,4 @@
-package blackdoor.cqbe.test;
+package blackdoor.cqbe.output_logic;
 
 import java.io.IOException;
 import java.net.InetAddress;

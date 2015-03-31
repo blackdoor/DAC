@@ -1,4 +1,4 @@
-package blackdoor.cqbe.test;
+package blackdoor.cqbe.addressing;
 
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
