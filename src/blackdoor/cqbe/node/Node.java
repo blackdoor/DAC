@@ -14,6 +14,8 @@ import blackdoor.util.DBP.SingletonAlreadyInitializedException;
 import blackdoor.cqbe.node.NodeException.*;
 
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 
 /**
@@ -130,8 +132,8 @@ public enum Node {
 
 	public static void shutdown() {
 		Node inst = getInstance();
-		inst.server.stop();
 		inst.updater.stop();
+		inst.server.stop();
 	}
 
 	/**
@@ -241,13 +243,29 @@ public enum Node {
 		 * 
 		 * @throws ServerException
 		 * @throws SingletonAlreadyInitializedException 
+		 * @throws IOException 
 		 * 
 		 * @throws Exception
 		 */
-		public Node buildNode() throws NodeException, ServerException, SingletonAlreadyInitializedException {
+		public Node buildNode() throws NodeException, ServerException, SingletonAlreadyInitializedException, IOException {
 			config.saveSessionToFile();
 			if (daemon) {
-				// TODO start a demon prossess depending on platform
+				List<String> commands = new ArrayList<String>();
+				commands.add("java");
+				commands.add("-jar");
+				commands.add("dh256.jar");
+				commands.add("join");
+				if (!adam && bootstrapNode != null) {
+					commands.add("-b");
+					commands.add(bootstrapNode.l3ToString());
+				}
+				else
+					commands.add("-a");
+				commands.add("-s");
+				commands.add((String) config.get("save_file"));
+				ProcessBuilder pb = new ProcessBuilder(commands);
+				pb.start();
+				return null;
 			}
 			if (!logDir.equals(""))
 				DBP.setLogFileLocation(logDir);
