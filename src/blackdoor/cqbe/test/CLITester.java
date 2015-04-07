@@ -31,12 +31,12 @@ public class CLITester {
 		//String[] args2 = {"retrieve", "8E:3F:08:DF:93:E5:0C:50:EB:59:25:58:88:38:8F:00", "-d", "yay.txt", "-b",address.getHostAddress() + ":1776"};
 		//String[] args2 = {"insert","file.txt","-b", address.getHostAddress() + ":1776"};
 		//String[] args2 = {"join","-a","-dm"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1779"};
+		String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1779"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1780"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1781"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1782"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1783"};
-		String[] args2 = {"shutdown", "-p", "1776"};
+		//String[] args2 = {"shutdown", "-p", "1776"};
 		dh256.main(args2);
 
 	}
