@@ -72,7 +72,7 @@ public class Updater implements Runnable {
 			strikeList.put(addr, strikeList.get(addr) + 1);
 			if(strikeList.get(addr) > 2){
 				if(Node.getAddressTable().contains(addr))
-					DBP.printdemoln("Removing " + addr.l3ToString() + " from table");
+					DBP.printdevln("Removing " + addr + " from address table due to 3d strike");
 				Node.getAddressTable().remove(addr);
 				strikeList.remove(addr);
 			}
@@ -90,7 +90,7 @@ public class Updater implements Runnable {
 	}
 	
 	protected void update() throws InterruptedException{
-		DBP.printdebugln(Node.getAddressTable());
+		//DBP.printdebugln(Node.getAddressTable());
 		//DBP.printdemoln(Node.getAddressTable().size());
 		//find new neighbors
 	
@@ -229,8 +229,6 @@ public class Updater implements Runnable {
 				}else{
 					try {
 						if(Router.ping(node)){
-							if(!Node.getAddressTable().contains(node))
-								DBP.printdemoln("Adding " + node.l3ToString() + " to table from updater");
 							Node.getAddressTable().add(node);
 							ref.forgive(node);
 						}else{

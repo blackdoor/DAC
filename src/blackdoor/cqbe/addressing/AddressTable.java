@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import blackdoor.cqbe.settings.Config;
+import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.settings.ConfigurationException.ConfigFileNotFoundException;
 import blackdoor.util.DBP;
 
@@ -133,7 +134,19 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		L3Address absent = putIfAbsent(value.getOverlayAddress(), value);
 		if(absent == null){
 			absent = put(null, value);
-			if(size() >= maxSize){
+			if(size() < maxSize){
+				if(Node.INSTANCE != null || this == Node.getAddressTable())
+					DBP.printdevln("Adding   " + value + " to address table");
+			}
+			else{
+				if(!pollLastEntry().getValue().equals(value))
+				{
+					if(Node.INSTANCE != null || this == Node.getAddressTable())
+					{
+						DBP.printdevln("Removing " + value + " from address table due to full table");
+						DBP.printdevln("Adding   " + value + " to address table");
+					}
+				}
 				return pollLastEntry().getValue();
 			}
 		}
