@@ -250,19 +250,20 @@ public enum Node {
 		public Node buildNode() throws NodeException, ServerException, SingletonAlreadyInitializedException, IOException {
 			config.saveSessionToFile();
 			if (daemon) {
+				config.put("save_file", "dmSettings.txt");
+				config.saveSessionToFile();
 				List<String> commands = new ArrayList<String>();
 				commands.add("java");
 				commands.add("-jar");
 				commands.add("dh256.jar");
 				commands.add("join");
 				if (!adam && bootstrapNode != null) {
-					commands.add("-b");
 					commands.add(bootstrapNode.l3ToString());
 				}
 				else
 					commands.add("-a");
 				commands.add("-s");
-				commands.add((String) config.get("save_file"));
+				commands.add("dmSettings.txt");
 				ProcessBuilder pb = new ProcessBuilder(commands);
 				pb.start();
 				return null;
