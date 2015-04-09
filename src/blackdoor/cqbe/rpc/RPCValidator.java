@@ -1,11 +1,6 @@
 package blackdoor.cqbe.rpc;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
@@ -14,7 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import blackdoor.cqbe.node.server.RPCHandler;
-
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
 /**
@@ -24,57 +18,46 @@ import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
  *
  */
 public class RPCValidator {
-	private String call;
-	private SocketIOWrapper io;
+	private SocketIOWrapper io = null;
 
-	public RPCValidator(String rpcCall, SocketIOWrapper oStream) {
-		call = rpcCall;
-		io = oStream;
+	public RPCValidator() {
+
 	}
 
-	public void handle() {
-		String validity = isValid(call);
+	public RPCValidator(SocketIOWrapper io) {
+		this.io = io;
+	}
+
+	/**
+	 * 
+	 * @param rpcRequest
+	 * @return
+	 */
+	public RpcResponse handle(String rpcRequest) {
+		RpcResponse response = null;
+		Rpc request = null;
 		try {
-			if (validity.equals("valid")) {
-				// Handle the call by passing off to the handler.
-				// String methodCalled = call.getString("method");
-				RPCHandler handler = new RPCHandler(io, new JSONObject(call));
-				handler.handle();
-			} else {
-				JSONObject error = buildError(
-						validity,
-						validity.equals("parse") ? -1 : new JSONObject(call)
-								.getInt("id"));
-				io.write(error.toString());
-			}
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			DBP.printException(e1);
+			request = Rpc.fromJsonString(rpcRequest);
+			if (isValid(request)) {
+				RPCHandler handler = new RPCHandler(io);
+				response = handler.handle(request);
+			} else
+				response = buildError(request);
+		} catch (RPCException e) {
+			// problems unpacking
+			response = new ErrorRpcResponse(request, e.getRPCError());
+		} catch (IOException e) {
+			// TODO What do? shutdown had issues.....
 		}
+		return response;
 	}
 
-	public JSONObject buildError(String errorStyle, int id) {
-		JSONObject error = null;
-		Integer _id = id == -1 ? null : id;
-		if (errorStyle.equals("parse"))
-			error = RPCBuilder.RPCResponseFactory(_id, false, null,
-					RPCException.JSONRPCError.PARSE_ERROR);
-		if (errorStyle.equals("invalid"))
-			error = RPCBuilder.RPCResponseFactory(_id, false, null,
-					RPCException.JSONRPCError.INVALID_REQUEST);
-		if (errorStyle.equals("method"))
-			error = RPCBuilder.RPCResponseFactory(_id, false, null,
-					RPCException.JSONRPCError.METHOD_NOT_FOUND);
-		if (errorStyle.equals("params"))
-			error = RPCBuilder.RPCResponseFactory(_id, false, null,
-					RPCException.JSONRPCError.INVALID_PARAMS);
-		if (errorStyle.equals("internal"))
-			error = RPCBuilder.RPCResponseFactory(_id, false, null,
-					RPCException.JSONRPCError.INTERNAL_ERROR);
-		if (error == null)
-			error = RPCBuilder.RPCResponseFactory(_id, false, null,
-					RPCException.JSONRPCError.NODE_SHAT);
-		return error;
+	public RpcResponse buildError(Rpc request) {
+		// ErrorRpcResponse response =
+		if (!hasValidAddress(request) || !hasValidSourceport(request))
+			return new ErrorRpcResponse(request,
+					RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
+		return null;
 	}
 
 	/**
@@ -84,65 +67,38 @@ public class RPCValidator {
 	 * @param String
 	 * @return String detailing whether the JSONObject is valid or not.
 	 */
-	public static String isValid(String call) {
-		JSONObject jCall;
-		try {
-			jCall = new JSONObject(call);
+	public boolean isValid(Rpc request) {
+		// TODO there are probably more things that make an RPC valid that arent
+		// being checked here...
+		if (!hasValidAddress(request))
+			return false;
+		if (!hasValidSourceport(request))
+			return false;
+		return true;
+	}
 
-		} catch (JSONException e) {
-			DBP.printException(e);
-			return "parse";
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public boolean hasValidAddress(Rpc request) {
+		// TODO what makes a valid address????
+		return true;
+	}
 
-		}
-		JSONObject params = new JSONObject();
-		String methodName = "";
-		if (!jCall.has("method") || !jCall.has("params")
-				|| !jCall.has("jsonrpc")) {
-			return "invalid";
-		} else {
-			methodName = jCall.getString("method");
-			params = jCall.getJSONObject("params");
-		}
-		if (!jCall.getString("jsonrpc").equals("2.0"))
-			return "invalid";
-		if (!params.has("sourceIP") || !params.has("sourcePort") || !params.has("destinationO")) {
-			return "params";
-		}
-		if (methodName.equalsIgnoreCase("PUT") && !params.has("value")) {
-			return "params";
-		}
-		if (methodName.equalsIgnoreCase("GET") && !params.has("index")) {
-			return "params";
-		}
-		if (methodName.equalsIgnoreCase("SHUTDOWN")
-				&& !params.has("sourcePort")) {
-			return "params";
-		}
-		if (!methodName.equalsIgnoreCase("PING")
-				&& !methodName.equalsIgnoreCase("PONG")
-				&& !methodName.equalsIgnoreCase("LOOKUP")
-				&& !methodName.equalsIgnoreCase("PUT")
-				&& !methodName.equalsIgnoreCase("GET")
-				&& !methodName.equalsIgnoreCase("SHUTDOWN")) {
-			return "method";
-		}
-		// Check for validity of params
-		// Not really sure how to do this with overlay addresses yet lawl
-		String ip = params.getString("sourceIP");
-		if(ip.equals("localhost"))
-			return "valid";
-		int port = params.getInt("sourcePort");
-		final String PATTERN = "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
-		Pattern pattern = Pattern.compile(PATTERN);
-		Matcher matcher = pattern.matcher(ip);
-		if (!matcher.matches()) {
-			return "params";
-		}
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public boolean hasValidSourceport(Rpc request) {
+		// TODO hardcoded port values???
+		int port = request.getSource().getPort();
 		if (port < 0 || port > 61001) {
-			return "params";
+			return false;
 		}
-
-		return "valid";
+		return true;
 	}
 
 	/**
@@ -159,8 +115,8 @@ public class RPCValidator {
 		try {
 			// check version and id
 			if (!response.getString("jsonrpc").equals("2.0")
-					|| !response.has("id")) {// TODO maybe add checking for
-												// value of id
+					|| !response.has("id")) {
+				// TODO maybe add checking for value of id
 				return false;
 			}
 			if (response.has("result"))
