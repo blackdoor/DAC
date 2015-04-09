@@ -436,7 +436,7 @@ public class Router {
 	public static void shutDown(int port) throws IOException {
 		SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
 		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
-		//should I read here?
-		io.write(ShutdownRpc.HANDSHAKE);
+		int challenge = Integer.parseInt(io.read());
+		io.write(challenge);
 	}
 }

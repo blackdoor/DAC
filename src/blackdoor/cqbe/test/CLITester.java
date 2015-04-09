@@ -2,20 +2,12 @@ package blackdoor.cqbe.test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 
-import org.json.JSONObject;
-
-import blackdoor.cqbe.addressing.AddressTable;
-import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.cli.dh256;
-import blackdoor.cqbe.node.NodeException.CantGetAddress;
-import blackdoor.util.DBP;
 
 public class CLITester {
 
