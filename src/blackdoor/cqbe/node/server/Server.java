@@ -30,6 +30,11 @@ public class Server implements Runnable {
 	private ThreadPoolExecutor pool;
 	private BlockingQueue<Runnable> blockingQueue;
 	private Thread runningThread = null;
+	public static final int TIMEOUT;
+	static{
+		TIMEOUT = 5;
+		//add config code here;
+	}
 	private final int QUEUE_SIZE = (int) Config.getReadOnly("max_server_queue_size","default.config");
 
 	/**
@@ -85,7 +90,7 @@ public class Server implements Runnable {
 		pool.shutdown(); // Disable new tasks from being submitted
 		try {
 			// Wait a while for existing tasks to terminate
-			if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+			if (!pool.awaitTermination(TIMEOUT, TimeUnit.SECONDS))
 				pool.shutdownNow(); // Cancel currently executing tasks
 			if (!serverSocket.isClosed())
 				this.serverSocket.close();
@@ -99,6 +104,8 @@ public class Server implements Runnable {
 			pool.shutdownNow();
 			// Preserve interrupt status
 			Thread.currentThread().interrupt();
+		}finally{
+			pool.shutdownNow();
 		}
 	}
 
@@ -135,9 +142,8 @@ public class Server implements Runnable {
 		DBP.printdevln("Server Detects " + cpus + " cores.");
 		int core = 5 * cpus;
 		int max = 15 * cpus;
-		int timeout = 60;
 		TimeUnit time = TimeUnit.SECONDS;
-		ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, timeout,
+		ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, TIMEOUT,
 				time, blockingQueue);
 		return tmp;
 	}
