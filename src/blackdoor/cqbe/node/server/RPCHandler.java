@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.NavigableSet;
+import java.util.Random;
 
 import blackdoor.cqbe.rpc.AckResponse;
 import blackdoor.cqbe.rpc.PutRpc;
@@ -310,9 +311,10 @@ public class RPCHandler {
 				|| !sock.getLocalAddress().isLoopbackAddress()) {
 			throw new RPCException(JSONRPCError.NON_LO_SHUTDOWN);
 		}
-		io.write(ShutdownRpc.CHALLENGE);
+		int challenge = new Random().nextInt();
+		io.write(challenge);
 		String handshake = io.read();
-		if (!handshake.equals(ShutdownRpc.HANDSHAKE)) {
+		if (!handshake.equals(String.valueOf(challenge))) {
 			DBP.printerrorln("Shutdown request was recieved but sender was unable to handshake. "
 					+ "It is possible that this was an attempted loopback spoofing attack.");
 			return;
