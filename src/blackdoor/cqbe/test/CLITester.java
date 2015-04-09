@@ -35,7 +35,7 @@ public class CLITester {
 		//addSettings();
 		//String[] args2 = {"retrieve", "AC:B6:6E:9D:13:FE:13:D0:BE:AA:E2:D8:1F:BA:95:02:4E:B9:BE:72:2D:6F:F2:A0:67:FF:88:BC:1C:0A:C6:2C", "-d", "yay.txt", "-b","localhost:1778"};
 		//String[] args2 = {"insert","lol_file.txt","-b","localhost:1778"};
-		//String[] args2 = {"join","-a", "-p", "1778"};
+//		String[] args2 = {"join","-a", "-p", "1778"};
 		
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1779"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780"};

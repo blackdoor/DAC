@@ -32,8 +32,7 @@ public class Server implements Runnable {
 	private Thread runningThread = null;
 	public static final int TIMEOUT;
 	static{
-		TIMEOUT = 5;
-		//add config code here;
+		TIMEOUT =  (int) Config.getReadOnly("node_timeout_in_seconds","default.config");
 	}
 	private final int QUEUE_SIZE = (int) Config.getReadOnly("max_server_queue_size","default.config");
 
