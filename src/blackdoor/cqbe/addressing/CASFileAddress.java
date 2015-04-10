@@ -12,7 +12,11 @@ import blackdoor.util.Misc;
 public class CASFileAddress extends FileAddress {
 	
 	
-	public static final int FILE_NAME_LEN = 89;
+	public static final int FILE_NAME_LEN;
+	static{
+		FILE_NAME_LEN = Math.min(89, Address.DEFAULT_ADDRESS_SIZE * 3 - 1);
+		
+	}
 	
 	public CASFileAddress(File f) throws IOException {
 		super.f = f;
