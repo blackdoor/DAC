@@ -109,7 +109,10 @@ public class StorageController implements Map<Address, FileAddress> {
 	}
 
 	public Address getHighest(){
-		return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable.lastEntry().getValue() : highest;
+		if(this.addressTable.size() < (this.addressTable.getMaxSize()*.9))
+			return isAutoRemappingEnabled() ? this.getReferenceAddress().getComplement(): highest;
+		else
+			return isAutoRemappingEnabled() ? addressTable.lastEntry().getValue() : highest;
 	}
 	
 	public synchronized void remap(Address nearest, Address farthest){

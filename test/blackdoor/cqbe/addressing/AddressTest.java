@@ -12,6 +12,7 @@ import blackdoor.util.Misc;
 public class AddressTest {
 	
 	byte[] array;
+	Address a;
 
 	@Before
 	public void setUp() throws Exception {
@@ -19,6 +20,7 @@ public class AddressTest {
 		for(int i = 0; i < array.length; i++){
 			array[i] = (byte) i;
 		}
+		a = new Address(array);
 	}
 
 	@Test
@@ -45,6 +47,12 @@ public class AddressTest {
 	@Test
 	public void testOverlayAddressToString() {
 		System.out.println(new Address(array));
+	}
+	
+	@Test
+	public void testComplementAddress() {
+		System.out.println(a);
+		System.out.println(a.getComplement());
 	}
 
 }

@@ -30,13 +30,15 @@ public class dh256 {
 	 */
 	public static void main(String[] args) {
 		DBP.DEMO = true;
+		DBP.DEV = true;
+		DBP.LOG_ALL = true;
 		try {
 			CommandLineParser clp = new CommandLineParser();
 			clp.setExecutableName("dh256");
 			clp.setUsageHint("\tmandatory options to long options are mandatory for short options too.\n"
 					+ "The subcommands for dh256 are:\n"
 					+ "\t join \n"
-					+ "\t insert \n" + "\t retrieve \n" + "\t leave \n");
+					+ "\t insert \n" + "\t retrieve \n" + "\t shutdown \n");
 			if (args.length > 0) {
 				String[] args2 = Arrays.copyOfRange(args, 1, args.length);
 				switch (args[0]) {
@@ -250,7 +252,7 @@ public class dh256 {
 				}
 				Address a = new Address(parsedArgs.get("fileoaddress").getValues().get(0));
 				byte[] response = router.get(a);
-				File fileDir = new File(parsedArgs.get("dir").getValue());
+				File fileDir = new File(parsedArgs.get("dir").getValues().get(0));
 				new CASFileAddress(fileDir, response);
 				if(existsAndReadable(fileDir))
 					System.out.println("the file was retrived to the specified directory successfully");

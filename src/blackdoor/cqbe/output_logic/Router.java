@@ -288,7 +288,7 @@ public class Router {
 		AddressTable neighbors = iterativeLookup(destination);
 		for(L3Address address : neighbors.values()){
 			response = call(address, request);
-			ret += response.getBoolean("result") ? 1 : 0;
+			ret += response.getJSONObject("result").getBoolean("result") ? 1 : 0;
 		}
 		return ret;
 	}
@@ -436,7 +436,7 @@ public class Router {
 	public static void shutDown(int port) throws IOException {
 		SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
 		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
-		//should I read here?
-		io.write(ShutdownRpc.HANDSHAKE);
+		int challenge = Integer.parseInt(io.read());
+		io.write(challenge);
 	}
 }
