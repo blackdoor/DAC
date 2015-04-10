@@ -135,17 +135,23 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		if(absent == null){
 			absent = put(null, value);
 			if(size() < maxSize){
-				if(Node.INSTANCE != null && this == Node.getAddressTable())
-					DBP.printdevln("Adding   " + value + " to address table");
+				try{
+					if(this == Node.getAddressTable())
+						DBP.printdevln("Adding   " + value + " to address table");
+				}
+				catch(ExceptionInInitializerError e){}
 			}
 			else{
 				if(!pollLastEntry().getValue().equals(value))
 				{
-					if(Node.INSTANCE != null && this == Node.getAddressTable())
-					{
-						DBP.printdevln("Removing " + value + " from address table due to full table");
-						DBP.printdevln("Adding   " + value + " to address table");
+					try{
+						if(this == Node.getAddressTable())
+						{
+							DBP.printdevln("Removing " + value + " from address table due to full table");
+							DBP.printdevln("Adding   " + value + " to address table");
+						}
 					}
+					catch(ExceptionInInitializerError e){}
 				}
 				return pollLastEntry().getValue();
 			}
