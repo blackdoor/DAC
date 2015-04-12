@@ -38,10 +38,10 @@ public abstract class RpcResponse implements Serializable {
 		}
 	}
 	
-	private int id;
+	private Integer id;
 	private boolean successful;
 
-	public RpcResponse(int id, boolean successful) {
+	public RpcResponse(Integer id, boolean successful) {
 		super();
 		this.id = id;
 		this.successful = successful;
@@ -50,14 +50,14 @@ public abstract class RpcResponse implements Serializable {
 	/**
 	 * @return the id
 	 */
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
 	/**
 	 * @param id the id to set
 	 */
-	protected void setId(int id) {
+	protected void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -78,7 +78,7 @@ public abstract class RpcResponse implements Serializable {
 	protected JSONObject getRpcOuterShell(){
 		   JSONObject shell = new JSONObject();
 		   shell.put("jsonrpc", "2.0");
-		   shell.put("id", getId());
+		   shell.put("id", getId() == -1 ? JSONObject.NULL : getId());
 		   return shell;
 	}
 	

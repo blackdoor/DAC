@@ -33,11 +33,15 @@ public class RPCBuilder {
 	}
 	
 	private JSONObject getDefaultParams() throws RPCException {
-		if (sourceIP == null || sourcePort == -1 || destinationO == null) {
+		if (destinationO == null) {
 			throw new RPCException(RPCException.JSONRPCError.INVALID_PARAMS);
 		}
 		else
 		{
+			if(sourceIP == null || sourcePort < 0){
+				sourceIP = L3Address.getNonNodeAddress().getLayer3Address();
+				sourcePort = L3Address.getNonNodeAddress().getPort();
+			}
 			JSONObject params = new JSONObject();
 			params.put("sourceO", new L3Address(sourceIP, sourcePort).overlayAddressToString());
 			params.put("sourceIP", sourceIP.getHostAddress());
@@ -71,11 +75,8 @@ public class RPCBuilder {
 	}
 	
 	public GetRpc buildGetObject(){
-		if(destinationO == null || sourceIP == null|| sourcePort == -1|| index == -1)
-			throw new RPCException.RPCCreationException("not enough parameters set");
 		GetRpc ret = new GetRpc();
-		ret.setDestination(getDestinationO());
-		ret.setSource(new L3Address(getSourceIP(), getSourcePort()));
+		populateDefaultParams(ret);
 		ret.index = getIndex();
 		return ret;
 	}
@@ -134,10 +135,11 @@ public class RPCBuilder {
 	}
 	
 	private void populateDefaultParams(Rpc rpc){
-		if(destinationO == null || sourceIP == null || sourcePort < 0)
+		if (destinationO == null || sourceIP == null || sourcePort < 0)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		rpc.setDestination(getDestinationO());
-		rpc.setSource(new L3Address(getSourceIP(), getSourcePort()));
+		rpc.setSource(getSource());
+		//rpc.setSource(new L3Address(getSourceIP(), getSourcePort()));
 	}
 	
 	public LookupRpc buildLookupObject(){

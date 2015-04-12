@@ -34,7 +34,7 @@ public class L3Address extends Address implements Serializable{
 	public static boolean isNonNodeAddress(L3Address address){
 		if(Address.isNonNodeAddress(address) ||
 				(isLoopbackAddress(address) && LOOPBACK_IS_NON_NODE) ||
-				address.equals(getNonNodeAddress()))
+				address.equals(getNonNodeAddress()) || address.getPort() <= 0)
 			return true;
 		return false;
 	}
