@@ -6,18 +6,38 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.xml.ws.Response;
+
+import org.json.JSONException;
+
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import blackdoor.cqbe.node.Node;
+import blackdoor.cqbe.node.server.RPCHandler;
+import blackdoor.cqbe.rpc.AckResponse;
+import blackdoor.cqbe.rpc.ErrorRpcResponse;
 import blackdoor.cqbe.rpc.GETResponse;
+import blackdoor.cqbe.rpc.GETResponse.GETLookupResponse;
 import blackdoor.cqbe.rpc.GETResponse.GETResponseFactory;
+import blackdoor.cqbe.rpc.GetRpc;
+import blackdoor.cqbe.rpc.IndexResult;
+import blackdoor.cqbe.rpc.JSONRPCResult;
+import blackdoor.cqbe.rpc.JSONRPCResult.ResultType;
+import blackdoor.cqbe.rpc.PingRpc;
+import blackdoor.cqbe.rpc.PongResult;
+import blackdoor.cqbe.rpc.PutRpc;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.rpc.ResultRpcResponse;
+import blackdoor.cqbe.rpc.Rpc;
+import blackdoor.cqbe.rpc.RpcResponse;
 import blackdoor.cqbe.rpc.ShutdownRpc;
+import blackdoor.cqbe.rpc.TableResult;
+import blackdoor.cqbe.rpc.ValueResult;
 import blackdoor.cqbe.rpc.RPCException.*;
 import blackdoor.cqbe.rpc.RPCValidator;
-
-import org.json.*;
-
 import blackdoor.cqbe.addressing.*;
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
@@ -59,53 +79,12 @@ public class Router {
 		//RPCBuilder lookupRequestBuilder = new RPCBuilder();
 		AddressTable table;
 		L3Address me;
-		//JSONObject lookupRequest;
-		//JSONObject lookupResponse;
-		//SocketIOWrapper io;
-		
 		//determine our address
 		try{
 			me = Node.getAddress();
 		}catch(ExceptionInInitializerError e){
 			me = L3Address.getNonNodeAddress();
 		}
-		
-		/*
-		//create lookup request
-		lookupRequestBuilder.setDestinationO(bootstrapNode);
-		lookupRequestBuilder.setSourceIP(me.getLayer3Address());
-		lookupRequestBuilder.setSourcePort(me.getPort());
-		try {
-			lookupRequest = lookupRequestBuilder.buildLOOKUP();
-		} catch (RPCException e) {
-			DBP.printException(e);
-			DBP.printerrorln("Couldn't build lookup request, this is bad, code is broken somewhere, investigate, returning");
-			return null;
-		}
-		
-		//send lookup request to bootstrapNode
-		io = new SocketIOWrapper(new Socket(bootstrapNode.getLayer3Address(),bootstrapNode.getPort()));
-		io.write(lookupRequest.toString());
-		
-		//check lookup response
-		lookupResponse = new JSONObject(io.read()); //TODO error handle this. Make sure syntax is valid, make sure JSON follows JSON-RPC, make sure id's match, make sure RPC was successful.
-		JSONArray addresses = lookupResponse.getJSONArray("result");
-		
-		//set router address table
-		table = new AddressTable(me);
-		JSONObject entry;
-		for(int i = 0; i < addresses.length(); i++){
-			entry = addresses.getJSONObject(i);
-			if (entry.getInt("IP") > 0){
-				L3Address a = new L3Address(InetAddress.getByName(entry.getString("IP")), entry.getInt("port"));
-				if(!a.equals(me)){
-					table.put(a);
-				}else{
-					DBP.printdevln(a + " is the current node("+me+"), not adding to table");
-				}
-			}
-		}
-		*/
 		table = primitiveLookup(bootstrapNode, me);
 		return new Router(table);
 	}
@@ -118,16 +97,17 @@ public class Router {
 	 * @throws RPCException 
 	 * @throws IOException 
 	 */
-	public static boolean ping(L3Address remoteNode) throws RPCException{
+	public static boolean ping(L3Address remoteNode) throws RPCException {
 		RPCBuilder requestBuilder = new RPCBuilder();
 		L3Address source = getSource();
-		JSONObject request;
 		try {
 		requestBuilder.setDestinationO(remoteNode);
 		requestBuilder.setSourceIP(source.getLayer3Address());
 		requestBuilder.setSourcePort(source.getPort());
-		request = requestBuilder.buildPING();
-		return RPCValidator.isValidoopResponse(call(remoteNode, request));
+		requestBuilder.setSource(new L3Address (source.getLayer3Address(), 123));//
+		PingRpc ping = requestBuilder.buildPingObject();;
+		ResultRpcResponse response = (ResultRpcResponse) call(remoteNode, ping);//check if call returns a pong
+		return(response.getResult().getValue().toString() == "pong");
 		} catch(IOException e) {
 			return false;
 		}
@@ -156,23 +136,22 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public static GETResponse primitiveGet(L3Address remoteNode, Address destination, int index) throws RPCException, IOException{
-		JSONObject requestObject = null;
-		JSONObject responseObject = null;
+	public static JSONRPCResult primitiveGet(L3Address remoteNode, Address destination, int index) throws RPCException, IOException{
+		Rpc requestObject;
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
-		try {
+		try{
 			requestBuilder.setDestinationO(destination);
 			requestBuilder.setSourceIP(source.getLayer3Address());
 			requestBuilder.setSourcePort(source.getPort());
 			requestBuilder.setIndex(index);
-			requestObject = requestBuilder.buildGET();
-		} catch (RPCException e) {
-			DBP.printException(e);
-		}
-		responseObject = call(remoteNode, requestObject);
-		GETResponse response = GETResponseFactory.multipleReturnTypeDerp(responseObject);
-		return response;
+			GetRpc request = requestBuilder.buildGetObject();
+			ResultRpcResponse response = call(remoteNode, request);
+			return response.getResult();
+			}catch(RPCException e){
+				DBP.printerrorln(e);
+			}
+			return null;
 	}
 	
 	/**
@@ -184,11 +163,12 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public static List<Address> getIndex(L3Address remoteNode, int index) throws RPCException, IOException{
-		GETResponse response = null;
+	public static Set<Address> getIndex(L3Address remoteNode, int index) throws RPCException, IOException{
+		JSONRPCResult response = null;
 		response = primitiveGet(remoteNode, Address.getNullAddress(), index);
-		if(response instanceof GETResponse.GETIndexResponse){
-			return ((GETResponse.GETIndexResponse) response).getResult();
+		if(response instanceof IndexResult){
+			return ((IndexResult)response).getValue();
+			//((GETResponse.GETIndexResponse) response).getResult();
 		}else throw new RPCException(JSONRPCError.INVALID_RESULT);
 	}
 	
@@ -201,9 +181,9 @@ public class Router {
 	 * @throws IOException
 	 */
 	public static byte[] getValue(L3Address remoteNode, Address destination) throws RPCException, IOException{
-		GETResponse response = primitiveGet(remoteNode, destination, 0);
-		if(response instanceof GETResponse.GETValueResponse){
-			return ((GETResponse.GETValueResponse) response).getResult();
+		JSONRPCResult response = primitiveGet(remoteNode, destination, 0);
+		if(response instanceof ValueResult){
+			return ((ValueResult) response).getValue();
 		}else return null;
 	}
 	
@@ -237,40 +217,33 @@ public class Router {
 	
 	//TODO use some OOD to associate destination and value. destination might have value in it like an L3Address, or destination can be a Class object that is a subtype of Address, and use that class to build an Oaddr from value.
 	public static boolean primitivePut(L3Address remoteNode, Address destination, byte[] value) throws IOException, RPCException{
-		JSONObject requestObject = null;
-		JSONObject responseObject = null;
+		Rpc requestObject = null;
+		RpcResponse responseObject = null;
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
-		try {
-			requestBuilder.setDestinationO(destination);
-			requestBuilder.setSourceIP(source.getLayer3Address());
-			requestBuilder.setSourcePort(source.getPort());
-			requestBuilder.setValue(value);
-			requestObject = requestBuilder.buildPUT();
-		} catch (RPCException e) {
-			DBP.printException(e);
-		}
-		responseObject = call(remoteNode, requestObject);
+		requestBuilder.setDestinationO(destination);
+		requestBuilder.setSourceIP(source.getLayer3Address());
+		requestBuilder.setSourcePort(source.getPort());
+		requestBuilder.setValue(value);
+		Rpc put  = requestBuilder.buildPutObject();
 		try{
-			return responseObject.getBoolean("result");
-		}catch(JSONException e){
-			throw new RPCException(JSONRPCError.INVALID_RESULT);
+			ResultRpcResponse response = call(remoteNode, put);
+			return(response.getResult().getValue().equals(true));
+		}catch(RPCException e){
+			DBP.printerrorln(e);
+			return false;
 		}
 	}
 	
-	private static JSONObject getPut(Address destination, byte[] value){
+	
+	private static Rpc getPut(Address destination, byte[] value) throws RPCException{
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
-		try {
 			requestBuilder.setDestinationO(destination);
 			requestBuilder.setSourceIP(source.getLayer3Address());
 			requestBuilder.setSourcePort(source.getPort());
 			requestBuilder.setValue(value);
-			return requestBuilder.buildPUT();
-		} catch (RPCException e) {
-			DBP.printException(e);
-		}
-		return null;
+			return requestBuilder.buildPutObject();
 	}
 	
 	/**
@@ -283,12 +256,12 @@ public class Router {
 	 */
 	public int put(Address destination, byte[] value) throws RPCException, IOException{
 		int ret = 0;
-		JSONObject request = getPut(destination, value);
-		JSONObject response;
+		RpcResponse response;
+		Rpc request = getPut(destination, value);
 		AddressTable neighbors = iterativeLookup(destination);
 		for(L3Address address : neighbors.values()){
 			response = call(address, request);
-			ret += response.getJSONObject("result").getBoolean("result") ? 1 : 0;
+			ret += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1 : 0;
 		}
 		return ret;
 	}
@@ -302,43 +275,30 @@ public class Router {
 	 */
 	public static AddressTable primitiveLookup(L3Address remoteNode, Address destination) throws IOException, RPCException{
 		AddressTable ret = null;
-		JSONObject requestObject;
-		JSONObject responseObject;
+		Rpc requestObject;
+		RpcResponse responseObject = null;
+		JSONRPCResult result = null;
 		SocketIOWrapper io;
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
 		requestBuilder.setDestinationO(destination);
 		requestBuilder.setSourceIP(source.getLayer3Address());
 		requestBuilder.setSourcePort(source.getPort());
-		requestObject = requestBuilder.buildLOOKUP();
-		
+		requestObject = requestBuilder.buildLookupObject();
 		io = new SocketIOWrapper(new Socket(remoteNode.getLayer3Address(), remoteNode.getPort()));
-		io.write(requestObject);
-		responseObject = new JSONObject(io.read());
-		//handle if response object is invalid JSON RPC response
-		//TODO check response ID
-		if(!RPCValidator.isValidoopResponse(responseObject)){
-			throw new RPCException(JSONRPCError.NODE_SHAT);
-		}
-		
+		io.write(requestObject.toString());
+		responseObject = ResultRpcResponse.fromJson(io.read());
 		// handle if response is an error.
-		if(responseObject.has("error")){
-			JSONObject error = responseObject.getJSONObject("error");
-			if(error.has("data"))
-				DBP.printerrorln("lookup request responded with error data: " + error.get("data"));
-			throw new RPCException(JSONRPCError.fromJSON(error));
+		if(responseObject instanceof ErrorRpcResponse){
+			throw new RPCException(((ErrorRpcResponse) responseObject).getError());
 		}
-		// get AddressTable from response
-		try{
-			ret = AddressTable.fromJSONArray(responseObject.getJSONArray("result"));
-		}catch (JSONException e){
-			throw new RPCException(JSONRPCError.PARSE_ERROR);
-		}
+		ResultRpcResponse r =  (ResultRpcResponse)responseObject;
+		ret = (AddressTable) r.getResult().getValue();
 		io.close();
 		ret.add(remoteNode);
 		return ret;
 	}
-	
+
 	/**
 	 * Resolve the network layer addresses and ports of neighbors to destination by routing through the network.
 	 * @param destination an overlay address for which nearby layer 3 addresses should be resolved.
@@ -387,35 +347,32 @@ public class Router {
 	 * along the way.
 	 * 
 	 * @param RPC
-	 * @return the consensus reply to RPC. Note: this is not the RPC response,
-	 *         but rather the JSON object in the "method" field of the response.
+	 * @return the consensus reply to RPC. 
 	 * @throws RPCException
 	 */
-	public JSONObject routeWithCalls(Object RPC) throws RPCException {
-		return null;
+	public RpcResponse routeWithCalls(Object RPC) throws RPCException {
+		throw new UnsupportedOperationException("method not yet implemented.");
 	}
 
 	/**
 	 * Send a RPC to destination and return the reply
 	 * 
 	 * @param destination
-	 * @return the reply from destination. Note: this is not the RPC response,
-	 *         but rather the JSON object in the result or error field of the response.
+	 * @return the reply from destination. 
 	 *         TODO make make the return match the docs, or make the docs match the actual return
 	 * @throws RPCException
 	 * @throws IOException 
 	 */
-	public static JSONObject call(L3Address destination, JSONObject RPC) throws RPCException, IOException {
-		JSONObject response;
+	public static ResultRpcResponse call(L3Address destination, Rpc RPC) throws RPCException, IOException {
+		RpcResponse result;
 		SocketIOWrapper io = new SocketIOWrapper(new Socket(destination.getLayer3Address(), destination.getPort()));
 		io.write(RPC);
-		response = new JSONObject(io.read());
-		io.close();
-		if(RPCValidator.isValidoopResponse(response)){
-			return response;
-		}else{
-			throw new RPCException(JSONRPCError.NODE_SHAT);
+		result = RpcResponse.fromJson(io.read());
+		if(result instanceof ErrorRpcResponse){
+			throw new RPCException(((ErrorRpcResponse) result).getError());
 		}
+		io.close();
+		return (ResultRpcResponse)result;
 	}
 
 	/**
@@ -423,12 +380,10 @@ public class Router {
 	 * response.
 	 * 
 	 * @param destinations
-	 * @return the consensus reply to the RPC. Note: this is not the RPC
-	 *         response, but rather the JSON object in the result or error field of the
-	 *         response.
+	 * @return the consensus reply to the RPC. 
 	 * @throws RPCException
 	 */
-	public static JSONObject call(AddressTable destinations, Object RPC)
+	public static RpcResponse call(AddressTable destinations, Object RPC)
 			throws RPCException {
 		return null;
 	}
@@ -436,7 +391,11 @@ public class Router {
 	public static void shutDown(int port) throws IOException {
 		SocketIOWrapper io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
 		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
-		int challenge = Integer.parseInt(io.read());
-		io.write(challenge);
+		io.write(ShutdownRpc.HANDSHAKE);
 	}
 }
+
+
+
+
+

@@ -135,14 +135,14 @@ public class RPCBuilder {
 	}
 	
 	private void populateDefaultParams(Rpc rpc){
-		if(destinationO == null || sourceIP == null || sourcePort <= 0)
+		if(destinationO == null || sourceIP == null || sourcePort < 0)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		rpc.setDestination(getDestinationO());
 		rpc.setSource(new L3Address(getSourceIP(), getSourcePort()));
 	}
 	
 	public LookupRpc buildLookupObject(){
-		if(destinationO == null || sourceIP == null || sourcePort <= 0)
+		if(destinationO == null || sourceIP == null || sourcePort < 0)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		LookupRpc ret = new LookupRpc();
 		ret.setDestination(getDestinationO());
@@ -173,7 +173,7 @@ public class RPCBuilder {
 	}
 	
 	public PingRpc buildPingObject(){
-		if(destinationO == null || sourceIP == null || sourcePort <= 0)
+		if(destinationO == null || sourceIP == null || sourcePort < 0)
 			throw new RPCException.RPCCreationException("not enough parameters set");
 		PingRpc ret = new PingRpc();
 		ret.setDestination(getDestinationO());
