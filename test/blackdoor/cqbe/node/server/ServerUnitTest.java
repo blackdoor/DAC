@@ -46,8 +46,7 @@ public class ServerUnitTest {
 	}
 
 	@Test
-	public void testBasicInteraction() throws InterruptedException,
-			ServerException {
+	public void testBasicInteraction() throws InterruptedException, ServerException {
 		Server server = new Server(SERVER_PORT);
 		new Thread(server).start();
 		Thread.sleep(10);
@@ -72,8 +71,7 @@ public class ServerUnitTest {
 	}
 
 	@Test
-	public void testThreadPoolMax() throws InterruptedException,
-			ServerException {
+	public void testThreadPoolMax() throws InterruptedException, ServerException {
 		Server server = new Server(SERVER_PORT);
 		new Thread(server).start();
 		Thread.sleep(10);
@@ -110,8 +108,7 @@ public class ServerUnitTest {
 
 		public TestInteraction(int port) throws IOException {
 			this.port = port;
-			io = new SocketIOWrapper(new Socket(
-					InetAddress.getLoopbackAddress(), SERVER_PORT));
+			io = new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), SERVER_PORT));
 		}
 
 		public void writeRPC(Rpc content) throws IOException {
@@ -158,16 +155,14 @@ public class ServerUnitTest {
 		public boolean isPongResult(String response) throws RPCException {
 			RpcResponse rpcres = RpcResponse.fromJson(response);
 			PongResult pong = new PongResult();
-			ResultRpcResponse result = new ResultRpcResponse(rpcres.getId(),
-					pong);
+			ResultRpcResponse result = new ResultRpcResponse(rpcres.getId(), pong);
 			return result.isSuccessful();
 		}
 
 		public Rpc getActualRPC() {
 			RPCBuilder builder = new RPCBuilder();
 			builder.setDestinationO(Address.getFullAddress());
-			builder.setSource(new L3Address(InetAddress.getLoopbackAddress(),
-					port));
+			builder.setSource(new L3Address(InetAddress.getLoopbackAddress(), port));
 			builder.setIndex(2);
 			PingRpc pingrpc = builder.buildPingObject();
 			return pingrpc;
@@ -178,10 +173,8 @@ public class ServerUnitTest {
 			JSONObject obj = null;
 			try {
 
-				builder.setDestinationO(new L3Address(InetAddress
-						.getByName(desthost), destport));
-				builder.setSource(new L3Address(InetAddress
-						.getLoopbackAddress(), port));
+				builder.setDestinationO(new L3Address(InetAddress.getByName(desthost), destport));
+				builder.setSource(new L3Address(InetAddress.getLoopbackAddress(), port));
 				obj = builder.buildLOOKUP();
 			} catch (Exception e) {
 				return null;
