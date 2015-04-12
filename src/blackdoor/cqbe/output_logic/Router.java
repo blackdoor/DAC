@@ -67,7 +67,7 @@ public class Router {
 		try{
 			me = Node.getAddress();
 		}catch(ExceptionInInitializerError e){
-			me = new L3Address(InetAddress.getLoopbackAddress(), -1);
+			me = L3Address.getNonNodeAddress();
 		}
 		
 		/*
