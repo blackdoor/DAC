@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -43,14 +44,16 @@ public class RouterTest {
 					ServerSocket ss = new ServerSocket(port);
 					SocketIOWrapper io = new SocketIOWrapper(ss.accept());
 					String input = io.read();
-					// System.out.println("input: " + input);
+					System.out.println("input: " + input);
+					Rpc built = Rpc.fromJsonString(input);
+					
 					// System.out.println("Sending response " + new
 					// JSONObject(cannedResponse).toString(2));
 					io.write(cannedResponse);
 					io.close();
 					ss.close();
 				} catch (Exception e) {
-					e.printStackTrace();
+					throw new RuntimeException("SHITSHITSHITSHITSHITSHITSHITSHITSHITSHITSHIT");
 				}
 			}
 		};
@@ -79,14 +82,17 @@ public class RouterTest {
 				"{\"id\": 5, \"result\": {\"result\":true,\"type\":\"A\"}, \"jsonrpc\": \"2.0\" }";
 		String nakSample =
 				"{\"id\": 5, \"result\": {\"result\":false,\"type\":\"N\"}, \"jsonrpc\": \"2.0\" }";
+
 		int port1 = startTestServer(ackSample);
 		assertTrue(Router.primitivePut(new L3Address(InetAddress.getLoopbackAddress(), port1),
 				Address.getFullAddress(), new byte[13]));
 		stopTestServer();
+
 		int port2 = startTestServer(nakSample);
 		assertFalse(Router.primitivePut(new L3Address(InetAddress.getLoopbackAddress(), port2),
 				Address.getFullAddress(), new byte[13]));
 		stopTestServer();
+		
 	}
 
 
@@ -145,12 +151,18 @@ public class RouterTest {
 
 	@Test
 	public void testIndex() throws RPCException, IOException, InterruptedException {
+		Address a = new L3Address(InetAddress.getLoopbackAddress(), 1);
+		Address b = new L3Address(InetAddress.getLoopbackAddress(), 2);
+		Address c = new L3Address(InetAddress.getLoopbackAddress(), 3);
+		Set compare = new HashSet();
+		compare.add(a);
+		compare.add(b);
+		compare.add(c);
 		String indexSample =
-				"{ \"id\": 5,  \"result\": {  \"result\": [   \"A8:B3:E0:27:21:B9:3C:7F:1F:10:42:71:F9:13:CA:B6\", \"9E:5B:77:15:AB:DD:58:F1:79:BE:E5:BE:61:05:60:F2\",  \"48:CE:24:8D:65:A8:08:BD:CA:24:37:50:9E:00:D3:93\"  ],\"type\": \"I\"  },  \"jsonrpc\": \"2.0\" }";
+				"{ \"id\": 5,  \"result\": {  \"result\": [   \""+a.overlayAddressToString()+"\", \""+b.overlayAddressToString()+"\",  \""+c.overlayAddressToString()+"\"  ],\"type\": \"I\"  },  \"jsonrpc\": \"2.0\" }";
 		int p = startTestServer(indexSample);
-		assertEquals(
-				Router.getIndex(new L3Address(InetAddress.getLoopbackAddress(), p), 1).toString(),
-				("[48:CE:24:8D:65:A8:08:BD:CA:24:37:50:9E:00:D3:93, A8:B3:E0:27:21:B9:3C:7F:1F:10:42:71:F9:13:CA:B6, 9E:5B:77:15:AB:DD:58:F1:79:BE:E5:BE:61:05:60:F2]"));
+		assertTrue(
+				Router.getIndex(new L3Address(InetAddress.getLoopbackAddress(), p), 1).equals(compare));
 		stopTestServer();
 		int n = startTestServer(indexSample);
 		assertNotEquals(

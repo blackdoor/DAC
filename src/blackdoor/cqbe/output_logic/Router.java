@@ -5,39 +5,24 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import javax.xml.ws.Response;
-
-import org.json.JSONException;
-
-import com.sun.org.apache.xml.internal.security.utils.Base64;
-
 import blackdoor.cqbe.node.Node;
-import blackdoor.cqbe.node.server.RPCHandler;
 import blackdoor.cqbe.rpc.AckResponse;
 import blackdoor.cqbe.rpc.ErrorRpcResponse;
-import blackdoor.cqbe.rpc.GETResponse;
-import blackdoor.cqbe.rpc.GETResponse.GETLookupResponse;
-import blackdoor.cqbe.rpc.GETResponse.GETResponseFactory;
 import blackdoor.cqbe.rpc.GetRpc;
 import blackdoor.cqbe.rpc.IndexResult;
 import blackdoor.cqbe.rpc.JSONRPCResult;
 import blackdoor.cqbe.rpc.JSONRPCResult.ResultType;
 import blackdoor.cqbe.rpc.PingRpc;
-import blackdoor.cqbe.rpc.PongResult;
-import blackdoor.cqbe.rpc.PutRpc;
 import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.ResultRpcResponse;
 import blackdoor.cqbe.rpc.Rpc;
 import blackdoor.cqbe.rpc.RpcResponse;
 import blackdoor.cqbe.rpc.ShutdownRpc;
-import blackdoor.cqbe.rpc.TableResult;
 import blackdoor.cqbe.rpc.ValueResult;
 import blackdoor.cqbe.rpc.RPCException.*;
-import blackdoor.cqbe.rpc.RPCValidator;
 import blackdoor.cqbe.addressing.*;
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
@@ -245,7 +230,7 @@ public class Router {
 		Rpc put = requestBuilder.buildPutObject();
 		try {
 			ResultRpcResponse response = call(remoteNode, put);
-			return (response.isSuccessful());
+			return (response.isSuccessful() && response.getResult().getType() == ResultType.ACK);
 		} catch (RPCException e) {
 			DBP.printerrorln(e);
 			return false;
@@ -308,7 +293,7 @@ public class Router {
 		requestBuilder.setSource(source);
 		requestObject = requestBuilder.buildLookupObject();
 		io = new SocketIOWrapper(new Socket(remoteNode.getLayer3Address(), remoteNode.getPort()));
-		io.write(requestObject.toString());
+		io.write(requestObject.toJSONString());
 		responseObject = ResultRpcResponse.fromJson(io.read());
 		// handle if response is an error.
 		if (responseObject instanceof ErrorRpcResponse) {
@@ -395,7 +380,7 @@ public class Router {
 		SocketIOWrapper io =
 				new SocketIOWrapper(new Socket(destination.getLayer3Address(),
 						destination.getPort()));
-		io.write(RPC);
+		io.write(RPC.toJSONString());
 		result = RpcResponse.fromJson(io.read());
 		if (result instanceof ErrorRpcResponse) {
 			throw new RPCException(((ErrorRpcResponse) result).getError());
@@ -420,6 +405,6 @@ public class Router {
 		SocketIOWrapper io =
 				new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
 		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
-		io.write(ShutdownRpc.HANDSHAKE);
+		io.write(Integer.parseInt(io.read()));
 	}
 }

@@ -65,9 +65,7 @@ public class RPCHandler {
 		RpcResponse response = null;
 		try {
 			request = Rpc.fromJsonString(requeststring);
-
-			if (isValid(request)) {
-				addRequestSenderToAT(request);
+			addRequestSenderToAT(request);
 				switch (request.getMethod()) {
 					case GET:
 						response = handleGetRequest(request);
@@ -89,8 +87,7 @@ public class RPCHandler {
 								"WTF IS THISSSS??? I'm looking at a method type that I don't recognize!"
 										+ "WHERE is the validator? Is it on vacation? Cause it's not validating!");
 				}
-			} else
-				response = buildError(request);
+
 
 		} catch (JSONException j) {
 			// TODO not convinced this is needed anymore
@@ -212,7 +209,7 @@ public class RPCHandler {
 					new CASFileAddress(storageController.getDomain(), rpc.getValue());
 			storageController.put(value);
 		} catch (IOException e) {
-			throw new RPCException(JSONRPCError.NODE_SHAT);
+			throw new RPCException(JSONRPCError.PUT_FAILURE);
 		}
 		AckResponse result = new AckResponse();
 		return new ResultRpcResponse(rpc.getId(), result);

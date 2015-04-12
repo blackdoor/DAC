@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import blackdoor.cqbe.settings.Config;
+import blackdoor.cqbe.addressing.Address.NaturalByteArrayComparator;
 import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.settings.ConfigurationException.ConfigFileNotFoundException;
 import blackdoor.util.DBP;
@@ -322,7 +323,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 			}*/
 		}
 		return ret + "size()=" + size() + ", isEmpty()=" + isEmpty()
-				+ ", comparator()=" + comparator() + "]";
+				+ ", comparator()=" + (comparator() == NaturalByteArrayComparator.INSTANCE ? "Natural " : comparator()) + "]";
 	}
 
 	

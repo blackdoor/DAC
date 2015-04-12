@@ -61,7 +61,9 @@ public class AcceptedRPC implements Runnable {
 	private void write(RpcResponse result) {
 		try {
 			if (result != null)
-				io.write(result);
+				io.write(result.toJSONString());
+			else
+				DBP.printerrorln("result to be send back to client is null object");
 		} catch (IOException e) {
 			DBP.printerror("Problem writing to Socket...");
 			DBP.printException(e);
