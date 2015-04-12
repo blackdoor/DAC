@@ -1,6 +1,8 @@
 package blackdoor.cqbe.node;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import blackdoor.cqbe.output_logic.Router;
 import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.settings.Config;
+import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 public class Updater implements Runnable {
@@ -87,6 +90,12 @@ public class Updater implements Runnable {
 			if(strikeList.get(addr) <= 0)
 				strikeList.remove(addr);
 		}
+	}
+	
+	private void pingHeadcount(InetAddress ip, int port) throws IOException{
+		SocketIOWrapper io = new SocketIOWrapper(new Socket(ip, port));
+		io.write(Node.getAddress().toJSONString());
+		io.close();
 	}
 	
 	protected void update() throws InterruptedException{
