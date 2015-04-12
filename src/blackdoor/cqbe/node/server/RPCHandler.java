@@ -2,7 +2,6 @@ package blackdoor.cqbe.node.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -10,22 +9,21 @@ import java.util.NavigableSet;
 import java.util.Random;
 
 import blackdoor.cqbe.rpc.AckResponse;
+import blackdoor.cqbe.rpc.ErrorRpcResponse;
+import blackdoor.cqbe.rpc.IndexResult;
+import blackdoor.cqbe.rpc.PongResult;
 import blackdoor.cqbe.rpc.PutRpc;
 import blackdoor.cqbe.rpc.GetRpc;
-import blackdoor.cqbe.rpc.RPCBuilder;
 import blackdoor.cqbe.rpc.RPCException;
+import blackdoor.cqbe.rpc.TableResult;
+import blackdoor.cqbe.rpc.ValueResult;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.rpc.ResultRpcResponse;
 import blackdoor.cqbe.rpc.Rpc;
-import blackdoor.cqbe.rpc.ShutdownRpc;
+import blackdoor.cqbe.rpc.RpcResponse;
 import blackdoor.cqbe.storage.StorageController;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.sun.org.apache.xml.internal.security.utils.Base64;
-
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
@@ -45,189 +43,209 @@ import blackdoor.util.DBP;
  *         Custom RPC response codes: -32001 - Malformed addresses
  */
 public class RPCHandler {
-
-	private JSONObject rpc;
 	private String errorData = null;
-	private SocketIOWrapper io; 
+	private SocketIOWrapper io = null;
 
-	public RPCHandler(JSONObject rpc, SocketIOWrapper io) {
-		this.rpc = rpc;
+	public RPCHandler() {}
+
+	public RPCHandler(SocketIOWrapper io) {
 		this.io = io;
 	}
 
 	/**
 	 * Handles appropriate RPC call
-	 * @return 
+	 * 
+	 * @param request
+	 * @return
 	 * 
 	 * @throws IOException
 	 */
-	public JSONObject handle() throws IOException {
-
-		JSONObject responseObject;
+	public RpcResponse handle(String requeststring) throws IOException {
+		Rpc request = null;
+		RpcResponse response = null;
 		try {
-			addRequestSenderToAT();
-			Rpc requestObject = Rpc.fromJson(rpc);
-			switch (requestObject.getMethod()) {// rpc.getString("method")){
-			case GET:
-				responseObject = handleGetRequest();
-				break;
-			case PUT:
-				responseObject = handlePutRequest();
-				break;
-			case LOOKUP:
-				responseObject = handleLookupRequest();
-				break;
-			case PING:
-				responseObject = handlePingRequest();
-				break;
-			case SHUTDOWN:
-				handleShutdown();
-				return null;
-			default:
-				throw new RuntimeException(
-						"WTF IS THISSSS??? I'm looking at a method type that I don't recognize! WHERE is the validator? Is it on vacation? Cause it's not validating!");
-			}
+			request = Rpc.fromJsonString(requeststring);
+
+			if (isValid(request)) {
+				addRequestSenderToAT(request);
+				switch (request.getMethod()) {
+					case GET:
+						response = handleGetRequest(request);
+						break;
+					case PUT:
+						response = handlePutRequest(request);
+						break;
+					case LOOKUP:
+						response = handleLookupRequest(request);
+						break;
+					case PING:
+						response = handlePingRequest(request);
+						break;
+					case SHUTDOWN:
+						handleShutdown(request);
+						return null;
+					default:
+						throw new RuntimeException(
+								"WTF IS THISSSS??? I'm looking at a method type that I don't recognize!"
+										+ "WHERE is the validator? Is it on vacation? Cause it's not validating!");
+				}
+			} else
+				response = buildError(request);
+
 		} catch (JSONException j) {
+			// TODO not convinced this is needed anymore
 			DBP.printException(j);
 			DBP.printerrorln("Apparently the RPC validator is broken");
 			DBP.printerrorln("A JSON-RPC response is not being sent, better fix the validator");
 			return null;
-		} catch (AddressException a) {
-			DBP.printException(a);
-			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),
-					false, null,
-					RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT,
-					a.getMessage());
 		} catch (RPCException e) {
-			if (errorData != null)
-				responseObject = RPCBuilder.RPCResponseFactory(
-						rpc.getInt("id"), false, null, e.getRPCError(),
-						errorData);
+			if (request == null && errorData != null)
+				response = new ErrorRpcResponse(e.getRPCError(), errorData);
+			else if (request != null && errorData == null)
+				response = new ErrorRpcResponse(request, e.getRPCError());
 			else
-				responseObject = RPCBuilder.RPCResponseFactory(
-						rpc.getInt("id"), false, null, e.getRPCError());
-		} catch (UnknownHostException e) {
-			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),
-					false, null,
-					RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
-			DBP.printException(e);
-		}
-			// DBP.printdevln("in handle");
-			// DBP.printdevln("about to write response " + responseObject);
+				response = new ErrorRpcResponse(e.getRPCError());
+		} catch (AddressException | UnknownHostException e) {
+			response =
+					new ErrorRpcResponse(request, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
 
-		return responseObject;
+			DBP.printException(e);
+		} catch (IOException e) {
+			// TODO What do? shutdown had issues.....
+		}
+
+		return response;
+	}
+
+	/**
+	 * <p>
+	 * Checks for semantics, syntax and if the RPC is supported by this system.
+	 *
+	 * @param String
+	 * @return String detailing whether the JSONObject is valid or not.
+	 */
+	public boolean isValid(Rpc request) {
+		// TODO there are probably more things that make an RPC valid that arent
+		// being checked here...
+		if (request != null)
+			return false;
+		if (!hasValidAddress(request))
+			return false;
+		if (!hasValidSourceport(request))
+			return false;
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public boolean hasValidAddress(Rpc request) {
+		// TODO what makes a valid address????
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public boolean hasValidSourceport(Rpc request) {
+		int port = request.getSource().getPort();
+		if (port < 0 || port > 61001) {
+			return false;
+		}
+		return true;
+	}
+
+	public RpcResponse buildError(Rpc request) {
+		if (!hasValidAddress(request) || !hasValidSourceport(request))
+			return new ErrorRpcResponse(request, RPCException.JSONRPCError.INVALID_ADDRESS_FORMAT);
+		return null;
 	}
 
 	/**
 	 * adds sender ip and port from rpc to this nodes's address table if
 	 * applicable. DOES NOT CHECK validity
 	 * 
+	 * @param request
+	 * 
 	 * @throws JSONException
 	 * @throws UnknownHostException
 	 */
-	private void addRequestSenderToAT() throws UnknownHostException{
-		JSONObject params = rpc.getJSONObject("params"); 
-		L3Address sender = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
-		if(!L3Address.isNonNodeAddress(sender))
-		{
-			L3Address result = Node.getAddressTable().add(sender);
-			if(!sender.equals(result))
-				DBP.printdemoln("Adding " + sender + " to address table from handler");
+	private void addRequestSenderToAT(Rpc request) throws UnknownHostException {
+		if (!L3Address.isNonNodeAddress(request.getSource())) {
+			L3Address result = Node.getAddressTable().add(request.getSource());
+			if (!request.getSource().equals(result))
+				DBP.printdemoln("Adding " + request.getSource() + " to address table from handler");
 		}
 	}
 
 	/**
-	 * Sends response to server, to be sent to the RPC builder
-	 */
-	private void sendRPC() {
-
-	}
-
-	/**
-	 * Accepts an RPC request and calls further functions to handle it
-	 */
-	private void acceptRPC() {
-
-	}
-
-	/**
-	 * Checks the validity of an RPC statement using the RPC Validator
-	 * 
-	 * @return True if valid RPC statement, False otherwise
-	 */
-	private Boolean checkValidity() {
-		return null;
-	}
-
-	/**
-	 * Returns an error-message to the server
-	 */
-	private void sendError() {
-	}
-
-	/**
-	 * Determines the nature of the request after validity
-	 */
-	private void parseRequest() {
-	}
-
-	/**
 	 * Handles a ping request
+	 * 
+	 * @param request
 	 */
-	private JSONObject handlePingRequest() {
-		return RPCBuilder.RPCResponseFactory(rpc.getInt("id"), true, "pong",
-				null);
+	private RpcResponse handlePingRequest(Rpc request) {
+		PongResult pong = new PongResult();
+		ResultRpcResponse result = new ResultRpcResponse(request.getId(), pong);
+		return result;
 	}
 
 	/**
 	 * Handles a put request
 	 * 
+	 * @param request
+	 * 
 	 * @throws RPCException
 	 */
-	private JSONObject handlePutRequest() throws RPCException {
+	private RpcResponse handlePutRequest(Rpc request) throws RPCException {
+
 		StorageController storageController = Node.getStorageController();
-		PutRpc rpc = (PutRpc) Rpc.fromJson(this.rpc);
+		PutRpc rpc = (PutRpc) request;
 		// TODO look at settings and find out how large of a value we are
 		// willing to store
 		// throw exception if value is oversized
 		try {
-			CASFileAddress value = new CASFileAddress(
-					storageController.getDomain(), rpc.getValue());
+			CASFileAddress value =
+					new CASFileAddress(storageController.getDomain(), rpc.getValue());
 			storageController.put(value);
 		} catch (IOException e) {
 			throw new RPCException(JSONRPCError.NODE_SHAT);
 		}
 		AckResponse result = new AckResponse();
-		return new ResultRpcResponse(rpc.getId(), result).toJSON();
+		return new ResultRpcResponse(rpc.getId(), result);
 	}
 
 	/**
 	 * Handles a get request
 	 * 
+	 * @param request
+	 * 
 	 * @throws AddressException
 	 * @throws UnknownHostException
 	 * @throws RPCException
-	 *             if the index field is true (non-zero), returns list of keys
-	 *             from indicated bucket if the index field is false (zero) and
-	 *             destination matches that of a stored key, returns associated
-	 *             value If index is false and destination does not match stored
-	 *             key, return a lookup call
+	 *         if the index field is true (non-zero), returns list of keys
+	 *         from indicated bucket if the index field is false (zero) and
+	 *         destination matches that of a stored key, returns associated
+	 *         value If index is false and destination does not match stored
+	 *         key, return a lookup call
 	 */
-	private JSONObject handleGetRequest() throws RPCException,
-			UnknownHostException, AddressException {
+	private RpcResponse handleGetRequest(Rpc request) throws RPCException, UnknownHostException,
+			AddressException {
 		StorageController storage = Node.getStorageController();
-		JSONObject responseObject = new JSONObject();
-		GetRpc rpc = (GetRpc) Rpc.fromJsonString(this.rpc.toString());
+		RpcResponse responseObject = null;
+		GetRpc rpc = (GetRpc) request;
 		try {
 			int index = rpc.getIndex();
 			if (index != 0) {
-				JSONArray result = new JSONArray();
+
 				NavigableSet<Address> keys = storage.getBucket(index);
-				for (Address key : keys) {
-					result.put(key.overlayAddressToString());
-				}
-				responseObject = RPCBuilder.RPCResponseFactory(rpc.getId(),
-						true, result, null);
+				IndexResult ir = new IndexResult(keys);
+
+				responseObject = new ResultRpcResponse(request.getId(), ir);
+
 			}
 			if (index == 0) {
 				if (storage.containsValue(rpc.getDestination())) {
@@ -235,16 +253,17 @@ public class RPCHandler {
 					File file = value.getFile();
 					try {
 						byte[] byteArray = Files.readAllBytes(file.toPath());
-						String result = Base64.encode(byteArray);
-						responseObject = RPCBuilder.RPCResponseFactory(
-								rpc.getId(), true, result, null);
+
+						ValueResult vr = new ValueResult(byteArray);
+						responseObject = new ResultRpcResponse(request.getId(), vr);
+
 					} catch (IOException e) {
 						throw new RPCException(JSONRPCError.NODE_STORAGE_ERROR);
 					}
 				}
-				if (!storage.containsValue(rpc.getDestination())) {
-					return handleLookupRequest();
-				}
+				if (!storage.containsValue(rpc.getDestination()))
+					return handleLookupRequest(request);
+
 			}
 		} catch (JSONException e) {
 			errorData = e.getMessage();
@@ -259,39 +278,19 @@ public class RPCHandler {
 	 * @throws UnknownHostException
 	 * @throws RPCException
 	 */
-	private JSONObject handleLookupRequest() throws AddressException,
+	private RpcResponse handleLookupRequest(Rpc request) throws AddressException,
 			UnknownHostException, RPCException {
-		JSONObject responseObject;
+		RpcResponse responseObject = null;
 		try {
-			JSONObject params = rpc.getJSONObject("params");
-			Address dest = new Address(params.getString("destinationO"));// TODO
-																			// change
-																			// all
-																			// "destinationO"
-																			// to
-																			// "destO"
-			Address src = new L3Address(InetAddress.getByName(params
-					.getString("sourceIP")), params.getInt("sourcePort")); // TODO
-																			// change
-																			// all
-																			// "source"
-																			// to
-																			// "src"
+
 			AddressTable nodeTable = Node.getAddressTable();
-			AddressTable nearest = nodeTable.getNearestAddresses(
-					Node.getN() + 1, dest);
-			nearest.remove(src.getOverlayAddress());
-			JSONArray result = new JSONArray();
-			JSONObject entry;
-			for (L3Address a : nearest.values()) {
-				entry = new JSONObject();
-				entry.put("overlay", a.overlayAddressToString());
-				entry.put("IP", a.getLayer3Address().getHostAddress());
-				entry.put("port", a.getPort());
-				result.put(entry);
-			}
-			responseObject = RPCBuilder.RPCResponseFactory(rpc.getInt("id"),
-					true, result, null);
+			AddressTable nearest =
+					nodeTable.getNearestAddresses(Node.getN() + 1, request.getDestination());
+			nearest.remove(request.getSource().getOverlayAddress());
+
+
+			TableResult tr = new TableResult(nearest);
+			responseObject = new ResultRpcResponse(5, tr);
 		} catch (JSONException e) {
 			errorData = e.getMessage();
 			throw new RPCException(RPCException.JSONRPCError.INVALID_PARAMS);
@@ -299,7 +298,10 @@ public class RPCHandler {
 		return responseObject;
 	}
 
-	private void handleShutdown() throws RPCException, IOException {
+	private void handleShutdown(Rpc request) throws RPCException, IOException {
+		if (this.io == null)
+			throw new IOException();
+
 		Socket sock = io.getSocket();
 		if (!sock.getInetAddress().isLoopbackAddress()
 				|| !sock.getLocalAddress().isLoopbackAddress()) {
@@ -316,7 +318,7 @@ public class RPCHandler {
 		System.out.println("Shutting down node.");
 		long mark = System.nanoTime();
 		Node.shutdown();
-		while(System.nanoTime() - mark < Server.TIMEOUT * 1000000000);
+		while (System.nanoTime() - mark < Server.TIMEOUT * 1000000000);
 		System.exit(0);
 	}
 
