@@ -165,7 +165,7 @@ public class Updater implements Runnable {
 		//poll for new storage values
 		for(L3Address neighbor : Node.getAddressTable()){
 			try {
-				List<Address> keys = Router.getIndex(neighbor, 1);
+				Set<Address> keys = Router.getIndex(neighbor, 1);
 				for(Address key : keys){
 					if (!Node.getStorageController().containsKey(key)
 							&& Node.getOverlayAddress()
