@@ -1,4 +1,4 @@
-package blackdoor.cqbe.test;
+package blackdoor.cqbe.rpc;
 
 import static org.junit.Assert.*;
 

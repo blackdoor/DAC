@@ -1,4 +1,4 @@
-package blackdoor.cqbe.test;
+package blackdoor.cqbe.node;
 
 import java.io.File;
 import java.net.InetAddress;

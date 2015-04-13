@@ -1,4 +1,4 @@
-package blackdoor.cqbe.test;
+package blackdoor.cqbe.storage;
 
 import java.io.File;
 import java.io.IOException;
