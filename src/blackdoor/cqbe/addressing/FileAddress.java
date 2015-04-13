@@ -20,14 +20,6 @@ public abstract class FileAddress extends Address {
     public File getFile(){
         return f;
     }
-    
-    
-
-	@Override
-	public String toString() {
-		return "FileAddress [f=" + f + ", overlayAddressToString()="
-				+ overlayAddressToString() + "]";
-	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -45,6 +37,10 @@ public abstract class FileAddress extends Address {
 		return super.equals(obj);
 	}
     
-    
+	@Override
+	public String toString() {
+			return "FileAddress [f=" + f + ", overlayAddressToString()="
+					+ overlayAddressToString() + "]";
+	}
     
 }

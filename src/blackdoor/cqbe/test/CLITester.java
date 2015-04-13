@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.URL;
 
 import blackdoor.cqbe.cli.dh256;
+import blackdoor.util.DBP;
 
 public class CLITester {
 
@@ -19,17 +20,22 @@ public class CLITester {
 					whatismyip.openStream()));
 			address = InetAddress.getByName(in.readLine());
 		
+		DBP.DEMO= true;
+		DBP.DEV = true;
+		DBP.ERROR = false;
+		DBP.WARNING = true;
+		DBP.VERBOSE = true;
 		addSettings();
-		//String[] args2 = {"retrieve", "8E:3F:08:DF:93:E5:0C:50:EB:59:25:58:88:38:8F:00", "-d", "yay.txt", "-b",address.getHostAddress() + ":1776"};
-		//String[] args2 = {"insert","file.txt","-b", address.getHostAddress() + ":1776"};
-		//String[] args2 = {"join",address.getHostAddress() + ":1776","-s","savefile.txt"};
-		//String[] args2 = {"join","-a"};
-		String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1779","-dm"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1780"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1781"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1782"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1776","-p","1783"};
-		//String[] args2 = {"shutdown", "-p", "1776"};
+		//String[] args2 = {"retrieve", "AC:B6:6E:9D:13:FE:13:D0:BE:AA:E2:D8:1F:BA:95:02:4E:B9:BE:72:2D:6F:F2:A0:67:FF:88:BC:1C:0A:C6:2C", "-d", "yay.txt", "-b","localhost:1778"};
+		//String[] args2 = {"insert","file.txt","-b","localhost:1778"};
+		//String[] args2 = {"join","-a", "-p", "1778"};
+		
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1779", "-d", "NodeStorage2"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780" ,"-d", "NodeStorage3"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1781","-d", "NodeStorage4"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1782"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1783"};
+		String[] args2 = {"shutdown", "-p", "1778"};
 		dh256.main(args2);
 
 	}
@@ -37,10 +43,20 @@ public class CLITester {
 	public static void addSettings() {
 		File theDir = new File("NodeStorage");
 		if (!theDir.exists()) {
-		    try{
-		        theDir.mkdir();
-		     } catch(SecurityException se){}        
-		  }	
+			try {
+				theDir.mkdir();
+			} catch (SecurityException se) {
+			}
+		}
+		for(int i = 2; i <= 4; i++) {
+			theDir = new File("NodeStorage" + i);
+			if (!theDir.exists()) {
+				try {
+					theDir.mkdir();
+				} catch (SecurityException se) {
+				}
+			}
+		}
 	}
 
 }

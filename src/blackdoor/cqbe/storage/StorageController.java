@@ -176,8 +176,6 @@ public class StorageController implements Map<Address, FileAddress> {
 		if(!value.getFile().toPath().startsWith(domain)){
 			throw new IndexOutOfBoundsException(value.getFile() + " is not in the domain of this storage controller (" + domain +")");
 		}
-		if(!containsKey(value))
-			DBP.printdevln("adding " + value + " to storage controller");
 		return buckets.put(value);
 	}
 	
@@ -197,7 +195,6 @@ public class StorageController implements Map<Address, FileAddress> {
 	
 	@Override
 	public FileAddress remove(Object key) {
-		DBP.printdevln("removing " + key + " from storage controller");
 		return buckets.remove(key);
 	}
 

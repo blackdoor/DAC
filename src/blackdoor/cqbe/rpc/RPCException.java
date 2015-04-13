@@ -99,7 +99,9 @@ public class RPCException extends Exception {
 		  * Were you trying to parse a response created by an older version using a newer parser? Older parsers are fowards compatible but new parsers are not backwards compatible.
 		  * This error should never go into a response.
 		  */
-		 MISSING_RESULT_TYPE(-32007, "Result type indicator was missing");
+		 MISSING_RESULT_TYPE(-32007, "Result type indicator was missing"),
+		 
+		 PUT_FAILURE(-32008, "Could not store the requested value");
 
 		/**
 		 * get a JSONRPCError java object from a JSONRPC error object
