@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+
+<!-- 
+	DH256 Version .1 Installer XML File
+	Author: Cyril Van Dyke
+	Date: 3/08/14
+-->
+
+<installation version="1.0">
+
+    <info>
+        <appname>DH256</appname>
+        <appversion>Beta Release 0.1</appversion>
+        <authors>
+			<author name="CJ Buresch" email="cburesch@zagmail.gonzaga.edu"/>
+            <author name="Nathan Fischer" email="nfischer3@zagmail.gonzaga.edu"/>
+			<author name="Anna Kocer" email="akocer@zagmail.gonzaga.edu"/>
+			<author name="Yuriy Kravtsov" email="ykravtsov@zagmail.gonzaga.edu"/>
+			<author name="Cyril Van Dyke" email="cvandyke2@zagmail.gonzaga.edu"/>
+        </authors>
+        <url>https://github.com/blackdoor/DAC/</url>
+        <javaversion>1.7</javaversion>
+        <run-privileged condition="izpack.windowsinstall"/>
+        <run-privileged condition="izpack.linuxinstall"/>
+    </info>
+
+    <guiprefs width="640" height="480" resizable="yes"/>
+
+	<locale>
+        <langpack iso3="eng"/>
+    </locale>
+	
+    <resources>
+        <res id="LicencePanel.licence" src="Licence.txt"/>
+        <res id="InfoPanel.info" src="Readme.txt"/>
+    </resources>
+
+    <panels>
+        <panel classname="HelloPanel"/>
+        <panel classname="InfoPanel"/>
+        <panel classname="LicencePanel"/>
+        <panel classname="TargetPanel"/>
+        <panel classname="PacksPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="FinishPanel"/>
+    </panels>
+
+    <packs>
+        <pack name="Base" required="yes">
+            <description>The base files</description>
+            <file src="Readme.txt" targetdir="$INSTALL_PATH"/>
+            <file src="Licence.txt" targetdir="$INSTALL_PATH"/>
+            <file src="script.bat" targetdir="$INSTALL_PATH"/>
+            <parsable targetfile="$INSTALL_PATH/script.bat"/>
+            <!-- The file will be parsed -->
+        </pack>
+		<pack name="Binary" required="yes">
+            <description>Source Jar File</description>
+            <file src="bin" targetdir="$INSTALL_PATH"/>
+        </pack>
+        <pack name="OSX Files" required="yes">
+            <os family="mac"/>
+            <description>OSX-Specific Files</description>
+            <file src="mac/dh256" targetdir="$INSTALL_PATH">
+                <os family="mac"/>
+            </file>
+            <file src="mac/macpath.sh" targetdir="$INSTALL_PATH">
+                <os family="mac"/>
+            </file>
+            <executable targetfile="$INSTALL_PATH/macpath.sh" stage="postinstall">
+                <os family="mac"/>
+            </executable>
+        </pack>
+        <pack name="Linux Files" required="yes">
+            <os name="Linux"/>
+            <description>Unix-Specific Files</description>
+            <file src="linux/dh256" targetdir="$INSTALL_PATH">
+                <os name="Linux"/>
+            </file>
+            <file src="linux/unixpath.sh" targetdir="$INSTALL_PATH">
+                <os name="Linux"/>
+            </file>
+            <executable targetfile="$INSTALL_PATH/unixpath.sh" stage="postinstall" keep="true">
+                <os name="Linux"/>
+            </executable>
+        </pack>
+        <pack name="Windows Files" required="yes">
+            <os family="windows"/>
+            <description>Windows-Specific Files</description>
+            <file src="windows/dh256.exe" targetdir="$INSTALL_PATH">
+                <os family="windows"/>
+            </file>
+            <file src="windows/winpath.bat" targetdir="$INSTALL_PATH">
+                <os family="windows"/>
+            </file>
+            <executable targetfile="$INSTALL_PATH/winpath.bat" stage="postinstall" keep="true">
+                <os family="windows"/>
+            </executable>
+        </pack>
+		<pack name="Nodes" required="yes">
+			<description>Node Storage</description>
+			<file src="nodes" targetdir="$INSTALL_PATH"/>
+		</pack>
+    </packs>
+
+</installation>
