@@ -205,6 +205,11 @@ public class Updater implements Runnable {
 			// TODO probably shouldn't be throwing this, should change in StorageController
 			e.printStackTrace();
 		}
+		
+		Map<String, Map> hb = new HashMap<>();
+		hb.put("table", Node.getAddressTable());
+		hb.put("storage", Node.getStorageController());
+		DBP.println("heartbeat", hb);
 	}
 	
 	private static class AddressUpdateThread implements Runnable{

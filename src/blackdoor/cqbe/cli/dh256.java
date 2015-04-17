@@ -14,7 +14,6 @@ import blackdoor.util.CommandLineParser.Argument;
 import blackdoor.util.CommandLineParser.DuplicateOptionException;
 import blackdoor.util.CommandLineParser.InvalidFormatException;
 import blackdoor.util.DBP;
-import blackdoor.util.DBP.SingletonAlreadyInitializedException;
 import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.CASFileAddress;
@@ -24,6 +23,8 @@ import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.node.Node.NodeBuilder;
 import blackdoor.cqbe.node.NodeException;
 import blackdoor.cqbe.node.server.ServerException;
+
+import blackdoor.util.DBP.Channel;
 
 public class dh256 {
 
@@ -35,9 +36,14 @@ public class dh256 {
 	 *        command line args
 	 */
 	public static void main(String[] args) {
-		DBP.DEMO = false;
-		DBP.DEV = true;
+		//DBP.DEMO = false;
+		DBP.enableChannel(DBP.DefaultChannelNames.DEV.name());//DBP.DEV = true;
+		DBP.enableChannel("LOG");
 		DBP.LOG_ALL = true;
+		Channel heartbeat = new Channel("heartbeat", System.err);
+		heartbeat.enable();
+		heartbeat.printAsJson(true);
+		DBP.addChannel(heartbeat);		
 
 		CommandLineParser clp = new CommandLineParser();
 		clp.setExecutableName("dh256");
@@ -189,8 +195,6 @@ public class dh256 {
 		} catch (NodeException e) {
 			DBP.printException(e);
 		} catch (ServerException e) {
-			DBP.printException(e);
-		} catch (SingletonAlreadyInitializedException e) {
 			DBP.printException(e);
 		} catch (IOException e) {
 			DBP.printException(e);

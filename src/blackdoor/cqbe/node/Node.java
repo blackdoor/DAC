@@ -10,7 +10,6 @@ import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
-import blackdoor.util.DBP.SingletonAlreadyInitializedException;
 import blackdoor.cqbe.node.NodeException.*;
 
 import java.net.*;
@@ -247,7 +246,7 @@ public enum Node {
 		 * 
 		 * @throws Exception
 		 */
-		public Node buildNode() throws NodeException, ServerException, SingletonAlreadyInitializedException, IOException {
+		public Node buildNode() throws NodeException, ServerException, IOException {
 			config.saveSessionToFile();
 			if (daemon) {
 				config.put("save_file", "dmSettings.txt");
