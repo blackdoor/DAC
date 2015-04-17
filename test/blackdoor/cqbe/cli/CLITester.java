@@ -21,6 +21,7 @@ public class CLITester {
 			address = InetAddress.getByName(in.readLine());
 		
 		DBP.DEMO= true;
+		DBP.DEBUG = false;
 		DBP.DEV = true;
 		DBP.ERROR = false;
 		DBP.WARNING = true;
@@ -30,12 +31,14 @@ public class CLITester {
 		//String[] args2 = {"insert","file.txt","-b","localhost:1778"};
 		//String[] args2 = {"join","-a", "-p", "1778"};
 		
-		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1779", "-d", "NodeStorage2"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780" ,"-d", "NodeStorage3"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1781","-d", "NodeStorage4"};
-		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1782"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1779"};
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780" };
+		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1781"};
+		String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1782"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1783"};
-		String[] args2 = {"shutdown", "-p", "1778"};
+		//String[] args2 = {"shutdown", "-p", "1779"};
+		
+		//String[] args2 = {"join", "clusterfuck.tk:57005","-p","1784"};
 		dh256.main(args2);
 
 	}

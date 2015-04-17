@@ -99,7 +99,7 @@ public class Updater implements Runnable {
 	}
 	
 	protected void update() throws InterruptedException{
-		//DBP.printdebugln(Node.getAddressTable());
+		DBP.printdebugln(Node.getAddressTable());
 		//DBP.printdemoln(Node.getAddressTable().size());
 		//find new neighbors
 	

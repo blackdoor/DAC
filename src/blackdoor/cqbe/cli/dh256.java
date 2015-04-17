@@ -35,7 +35,7 @@ public class dh256 {
 	 *        command line args
 	 */
 	public static void main(String[] args) {
-		DBP.DEMO = true;
+		DBP.DEMO = false;
 		DBP.DEV = true;
 		DBP.LOG_ALL = true;
 

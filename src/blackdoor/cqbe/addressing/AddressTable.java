@@ -20,6 +20,7 @@ import blackdoor.cqbe.addressing.Address.NaturalByteArrayComparator;
 import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.settings.ConfigurationException.ConfigFileNotFoundException;
 import blackdoor.util.DBP;
+import blackdoor.util.Misc;
 
 
 /**
@@ -135,26 +136,38 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		L3Address absent = putIfAbsent(value.getOverlayAddress(), value);
 		if(absent == null){
 			absent = put(null, value);
-			if(size() < maxSize){
+			if(size() <= maxSize){
 				try{
 					if(this == Node.getAddressTable())
-						DBP.printdevln("Adding   " + value + " to address table");
+						DBP.printdevln("Adding   " + value + " to address table. D=" + Misc.getHammingDistance(getReferenceAddress().getShallowOverlayAddress(), value.getShallowOverlayAddress()));
 				}
 				catch(ExceptionInInitializerError e){}
 			}
 			else{
-				if(!pollLastEntry().getValue().equals(value))
+				L3Address polled = pollLastEntry().getValue();
+				if(!polled.equals(value))
 				{
 					try{
 						if(this == Node.getAddressTable())
 						{
-							DBP.printdevln("Removing " + value + " from address table due to full table");
-							DBP.printdevln("Adding   " + value + " to address table");
+							DBP.printdevln(("Exchanging " + polled + "D=" + Misc
+									.getHammingDistance(getReferenceAddress()
+											.getShallowOverlayAddress(), polled
+											.getShallowOverlayAddress()))
+									+ " for "
+									+ value
+									+ "D="
+									+ Misc.getHammingDistance(
+											getReferenceAddress()
+													.getShallowOverlayAddress(),
+											value.getShallowOverlayAddress()));
+							//DBP.printdevln("Removing " + value + " from address table due to full table. D=" + Misc.getHammingDistance(getReferenceAddress().getShallowOverlayAddress(), value.getShallowOverlayAddress()));
+							//DBP.printdevln("Adding   " + value + " to address table D=" + Misc.getHammingDistance(getReferenceAddress().getShallowOverlayAddress(), value.getShallowOverlayAddress()));
 						}
 					}
 					catch(ExceptionInInitializerError e){}
 				}
-				return pollLastEntry().getValue();
+				return polled;
 			}
 		}
 		return absent;
@@ -313,7 +326,7 @@ public class AddressTable extends ConcurrentSkipListMap<byte[], L3Address> imple
 		//Set<Entry<byte[], L3Address>> order = this.entrySet();
 		for(L3Address entry : this){
 			//try {
-				ret += '\t' + entry.toString() + "\n";
+				ret += '\t' + entry.toString() + "D="+ Misc.getHammingDistance(entry.getShallowOverlayAddress(), getReferenceAddress().getShallowOverlayAddress()) +"\n";
 			/*}
 			catch (MissingLayer3Exception e) {
 				DBP.printerrorln("One of the addresses in the address table did not have a layer 3 address. "
