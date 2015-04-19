@@ -10,6 +10,7 @@ import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
+import blackdoor.util.DBP.Channel;
 import blackdoor.cqbe.node.NodeException.*;
 
 import java.net.*;
@@ -281,6 +282,13 @@ public enum Node {
 			Node.singleton = node;
 			node.startServer(port);
 			node.startUpdater();
+			
+			Channel heartbeat = new Channel("heartbeat", new PrintStream("log/" + Node.getAddress().overlayAddressToString() + ".heartbeat"));
+			heartbeat.enable();
+			//heartbeat.printAsJson(true);
+			heartbeat.setNeverLog(true);
+			DBP.addChannel(heartbeat);	
+			
 			return Node.getInstance();
 		}
 

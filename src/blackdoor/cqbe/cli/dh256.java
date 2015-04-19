@@ -9,6 +9,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import blackdoor.util.CommandLineParser;
 import blackdoor.util.CommandLineParser.Argument;
 import blackdoor.util.CommandLineParser.DuplicateOptionException;
@@ -23,10 +26,25 @@ import blackdoor.cqbe.rpc.RPCException;
 import blackdoor.cqbe.node.Node.NodeBuilder;
 import blackdoor.cqbe.node.NodeException;
 import blackdoor.cqbe.node.server.ServerException;
-
 import blackdoor.util.DBP.Channel;
 
 public class dh256 {
+	
+	public static void configureLogs(String logsettings) throws IOException{
+		JSONObject settings = new JSONObject(new String(Files.readAllBytes(new File(logsettings).toPath())));
+		for(String channel : settings.keySet()){
+			try{
+			DBP.getChannel(channel).setEnabled(settings.getJSONObject(channel).getBoolean("enabled"));
+			}catch(Exception e){
+				
+			}
+		}
+		if(settings.has("logAll")){
+			if(settings.getBoolean("logAll"))
+				DBP.LOG_ALL = true;
+			else DBP.LOG_ALL = false;
+		}
+	}
 
 	/**
 	 * This is the main function that is called whenever the user ineracts with
@@ -34,16 +52,15 @@ public class dh256 {
 	 *
 	 * @param args
 	 *        command line args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		configureLogs("logConfig.js");
 		//DBP.DEMO = false;
-		DBP.enableChannel(DBP.DefaultChannelNames.DEV.name());//DBP.DEV = true;
-		DBP.enableChannel("LOG");
-		DBP.LOG_ALL = true;
-		Channel heartbeat = new Channel("heartbeat", System.err);
-		heartbeat.enable();
-		heartbeat.printAsJson(true);
-		DBP.addChannel(heartbeat);		
+		//DBP.enableChannel(DBP.DefaultChannelNames.DEV.name());//DBP.DEV = true;
+		//DBP.enableChannel("LOG");
+		//DBP.LOG_ALL = true;
+			
 
 		CommandLineParser clp = new CommandLineParser();
 		clp.setExecutableName("dh256");

@@ -20,19 +20,19 @@ public class CLITester {
 					whatismyip.openStream()));
 			address = InetAddress.getByName(in.readLine());
 		
-		DBP.enableChannel("DEMO");
+		//DBP.enableChannel("DEMO");
 		//DBP.DEMO= true;
 		//DBP.DEBUG = false;
 		//DBP.DEV = true;
 		//DBP.ERROR = false;
-		DBP.enableChannel("ERROR");
-		DBP.enableChannel("WARNING");//DBP.WARNING = true;
+		//DBP.enableChannel("ERROR");
+		//DBP.enableChannel("WARNING");//DBP.WARNING = true;
 		//DBP.LOG_ALL = true;
 		//DBP.VERBOSE = true;
 		addSettings();
 		//String[] args2 = {"retrieve", "AC:B6:6E:9D:13:FE:13:D0:BE:AA:E2:D8:1F:BA:95:02:4E:B9:BE:72:2D:6F:F2:A0:67:FF:88:BC:1C:0A:C6:2C", "-d", "yay.txt", "-b","localhost:1778"};
-		//String[] args2 = {"insert","file.txt","-b","localhost:1778"};
-		String[] args2 = {"join","-a", "-p", "1778", "--log", "log/adam.log"};
+		//String[] args2 = {"insert","savefile.txt","-b","localhost:1784"};
+		//String[] args2 = {"join","-a", "-p", "1778", "--log", "log/adam.log"};
 		
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1779"};
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1780" };
@@ -41,7 +41,7 @@ public class CLITester {
 		//String[] args2 = {"join", address.getHostAddress() + ":1778","-p","1783"};
 		//String[] args2 = {"shutdown", "-p", "1779"};
 		
-		//String[] args2 = {"join", "clusterfuck.tk:57005","-p","1784"};
+		String[] args2 = {"join", "clusterfuck.tk:57005","-p","1784"};
 		dh256.main(args2);
 
 	}
