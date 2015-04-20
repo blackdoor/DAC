@@ -11,6 +11,7 @@ import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.storage.StorageController;
 import blackdoor.util.DBP;
 import blackdoor.util.DBP.Channel;
+import blackdoor.util.Misc;
 import blackdoor.cqbe.node.NodeException.*;
 
 import java.net.*;
@@ -283,8 +284,8 @@ public enum Node {
 			node.startServer(port);
 			node.startUpdater();
 			
-			Channel heartbeat = new Channel("heartbeat", new PrintStream("log/" + Node.getAddress().overlayAddressToString() + ".heartbeat"));
-			heartbeat.enable();
+			Channel heartbeat = new Channel("heartbeat", new PrintStream("log" + File.separator + Misc.getHexBytes(Node.getAddress().getOverlayAddress(), "_") + ".heartbeat"));
+			heartbeat.disable();
 			//heartbeat.printAsJson(true);
 			heartbeat.setNeverLog(true);
 			DBP.addChannel(heartbeat);	

@@ -2,6 +2,7 @@ package blackdoor.cqbe.output_logic;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.addressing.*;
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
+import blackdoor.util.Misc;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +46,7 @@ import java.util.*;
 public class Router {
 	
 	public static int PARALLELISM = (int) Config.getReadOnly("node_update_parallelism","default.config");
+	public static int TIMEOUT = 2;
 	
 	private AddressTable bootstrapTable;
 
@@ -301,7 +304,9 @@ public class Router {
 		requestBuilder.setDestinationO(destination);
 		requestBuilder.setSource(source);
 		requestObject = requestBuilder.buildLookupObject();
-		io = new SocketIOWrapper(new Socket(remoteNode.getLayer3Address(), remoteNode.getPort()));
+		Socket sock = new Socket();
+		sock.connect(new InetSocketAddress(remoteNode.getLayer3Address(), remoteNode.getPort()), TIMEOUT * 1000);
+		io = new SocketIOWrapper(sock);
 		io.write(requestObject.toJSONString());
 		responseObject = ResultRpcResponse.fromJson(io.read());
 		// handle if response is an error.
@@ -316,10 +321,11 @@ public class Router {
 	}
 	
 	public AddressTable iterativeLookup(Address destination, int α, int n){
-		return iterativeLookup(destination, α, n, AddressTable.DEFAULT_MAX_SIZE * 2);
+		return iterativeLookup(destination, α, n, AddressTable.DEFAULT_MAX_SIZE);
 	}
 	
 	public AddressTable iterativeLookup(Address destination, int α, int n, int Ω){
+		
 		AddressTable rt = new AddressTable(destination);
 		AddressTable q = new AddressTable(destination);
 		Set<Address> visited = Collections.synchronizedSet(new HashSet<Address>());
@@ -347,7 +353,7 @@ public class Router {
 				interrupted = true;
 			}
 		}
-		
+		rt.trim();
 		return rt;
 	}
 	
@@ -389,13 +395,18 @@ public class Router {
 						continue;
 					} catch (InterruptedException e) {
 						DBP.printException(e);
+						continue;
 					}
 				}else{
 					empty = false;
+					if(visited.contains(address))
+						continue;
 				}
 				
 				AddressTable response;
 				visited.add(address);
+				
+				DBP.printdebugln("iterative lookup D=" + Misc.getHammingDistance(address.getOverlayAddress(), destination.getOverlayAddress()) + " " + address);
 				
 				try {
 					response = primitiveLookup(address, destination);
@@ -405,14 +416,15 @@ public class Router {
 					if(rt.size() >= n){
 						AddressTable tmp = new AddressTable(destination);
 						tmp.setMaxSize(α);
-						tmp.addAll(response.values());
+						tmp.addAll(response.headMap(rt.lastKey(), true).values());
 						response = tmp;
 					}
-					
-					q.addAll(response.values());				
+					q.addAll(response.values());
+					if(rt.size() >= n)
+						q.values().removeAll(q.tailMap(rt.lastKey()).values());
 										
 				} catch (IOException | RPCException e1) {
-					DBP.printException(e1);
+					//DBP.printException(e1);
 					DBP.printwarningln(address + " did not respond during iterative lookup.");
 				}
 				
@@ -460,9 +472,9 @@ public class Router {
 	public static ResultRpcResponse call(L3Address destination, Rpc RPC) throws RPCException,
 			IOException {
 		RpcResponse result;
-		SocketIOWrapper io =
-				new SocketIOWrapper(new Socket(destination.getLayer3Address(),
-						destination.getPort()));
+		Socket sock = new Socket();
+		sock.connect(new InetSocketAddress(destination.getLayer3Address(), destination.getPort()), TIMEOUT * 1000);
+		SocketIOWrapper io = new SocketIOWrapper(sock);
 		io.write(RPC.toJSONString());
 		result = RpcResponse.fromJson(io.read());
 		if (result instanceof ErrorRpcResponse) {
@@ -470,18 +482,6 @@ public class Router {
 		}
 		io.close();
 		return (ResultRpcResponse) result;
-	}
-
-	/**
-	 * Send an RPC to all nodes in an AddressTable and return the consensus
-	 * response.
-	 * 
-	 * @param destinations
-	 * @return the consensus reply to the RPC.
-	 * @throws RPCException
-	 */
-	public static RpcResponse call(AddressTable destinations, Object RPC) throws RPCException {
-		return null;
 	}
 
 	public static void shutDown(int port) throws IOException {

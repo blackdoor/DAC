@@ -3,7 +3,9 @@ package blackdoor.cqbe.node.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.node.Node;
+import blackdoor.cqbe.node.Updater;
 import blackdoor.cqbe.node.server.ServerException.*;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -30,9 +32,11 @@ public class Server implements Runnable {
 	private ThreadPoolExecutor pool;
 	private BlockingQueue<Runnable> blockingQueue;
 	private Thread runningThread = null;
+	private static final int SERVER_PARALLELISM;
 	public static final int TIMEOUT;
 	static{
 		TIMEOUT =  (int) Config.getReadOnly("node_timeout_in_seconds","default.config");
+		SERVER_PARALLELISM = (int) Config.getReadOnly("server_parallelism","default.config");
 	}
 	private final int QUEUE_SIZE = (int) Config.getReadOnly("max_server_queue_size","default.config");
 
@@ -139,9 +143,10 @@ public class Server implements Runnable {
 	private ThreadPoolExecutor getPool() {
 		int cpus = Runtime.getRuntime().availableProcessors();
 		DBP.printdevln("Server Detects " + cpus + " cores.");
-		int core = 5 * cpus;
-		int max = 15 * cpus;
+		int core = Updater.PARALLELISM * cpus;
+		int max = Math.max(cpus * SERVER_PARALLELISM, Updater.PARALLELISM * AddressTable.DEFAULT_MAX_SIZE * cpus);
 		TimeUnit time = TimeUnit.SECONDS;
+		DBP.printdevln("Starting with " +core+ "<=threads<="+max);
 		ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, TIMEOUT,
 				time, blockingQueue);
 		return tmp;

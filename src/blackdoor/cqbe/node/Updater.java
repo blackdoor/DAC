@@ -170,7 +170,7 @@ public class Updater implements Runnable {
 			}
 		}
 		*/
-		
+		boolean strike = false;
 		//poll for new storage values
 		for(L3Address neighbor : Node.getAddressTable()){
 			try {
@@ -193,9 +193,13 @@ public class Updater implements Runnable {
 					strike(neighbor);
 			} catch (IOException e) {
 				//TODO
+				//strike = true;
 				DBP.printerrorln("IO error updating storage from " + neighbor);
+				DBP.printerror(e);
 				//DBP.printException(e);
 			}
+			//if(strike)
+				//
 		}
 		
 		//update storage controller
@@ -250,6 +254,7 @@ public class Updater implements Runnable {
 							ref.strike(node);
 						}
 					} catch (RPCException e) {
+						ref.strike(node);
 						// TODO determine if exception was somehow not node's fault, else strike node
 						DBP.printException(e);
 					}
