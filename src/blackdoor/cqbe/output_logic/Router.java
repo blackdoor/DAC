@@ -266,14 +266,18 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public int put(Address destination, byte[] value) throws RPCException, IOException {
+	public int put(Address destination, byte[] value) throws IOException, RPCException  {
 		int ret = 0;
 		RpcResponse response;
 		Rpc request = getPut(destination, value);
 		AddressTable neighbors = iterativeLookup(destination);
 		for (L3Address address : neighbors.values()) {
-			response = call(address, request);
-			ret += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1 : 0;
+			try{
+				response = call(address, request);
+				ret += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1 : 0;
+			}catch (RPCException e) {
+				DBP.printException(e);
+		}
 		}
 		return ret;
 	}

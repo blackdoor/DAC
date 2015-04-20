@@ -293,7 +293,7 @@ public class dh256 {
 			if (parsedArgs.containsKey("help")) {
 				System.out.println(clp.getHelpText());
 			}
-			if (parsedArgs.containsKey("fileOAddress")) {
+			if (parsedArgs.containsKey("fileoaddress")) {
 				Router router;
 				if (parsedArgs.containsKey("bootstrap")) {
 
@@ -302,7 +302,7 @@ public class dh256 {
 				} else {
 					router = Router.fromDefaultLocalNode();
 				}
-				Address a = new Address(parsedArgs.get("fileOAddress").getValues().get(0));
+				Address a = new Address(parsedArgs.get("fileoaddress").getValues().get(0));
 				if (!parsedArgs.containsKey("check")) {
 					byte[] response = router.get(a);
 					File fileDir = new File(parsedArgs.get("dir").getValues().get(0));
