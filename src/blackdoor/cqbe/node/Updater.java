@@ -193,7 +193,8 @@ public class Updater implements Runnable {
 					strike(neighbor);
 			} catch (IOException e) {
 				//TODO
-				DBP.printException(e);
+				DBP.printerrorln("IO error updating storage from " + neighbor);
+				//DBP.printException(e);
 			}
 		}
 		
@@ -203,8 +204,13 @@ public class Updater implements Runnable {
 			Node.getStorageController().deleteThirdBucket();
 		} catch (IOException e) {
 			// TODO probably shouldn't be throwing this, should change in StorageController
-			e.printStackTrace();
+			DBP.printerrorln("trouble deleting 3rd bucket");//e.printStackTrace();
 		}
+		
+		Map<String, Map> hb = new HashMap<>();
+		hb.put("table", Node.getAddressTable());
+		hb.put("storage", Node.getStorageController());
+		DBP.println("heartbeat", Node.getAddressTable(), "\n" ,Node.getStorageController());
 	}
 	
 	private static class AddressUpdateThread implements Runnable{
@@ -230,7 +236,7 @@ public class Updater implements Runnable {
 						everyone.addAll(nn.values());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
-						DBP.printException(e);
+						//DBP.printException(e);
 					} catch (RPCException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
