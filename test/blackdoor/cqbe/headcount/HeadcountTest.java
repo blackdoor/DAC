@@ -1,12 +1,8 @@
 package blackdoor.cqbe.headcount;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-
 import org.junit.Before;
 import org.junit.Test;
 

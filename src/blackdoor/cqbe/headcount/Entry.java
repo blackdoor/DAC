@@ -6,7 +6,7 @@ import blackdoor.util.Watch;
 public class Entry implements Comparable<Entry>{
 	Watch lastSeen;
 	L3Address address;
-
+	
 	
 	
 	/* (non-Javadoc)
