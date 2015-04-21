@@ -10,7 +10,7 @@ import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.Watch;
 
 public class HeadcountServerThread implements ServerThread {
-	
+
 	Socket s;
 	Set<Entry> set;
 
@@ -20,8 +20,8 @@ public class HeadcountServerThread implements ServerThread {
 			SocketIOWrapper io = new SocketIOWrapper(s);
 			Ping p = new Ping(io.read());
 			Entry e = new Entry();
-			e.address = p.l3;
-			e.lastSeen = new Watch();
+			e.setAddress(p.getL3());
+			e.setLastSeen(new Watch());
 			set.remove(e);
 			set.add(e);
 		} catch (IOException e) {
@@ -34,15 +34,16 @@ public class HeadcountServerThread implements ServerThread {
 	public Socket getSocket() {
 		return s;
 	}
-	
-	public static class HeadcountServerThreadBuilder implements ServerThreadBuilder{
+
+	public static class HeadcountServerThreadBuilder implements
+			ServerThreadBuilder {
 
 		Set<Entry> set;
-		
+
 		public HeadcountServerThreadBuilder(Set<Entry> set) {
 			this.set = set;
 		}
-		
+
 		@Override
 		public ServerThread build(Socket sock) {
 			HeadcountServerThread x = new HeadcountServerThread();
@@ -50,7 +51,7 @@ public class HeadcountServerThread implements ServerThread {
 			x.set = set;
 			return x;
 		}
-		
+
 	}
 
 }

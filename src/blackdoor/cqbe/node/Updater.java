@@ -44,7 +44,7 @@ public class Updater implements Runnable {
 	private int headcount_port = (int) Config.getReadOnly("headcount_port",
 			"default.config");
 	private boolean headcount_flag = Boolean.parseBoolean((String) Config
-			.getReadOnly("headcount_port", "default.config"));
+			.getReadOnly("headcount_flag", "default.config"));
 
 	public Updater() {
 		running = true;
