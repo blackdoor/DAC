@@ -1,0 +1,1 @@
+./collectStorage.sh ~/work/per/dac/pitower.names ~/work/per/dac/annex.names 

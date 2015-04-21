@@ -1,0 +1,6 @@
+---
+- hosts: picluster
+  gather_facts: no
+  tasks:
+    - name: Fetching Logs N' Stuff
+      fetch: src=~/run.dh256/log/ dest=../logs/ 

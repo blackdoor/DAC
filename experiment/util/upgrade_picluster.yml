@@ -1,0 +1,7 @@
+---
+- hosts: picluster
+  gather_facts: no
+  sudo: yes
+  tasks:
+    - name: UPDATING . . . . 
+      apt: upgrade=dist update_cache=yes
