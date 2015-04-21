@@ -45,20 +45,26 @@ public class Entry implements Comparable<Entry> {
 
 	@Override
 	public int compareTo(Entry o) {
-		return this.getLastSeen().getCalendar()
-				.compareTo(o.getLastSeen().getCalendar());
+		return this.getWatch().getCalendar()
+				.compareTo(o.getWatch().getCalendar());
 	}
 
-	public L3Address getAddress() {
-		return address;
+	public String getAddress() {
+		return address.getLayer3Address().toString() + ":" + address.getPort()
+				+ " " + address.overlayAddressToString();
 	}
 
 	public void setAddress(L3Address address) {
 		this.address = address;
 	}
 
-	public Watch getLastSeen() {
+	public Watch getWatch() {
 		return lastSeen;
+	}
+
+	public String getLastSeen() {
+		return String.format("%2d:%2d:%2d", 24 - (lastSeen.getHours() - 7),
+				lastSeen.getMinutes(), lastSeen.getSeconds());
 	}
 
 	public void setLastSeen(Watch lastSeen) {

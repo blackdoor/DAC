@@ -11,7 +11,10 @@ public class Ping {
 	private L3Address l3 = null;
 
 	public Ping(String json) throws UnknownHostException, JSONException {
-		this.setL3(L3Address.fromJSON(new JSONObject(json)));
+		JSONObject obj = new JSONObject(json);
+		L3Address tmp = L3Address.fromJSON(obj);
+		l3 = tmp;
+
 	}
 
 	public String toJSON() {

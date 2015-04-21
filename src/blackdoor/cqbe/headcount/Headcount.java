@@ -8,6 +8,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import blackdoor.cqbe.headcount.HeadcountServerThread.HeadcountServerThreadBuilder;
 import blackdoor.net.Server;
@@ -16,13 +17,13 @@ import blackdoor.util.Watch;
 public class Headcount {
 
 	// final static
-	final static long interval = 5000;
+	final static long interval = 10000;
 
 	public static void main(String[] args) {
 		File outfile = new File(args[0]);
 		int port = Integer.parseInt(args[1]);
 		// System.out.println("Listening on port " + port);
-		Set<Entry> entries = Collections.synchronizedSet(new HashSet<Entry>());
+		Set<Entry> entries = new ConcurrentSkipListSet<Entry>();
 		HeadcountServerThreadBuilder b = new HeadcountServerThreadBuilder(
 				entries);
 		Server s = new Server(b, port);
@@ -36,8 +37,10 @@ public class Headcount {
 
 	public static class Flush implements Runnable {
 
-		Set<Entry> s;
-		File outfile;
+		private Set<Entry> s;
+		private File outfile;
+
+		private final static Object lock = new Object();
 
 		public Flush(Set<Entry> s, File outfile) {
 			this.s = s;
@@ -45,40 +48,44 @@ public class Headcount {
 		}
 
 		@Override
-		public void run() {
-			while (true) {
-				// System.out.println("looping");
-				String out = "-----Headcount is up -----";
-				try {
-					Thread.sleep(interval);
-				} catch (InterruptedException e) {
-					// // TODO Auto-generated catch block
-					// e.printStackTrace();
-				}
+		public synchronized void run() {
+			synchronized (lock) {
+				while (true) {
+					// System.out.println("looping");
+					String out = "-----Headcount is up -----\n";
 
-				HashSet<Entry> r = new HashSet<Entry>();
-				for (Entry e : s) {
+					try {
+						Thread.sleep(interval);
+					} catch (InterruptedException e1) {
+						Thread.currentThread().interrupt();
+					}
+
+					// HashSet<Entry> r = new HashSet<Entry>();
 					Watch w = new Watch();
-					if (w.getTime() - e.getLastSeen().getTime() > interval * 3)
-						r.add(e);
-				}
-				s.removeAll(r);
-				for (Entry e : s) {
-					out += e.getAddress() + " | last seen: " + e.getLastSeen();
-					out += "\n";
-				}
+					for (Entry e : s) {
+						if (w.getTime() - e.getWatch().getTime() > interval * 3)
+							s.remove(e);
+					}
+					// s.removeAll(r);
+					for (Entry e : s) {
+						out += e.getAddress() + " | last seen: "
+								+ e.getLastSeen();
+						out += "\n";
+					}
 
-				try {
-					Files.write(outfile.toPath(),
-							out.getBytes(StandardCharsets.UTF_8),
-							StandardOpenOption.CREATE,
-							StandardOpenOption.WRITE,
-							StandardOpenOption.TRUNCATE_EXISTING);
+					try {
+						Files.write(outfile.toPath(),
+								out.getBytes(StandardCharsets.UTF_8),
+								StandardOpenOption.CREATE,
+								StandardOpenOption.WRITE,
+								StandardOpenOption.TRUNCATE_EXISTING);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					// System.out.println("wrote to file");
 					// System.out.println(out);
-				} catch (IOException e1) {
-					// // TODO Auto-generated catch block
-					// e1.printStackTrace();
+
 				}
 			}
 		}
