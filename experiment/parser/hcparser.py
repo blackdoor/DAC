@@ -1,10 +1,11 @@
 import re
+import node
 
 def main():
 	testlog = "test.log"
 	addlist = {}
 	dups = []
-	addingregex = re.compile("\/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\:([0-9]+)", re.IGNORECASE)	
+	addingregex = re.compile("\/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\:([0-9]+)\s([0-9,A-F]+\:[0-9,A-F]+\:[0-9,A-F]+\:[0-9,A-F]+)", re.IGNORECASE)	
 	f = open("headcount.log","r")
 	for line in f:
 		m = re.match(addingregex,line)
@@ -28,6 +29,11 @@ def main():
 	print " FUPPPPPS ::::::::"  + str(len(dups))
 	for x in dups:
 		print x
+
+	network = {}
+	for x in addlist.ke
+		node = node.Node(m.group(1),m.group(2),m.group(3))
+
 
 	return None
 
