@@ -117,7 +117,7 @@ public class HeartbeatServerThread implements ServerThread {
 
 		@Override
 		public ServerThread build(Socket socket) {
-			HeartbeatServerThread thread = new HeartbeatServerThread(sock, network);
+			HeartbeatServerThread thread = new HeartbeatServerThread(socket, network);
 			return thread;
 		}
 	}

@@ -65,7 +65,7 @@ public class Headcount {
 						Thread.currentThread().interrupt();
 					}
 
-					int mintimes = 3;
+					int mintimes = 300;
 					HeartbeatServerThread.removeOld(network, mintimes);
 
 					JSONObject obj = HeartbeatServerThread.buildSHIT(network);
