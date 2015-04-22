@@ -1,16 +1,22 @@
 package blackdoor.cqbe.headcount;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Date;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentHashMap;
 
-import blackdoor.cqbe.headcount.HeadcountServerThread.HeadcountServerThreadBuilder;
+import org.json.JSONObject;
+
+import blackdoor.cqbe.addressing.L3Address;
+import blackdoor.cqbe.headcount.HeartbeatServerThread.HeartbeatServerThreadFactory;
 import blackdoor.net.Server;
 import blackdoor.util.Watch;
 
@@ -23,17 +29,64 @@ public class Headcount {
 		File outfile = new File(args[0]);
 		int port = Integer.parseInt(args[1]);
 		// System.out.println("Listening on port " + port);
-		Set<Entry> entries = new ConcurrentSkipListSet<Entry>();
-		HeadcountServerThreadBuilder b = new HeadcountServerThreadBuilder(
-				entries);
+		Map<L3Address, Node> network = new ConcurrentHashMap<>();
+		HeartbeatServerThreadFactory b = new HeartbeatServerThreadFactory(network);
 		Server s = new Server(b, port);
-		Flush flusher = new Flush(entries, outfile);
+		HeartFlusher flusher = new HeartFlusher(network, outfile);
 		Thread flush = new Thread(flusher);
 		Thread serverThread = new Thread(s);
 		flush.start();
 		serverThread.start();
 
 	}
+
+	public static class HeartFlusher implements Runnable {
+
+		private Map<L3Address, Node> network;
+		private File outfile = null;
+
+		private final static Object lock = new Object();
+
+		public HeartFlusher(Map<L3Address, Node> s, File outfile) {
+			this.network = s;
+			this.outfile = outfile;
+		}
+
+		@Override
+		public synchronized void run() {
+			synchronized (lock) {
+				while (true) {
+					// System.out.println("looping");
+
+
+					try {
+						Thread.sleep(interval);
+					} catch (InterruptedException e1) {
+						Thread.currentThread().interrupt();
+					}
+
+					int mintimes = 3;
+					HeartbeatServerThread.removeOld(network, mintimes);
+
+					JSONObject obj = HeartbeatServerThread.buildSHIT(network);
+
+					try {
+						BufferedWriter bw = new BufferedWriter( new FileWriter(outfile));
+						bw.write(obj.toString());
+						bw.flush();
+						bw.close();
+
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+				}
+			}
+
+		}
+	}
+
 
 	public static class Flush implements Runnable {
 
@@ -68,16 +121,13 @@ public class Headcount {
 					}
 					// s.removeAll(r);
 					for (Entry e : s) {
-						out += e.getAddress() + " | last seen: "
-								+ e.getLastSeen();
+						out += e.getAddress() + " | last seen: " + e.getLastSeen();
 						out += "\n";
 					}
 
 					try {
-						Files.write(outfile.toPath(),
-								out.getBytes(StandardCharsets.UTF_8),
-								StandardOpenOption.CREATE,
-								StandardOpenOption.WRITE,
+						Files.write(outfile.toPath(), out.getBytes(StandardCharsets.UTF_8),
+								StandardOpenOption.CREATE, StandardOpenOption.WRITE,
 								StandardOpenOption.TRUNCATE_EXISTING);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -89,7 +139,5 @@ public class Headcount {
 				}
 			}
 		}
-
 	}
-
 }
