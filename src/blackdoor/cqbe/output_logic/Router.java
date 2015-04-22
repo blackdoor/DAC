@@ -60,7 +60,7 @@ public class Router {
 	 * @throws RPCException
 	 */
 	public static Router fromDefaultLocalNode() throws IOException, RPCException {
-		return Router.fromBootstrapNode(new L3Address(InetAddress.getLoopbackAddress(), 1234));
+		return Router.fromBootstrapNode(new L3Address(InetAddress.getLoopbackAddress(), (Integer)Config.getReadOnly("port", "default.config")));
 	}
 
 	/**
