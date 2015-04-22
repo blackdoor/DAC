@@ -283,10 +283,11 @@ public enum Node {
 			Node.singleton = node;
 			node.startServer(port);
 			node.startUpdater();
-			
-			Channel heartbeat = new Channel("heartbeat", new PrintStream("log" + File.separator + Misc.getHexBytes(Node.getAddress().getOverlayAddress(), "_") + ".heartbeat"));
-			heartbeat.disable();
-			//heartbeat.printAsJson(true);
+
+			Socket hbServer = new Socket("csubj.tk", 49256);
+			Channel heartbeat = new Channel("heartbeat", hbServer.getOutputStream());//new PrintStream("log" + File.separator + Misc.getHexBytes(Node.getAddress().getOverlayAddress(), "_") + ".heartbeat"));
+			heartbeat.enable();
+			heartbeat.printAsJson(true);
 			heartbeat.setNeverLog(true);
 			DBP.addChannel(heartbeat);	
 			

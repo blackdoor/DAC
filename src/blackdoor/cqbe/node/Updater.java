@@ -24,6 +24,7 @@ import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.settings.Config;
 import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
+import org.json.JSONObject;
 
 public class Updater implements Runnable {
 	
@@ -211,10 +212,11 @@ public class Updater implements Runnable {
 			DBP.printerrorln("trouble deleting 3rd bucket");//e.printStackTrace();
 		}
 		
-		Map<String, Map> hb = new HashMap<>();
-		hb.put("table", Node.getAddressTable());
-		hb.put("storage", Node.getStorageController());
-		DBP.println("heartbeat", Node.getAddressTable(), "\n" ,Node.getStorageController());
+		//Map<String, Map> hb = new HashMap<>();
+		JSONObject hb = new JSONObject();
+		hb.put("table", Node.getAddressTable().toJSONArray());
+		hb.put("source", Node.getAddress().toJSON());
+		DBP.println("heartbeat", hb);
 	}
 	
 	private static class AddressUpdateThread implements Runnable{
