@@ -1,0 +1,7 @@
+---
+- name: Starting Adam Node
+  shell: nohup java -jar bin/dh256.jar join -a --log log/adam.log -d NodeStorage/adam </dev/null > log/adam.log 2>&1 &
+  args:
+     chdir: /home/cube/run.dh256/
+  environment:
+     PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}

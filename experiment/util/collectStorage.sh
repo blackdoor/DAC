@@ -14,12 +14,12 @@ do
 
 done < "$towernames"
 
-i=1
-while read -r line
-do
-	name=$line
-	echo "Files grabbed from: annex$i"
-	mkdir -p ../stored/annex$i
-	scp -r $name:~/run.dh256/$storagefolder/* ../stored/annex$i/ > ../stored/annex$i/grab.out &
-	i=$((i+1))
-done < "$annexnames"
+# i=1
+# while read -r line
+# do
+# 	name=$line
+# 	echo "Files grabbed from: annex$i"
+# 	mkdir -p ../stored/annex$i
+# 	scp -r $name:~/run.dh256/$storagefolder/* ../stored/annex$i/ > ../stored/annex$i/grab.out &
+# 	i=$((i+1))
+# done < "$annexnames"

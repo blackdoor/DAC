@@ -1,5 +1,5 @@
 ---
-- hosts: picluster
+- hosts: pitower
   user: cube
   gather_facts: no
   tasks:

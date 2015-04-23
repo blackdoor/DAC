@@ -26,13 +26,13 @@
          chdir: /home/cube/run.dh256/      
       environment:
          PATH: /usr/bin:{{ ansible_env.PATH }}
-- hosts: annex
-  gather_facts: no
-  tasks:
-    - name: Annex is stopping... 
-      shell: nohup ./stopnodes.sh 10 57005
-      args:
-         chdir: /home/cube/run.dh256/
-      environment:
-         PATH: /usr/bin:{{ ansible_env.PATH }}
+# - hosts: annex
+#   gather_facts: no
+#   tasks:
+#     - name: Annex is stopping... 
+#       shell: nohup ./stopnodes.sh 10 57005
+#       args:
+#          chdir: /home/cube/run.dh256/
+#       environment:
+#          PATH: /usr/bin:{{ ansible_env.PATH }}
 

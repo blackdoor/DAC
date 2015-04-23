@@ -23,14 +23,16 @@ import blackdoor.util.Watch;
 public class Headcount {
 
 	// final static
-	final static long interval = 10000;
+	final static long interval = 5000;
+	final static int minimumTime = 30 * 1000; // in seconds
 
 	public static void main(String[] args) {
 		File outfile = new File(args[0]);
 		int port = Integer.parseInt(args[1]);
 		// System.out.println("Listening on port " + port);
 		Map<L3Address, Node> network = new ConcurrentHashMap<>();
-		HeartbeatServerThreadFactory b = new HeartbeatServerThreadFactory(network);
+		HeartbeatServerThreadFactory b = new HeartbeatServerThreadFactory(
+				network);
 		Server s = new Server(b, port);
 		HeartFlusher flusher = new HeartFlusher(network, outfile);
 		Thread flush = new Thread(flusher);
@@ -56,23 +58,21 @@ public class Headcount {
 		public synchronized void run() {
 			synchronized (lock) {
 				while (true) {
-					// System.out.println("looping");
-
 
 					try {
 						Thread.sleep(interval);
 					} catch (InterruptedException e1) {
 						Thread.currentThread().interrupt();
 					}
-
-					int mintimes = 300;
-					HeartbeatServerThread.removeOld(network, mintimes);
-
+					System.out.println("looping");
+					HeartbeatServerThread.removeOld(network, minimumTime);
+					System.out.println(network.size());
 					JSONObject obj = HeartbeatServerThread.buildSHIT(network);
 
 					try {
-						BufferedWriter bw = new BufferedWriter( new FileWriter(outfile));
-						bw.write(obj.toString());
+						BufferedWriter bw = new BufferedWriter(new FileWriter(
+								outfile));
+						bw.write(obj.toString(3));
 						bw.flush();
 						bw.close();
 
@@ -86,7 +86,6 @@ public class Headcount {
 
 		}
 	}
-
 
 	public static class Flush implements Runnable {
 
@@ -121,13 +120,16 @@ public class Headcount {
 					}
 					// s.removeAll(r);
 					for (Entry e : s) {
-						out += e.getAddress() + " | last seen: " + e.getLastSeen();
+						out += e.getAddress() + " | last seen: "
+								+ e.getLastSeen();
 						out += "\n";
 					}
 
 					try {
-						Files.write(outfile.toPath(), out.getBytes(StandardCharsets.UTF_8),
-								StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+						Files.write(outfile.toPath(),
+								out.getBytes(StandardCharsets.UTF_8),
+								StandardOpenOption.CREATE,
+								StandardOpenOption.WRITE,
 								StandardOpenOption.TRUNCATE_EXISTING);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block

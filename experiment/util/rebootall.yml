@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: pitower
   gather_facts: no
   sudo: yes 
   tasks:

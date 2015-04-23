@@ -1,0 +1,52 @@
+---
+- hosts: all
+  user: cube
+  gather_facts: no
+  tasks:
+    - name: Starting onto peeps 
+      shell: nohup ./startnodes.sh 9 57006 52.4.9.5:57005 "netstart" NodeStorage
+      args:
+         chdir: /home/cube/run.dh256/
+      environment:
+         PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
+
+# - hosts: whiteteam
+#   user: cube
+#   gather_facts: no
+#   tasks:
+#     - name: whiteteam is Starting up... 
+#       shell: nohup ./startnodes.sh 10 57005 147.222.164.110:57005 "netstart" NodeStorage
+#       args:
+#          chdir: /home/cube/run.dh256/ 
+#       environment:
+#          PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
+# - hosts: blueteam
+#   user: cube
+#   gather_facts: no
+#   tasks:
+#     - name: blueteam is Starting up... 
+#       shell: nohup ./startnodes.sh 10 57005 147.222.164.108:57005 "netstart" NodeStorage
+#       args:
+#          chdir: /home/cube/run.dh256/ 
+#       environment:
+#          PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
+# - hosts: redteam
+#   user: cube
+#   gather_facts: no
+#   tasks:
+#     - name: redteam is Starting up... 
+#       shell: nohup ./startnodes.sh 10 57005 147.222.164.101:57005 "netstart" NodeStorage
+#       args:
+#          chdir: /home/cube/run.dh256/ 
+#       environment:
+#          PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
+# - hosts: annex
+#   user: cube
+#   gather_facts: no
+#   tasks:
+#     - name: Annex is Starting up... 
+#       shell: nohup ./startnodes.sh 10 57005 147.222.164.101:57005 "netstart" NodeStorage
+#       args:
+#          chdir: /home/cube/run.dh256/
+#       environment:
+#          PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
