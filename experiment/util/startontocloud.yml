@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: 147.222.164.101
   user: cube
   gather_facts: no
   tasks:

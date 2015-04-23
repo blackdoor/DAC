@@ -2,24 +2,26 @@ package blackdoor.cqbe.node.server;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Set;
 
+import blackdoor.cqbe.headcount.Entry;
+import blackdoor.cqbe.headcount.HeadcountServerThread;
 import blackdoor.cqbe.rpc.RpcResponse;
+import blackdoor.net.ServerThread;
 import blackdoor.net.SocketIOWrapper;
+import blackdoor.net.ServerThread.ServerThreadBuilder;
 import blackdoor.util.DBP;
 
 /**
  * 
  * @author Cj Buresch
- * @version v0.0.2 - Nov 17, 2014
+ * @version v0.1.0 - April 23, 2015
  */
-public class AcceptedRPC implements Runnable {
-	private Socket socket = null;
+public class AcceptedRPC implements ServerThread {
 	private SocketIOWrapper io;
 
-	public AcceptedRPC(Socket socket) throws IOException {
-		this.socket = socket;
-		io = new SocketIOWrapper(socket);
-		io.setMaxReadSize(712000000);
+	public AcceptedRPC(SocketIOWrapper socket) {
+		this.io = socket;
 	}
 
 	/**
@@ -27,15 +29,25 @@ public class AcceptedRPC implements Runnable {
  */
 	@Override
 	public void run() {
-		RPCHandler rv = new RPCHandler(io);
-		RpcResponse result;
 		try {
-			String request = read();
-			result = rv.handle(request);
+			RPCHandler rv = new RPCHandler(io);
+			RpcResponse result;
+			result = rv.handle(read());
 			write(result);
+		} catch (IOException e) {
+			DBP.printerror(" RPC HANDLE ERROR...");
+			e.printStackTrace();
+		} finally {
+			close();
+		}
+	}
+
+	private void close() {
+		try {
 			io.close();
 		} catch (IOException e) {
-			DBP.printerror("Problem closing socket...");
+			DBP.printerror("Problem closing RPC socket...");
+			e.printStackTrace();
 		}
 	}
 
@@ -48,7 +60,7 @@ public class AcceptedRPC implements Runnable {
 		try {
 			input = io.read();
 		} catch (IOException e) {
-			DBP.printerror("Problem reading from Socket...");
+			DBP.printerror("Problem reading RPC from Socket.");
 			DBP.printException(e);
 			return null;
 		}
@@ -58,16 +70,43 @@ public class AcceptedRPC implements Runnable {
 	/**
 	 * 
 	 * @param result
+	 * @throws IOException
 	 */
-	private void write(RpcResponse result) {
-		try {
-			if (result != null)
-				io.write(result.toJSONString());
-			else
-				DBP.printerrorln("result to be send back to client is null object");
-		} catch (IOException e) {
-			DBP.printerror("Problem writing to Socket...");
-			DBP.printException(e);
-		}
+	private void write(RpcResponse result) throws IOException {
+		if (result != null) {
+			io.write(result.toJSONString());
+			return;
+		} else
+			DBP.printerrorln("Reponse to client is null object");
+
 	}
+
+	@Override
+	public Socket getSocket() {
+		return io.getSocket();
+	}
+
+	public static class AcceptedRPCServerThreadFactory implements
+			ServerThreadBuilder {
+
+		public AcceptedRPCServerThreadFactory() {
+
+		}
+
+		@Override
+		public ServerThread build(Socket s) {
+			SocketIOWrapper io;
+			try {
+				io = new SocketIOWrapper(s);
+				io.setMaxReadSize(712000000);
+				return new AcceptedRPC(io);
+			} catch (IOException e) {
+				DBP.printerror("Problem with socket connection!");
+				DBP.printException(e);
+			}
+			return null;
+		}
+
+	}
+
 }

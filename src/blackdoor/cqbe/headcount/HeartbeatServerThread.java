@@ -106,7 +106,6 @@ public class HeartbeatServerThread implements ServerThread {
 				network.put(n.addr, n);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
 			DBP.printException(e);
 		}
 	}

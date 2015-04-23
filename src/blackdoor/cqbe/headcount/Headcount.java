@@ -33,7 +33,7 @@ public class Headcount {
 		Map<L3Address, Node> network = new ConcurrentHashMap<>();
 		HeartbeatServerThreadFactory b = new HeartbeatServerThreadFactory(
 				network);
-		Server s = new Server(b, port);
+		Server s = new Server(b, port, 1024, 1024, 60);
 		HeartFlusher flusher = new HeartFlusher(network, outfile);
 		Thread flush = new Thread(flusher);
 		Thread serverThread = new Thread(s);
@@ -55,7 +55,7 @@ public class Headcount {
 		}
 
 		@Override
-		public synchronized void run() {
+		public void run() {
 			synchronized (lock) {
 				while (true) {
 
@@ -64,7 +64,6 @@ public class Headcount {
 					} catch (InterruptedException e1) {
 						Thread.currentThread().interrupt();
 					}
-					System.out.println("looping");
 					HeartbeatServerThread.removeOld(network, minimumTime);
 					System.out.println(network.size());
 					JSONObject obj = HeartbeatServerThread.buildSHIT(network);

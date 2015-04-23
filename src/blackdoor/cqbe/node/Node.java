@@ -5,7 +5,7 @@ import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
-import blackdoor.cqbe.node.server.Server;
+import blackdoor.cqbe.node.server.NodeServer;
 import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.storage.StorageController;
@@ -28,7 +28,7 @@ public enum Node {
 	INSTANCE;
 
 	private static Node singleton;
-	private Server server;
+	private NodeServer server;
 	private Updater updater;
 	private Config config;
 	private AddressTable addressTable;
@@ -86,7 +86,7 @@ public enum Node {
 	}
 
 	private void startServer(int port) throws ServerException {
-		server = new Server(port);
+		server = new NodeServer(port);
 		serverThread = new Thread(server);
 		serverThread.start();
 	}
