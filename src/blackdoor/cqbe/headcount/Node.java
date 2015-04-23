@@ -12,4 +12,5 @@ public class Node {
     Date timestamp;
     AddressTable table;
     L3Address addr;
+    int group;
 }

@@ -216,6 +216,7 @@ public class Updater implements Runnable {
 		JSONObject hb = new JSONObject();
 		hb.put("table", Node.getAddressTable().toJSONArray());
 		hb.put("source", Node.getAddress().toJSON());
+		hb.put("group", Config.getReadOnly("group", "default.config"));
 		DBP.println("heartbeat", hb);
 	}
 	

@@ -43,7 +43,7 @@ public class HeartbeatServerThread implements ServerThread{
         for(Map.Entry<L3Address, Node> e : network.entrySet()){
             JSONObject node = new JSONObject();
             node.put("name", e.getKey());
-            node.put("group", 1);
+            node.put("group", e.getValue().group);
             nodes.put(node);
 
             stupid.put(e.getKey(), i++);
@@ -91,6 +91,7 @@ public class HeartbeatServerThread implements ServerThread{
                 n.timestamp = DatatypeConverter.parseDateTime(recv.getString("timestamp")).getTime();
                 n.addr = L3Address.fromJSON(recv.getJSONArray("message").getJSONObject(0).getJSONObject("source"));
                 n.table = AddressTable.fromJSONArray(recv.getJSONArray("message").getJSONObject(0).getJSONArray("table"));
+                n.group = recv.getJSONArray("message").getJSONObject(0).getInt("group");
                 network.put(n.addr, n);
             }
         } catch (IOException e) {
@@ -99,17 +100,17 @@ public class HeartbeatServerThread implements ServerThread{
         }
     }
 
-    public class HeartbeatServerThreadFactory implements ServerThreadBuilder {
+    public static class HeartbeatServerThreadBuilder implements blackdoor.net.ServerThread.ServerThreadBuilder {
 
         Map<L3Address, Node> network;
 
-        public HeartbeatServerThreadFactory(Map<L3Address, Node> network){
+        public HeartbeatServerThreadBuilder(Map<L3Address, Node> network){
             this.network = network;
         }
 
         @Override
         public ServerThread build(Socket socket) {
-            HeartbeatServerThread thread = new HeartbeatServerThread(sock, network);
+            HeartbeatServerThread thread = new HeartbeatServerThread(socket, network);
             return thread;
         }
     }
