@@ -1,24 +1,14 @@
 ---
-- hosts: adam
-  user: cube
-  gather_facts: no
-  tasks:
-    - name: Starting Adam Node
-      shell: nohup java -jar bin/dh256.jar join -a --log log/adam.log -d NodeStorage/adam </dev/null > log/adam.log 2>&1 &
-      args:
-         chdir: /home/cube/run.dh256/
-      environment:
-         PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
-- hosts: adam
-  user: cube
-  gather_facts: no
-  tasks:
-    - name: Starting the rest of Adams Node
-      shell: nohup ./startnodes.sh 9 57006 147.222.164.100:57005 "netstart" NodeStorage
-      args:
-         chdir: /home/cube/run.dh256/
-      environment:
-         PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
+# - hosts: adam
+#   user: cube
+#   gather_facts: no
+#   tasks:
+#     - name: Starting Adam Node
+#       shell: nohup java -jar bin/dh256.jar join -a --log log/adam.log -d NodeStorage/adam </dev/null > log/adam.log 2>&1 &
+#       args:
+#          chdir: /home/cube/run.dh256/
+#       environment:
+#          PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
 - hosts: blackteam
   user: cube
   gather_facts: no
@@ -47,6 +37,16 @@
       shell: nohup ./startnodes.sh 10 57005 147.222.164.108:57005 "netstart" NodeStorage
       args:
          chdir: /home/cube/run.dh256/ 
+      environment:
+         PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
+- hosts: adam
+  user: cube
+  gather_facts: no
+  tasks:
+    - name: Starting the rest of Adams Node
+      shell: nohup ./startnodes.sh 9 57006 147.222.164.110:57005 "netstart" NodeStorage
+      args:
+         chdir: /home/cube/run.dh256/
       environment:
          PATH: /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin:{{ ansible_env.PATH }}
 - hosts: redteam

@@ -32,15 +32,13 @@ public class Updater implements Runnable {
 	/**
 	 * in seconds
 	 */
-	public static final long updateInterval = (int) Config.getReadOnly("node_update_interval",
-			"default.config");
-	public static int PARALLELISM = (int) Config.getReadOnly("node_update_parallelism",
-			"default.config");
+	public static final long updateInterval = (int) Config.getReadOnly(
+			"node_update_interval", "default.config");
+	public static int PARALLELISM = (int) Config.getReadOnly(
+			"node_update_parallelism", "default.config");
 	private Thread updaterThread;
 	private volatile boolean running;
 	private Map<L3Address, Integer> strikeList;
-
-
 
 	public Updater() {
 		running = true;
@@ -80,7 +78,8 @@ public class Updater implements Runnable {
 			strikeList.put(addr, strikeList.get(addr) + 1);
 			if (strikeList.get(addr) > 2) {
 				if (Node.getAddressTable().contains(addr))
-					DBP.printdevln("Removing " + addr + " from address table due to 3d strike");
+					DBP.printdevln("Removing " + addr
+							+ " from address table due to 3d strike");
 				Node.getAddressTable().remove(addr);
 				strikeList.remove(addr);
 			}
@@ -115,8 +114,8 @@ public class Updater implements Runnable {
 		// DBP.printdemoln(Node.getAddressTable().size());
 		// find new neighbors
 
-		Set<L3Address> every1ISee =
-				Collections.newSetFromMap(new ConcurrentHashMap<L3Address, Boolean>());
+		Set<L3Address> every1ISee = Collections
+				.newSetFromMap(new ConcurrentHashMap<L3Address, Boolean>());
 		Router r = new Router(Node.getAddressTable());
 		BlockingQueue<L3Address> q = new LinkedBlockingQueue<L3Address>();
 		every1ISee.addAll(Node.getAddressTable().values());
@@ -124,8 +123,10 @@ public class Updater implements Runnable {
 		q.addAll(every1ISee);
 		ArrayList<Thread> pool = new ArrayList<Thread>();
 
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM; i++) {
-			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, true, this));
+		for (int i = 0; i < Runtime.getRuntime().availableProcessors()
+				* PARALLELISM; i++) {
+			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, true,
+					this));
 			pool.add(t);
 			t.start();
 		}
@@ -148,8 +149,10 @@ public class Updater implements Runnable {
 		q.addAll(every1ISee);
 		pool = new ArrayList<Thread>();
 
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM; i++) {
-			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, false, this));
+		for (int i = 0; i < Runtime.getRuntime().availableProcessors()
+				* PARALLELISM; i++) {
+			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, false,
+					this));
 			pool.add(t);
 			t.start();
 		}
@@ -174,11 +177,16 @@ public class Updater implements Runnable {
 				Set<Address> keys = Router.getIndex(neighbor, 1);
 				for (Address key : keys) {
 					if (!Node.getStorageController().containsKey(key)
-							&& Node.getOverlayAddress().getComparator()
-									.compare(key, Node.getStorageController().getHighest()) <= 0) {
+							&& Node.getOverlayAddress()
+									.getComparator()
+									.compare(
+											key,
+											Node.getStorageController()
+													.getHighest()) <= 0) {
 						byte[] value = Router.getValue(neighbor, key);
 						Node.getStorageController().put(
-								new CASFileAddress(Node.getStorageController().getDomain(), value));
+								new CASFileAddress(Node.getStorageController()
+										.getDomain(), value));
 					}
 				}
 				// too much forgiving: forgive(neighbor);
@@ -211,6 +219,7 @@ public class Updater implements Runnable {
 		JSONObject hb = new JSONObject();
 		hb.put("table", Node.getAddressTable().toJSONArray());
 		hb.put("source", Node.getAddress().toJSON());
+		hb.put("group", (int) Config.getReadOnly("group", "default.config"));
 		DBP.println("heartbeat", hb);
 	}
 
@@ -221,8 +230,8 @@ public class Updater implements Runnable {
 		boolean seek;
 		Updater ref;
 
-		public AddressUpdateThread(BlockingQueue<L3Address> q, Set<L3Address> everyone,
-				boolean seek, Updater ref) {
+		public AddressUpdateThread(BlockingQueue<L3Address> q,
+				Set<L3Address> everyone, boolean seek, Updater ref) {
 			this.q = q;
 			this.everyone = everyone;
 			this.seek = seek;
@@ -234,7 +243,8 @@ public class Updater implements Runnable {
 			for (L3Address node = q.poll(); node != null; node = q.poll()) {
 				if (seek) {
 					try {
-						AddressTable nn = Router.primitiveLookup(node, Node.getOverlayAddress());
+						AddressTable nn = Router.primitiveLookup(node,
+								Node.getOverlayAddress());
 						everyone.addAll(nn.values());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

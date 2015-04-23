@@ -4,7 +4,7 @@
   gather_facts: no
   tasks:
     - name: Starting onto peeps 
-      shell: nohup ./startnodes.sh 9 57006 52.4.9.5:57005 "netstart" NodeStorage
+      shell: nohup ./startnodes.sh 10 57005 73.193.102.47:57005 "netstart" NodeStorage
       args:
          chdir: /home/cube/run.dh256/
       environment:

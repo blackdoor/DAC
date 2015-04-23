@@ -36,29 +36,31 @@ public class HeartbeatServerThread implements ServerThread {
 	}
 
 	public static JSONObject buildSHIT(Map<L3Address, Node> network) {
-		Map<Address, Integer> stupid = new HashMap<>();
+		Map<Address, Integer> currentmap = new HashMap<>();
 		JSONArray links = new JSONArray();
 		JSONArray nodes = new JSONArray();
-		JSONObject shit = new JSONObject();
+		JSONObject ouputjson = new JSONObject();
 
 		int i = 0;
 		for (Map.Entry<L3Address, Node> e : network.entrySet()) {
 			JSONObject node = new JSONObject();
-			node.put("name", e.getKey());
-			node.put("group", 1);
+			String name = e.getKey().l3ToString() + " | "
+					+ e.getKey().overlayAddressToString();
+			node.put("name", name);
+			node.put("group", e.getValue().group);
 			nodes.put(node);
 
-			stupid.put(e.getKey(), i++);
+			currentmap.put(e.getKey(), i++);
 		}
 
 		for (Map.Entry<L3Address, Node> e : network.entrySet()) {
 			Node n = e.getValue();
 
 			for (L3Address a : n.table.values()) {
-				if (stupid.containsKey(a)) {
+				if (currentmap.containsKey(a)) {
 					JSONObject link = new JSONObject();
-					link.put("source", stupid.get(e.getKey()));
-					link.put("target", stupid.get(a));
+					link.put("source", currentmap.get(e.getKey()));
+					link.put("target", currentmap.get(a));
 					link.put("value", Misc.getHammingDistance(e.getKey()
 							.getOverlayAddress(), a.getOverlayAddress()));
 					links.put(link);
@@ -66,9 +68,9 @@ public class HeartbeatServerThread implements ServerThread {
 			}
 		}
 
-		shit.put("links", links);
-		shit.put("nodes", nodes);
-		return shit;
+		ouputjson.put("links", links);
+		ouputjson.put("nodes", nodes);
+		return ouputjson;
 	}
 
 	Socket sock;
@@ -99,6 +101,8 @@ public class HeartbeatServerThread implements ServerThread {
 				n.table = AddressTable.fromJSONArray(recv
 						.getJSONArray("message").getJSONObject(0)
 						.getJSONArray("table"));
+				n.group = recv.getJSONArray("message").getJSONObject(0)
+						.getInt("group");
 				network.put(n.addr, n);
 			}
 		} catch (IOException e) {
