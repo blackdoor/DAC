@@ -5,11 +5,11 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import blackdoor.cqbe.settings.ConfigUnitTest;
-import blackdoor.cqbe.node.server.ServerUnitTest;
+import blackdoor.cqbe.node.server.NodeServerUnitTest;
 import blackdoor.cqbe.output_logic.RouterTest;
 
 @RunWith(Suite.class)
-@SuiteClasses({ConfigUnitTest.class, ServerUnitTest.class, RouterTest.class})
+@SuiteClasses({ConfigUnitTest.class, NodeServerUnitTest.class, RouterTest.class})
 public class NodeComponentTester {
 
 }

@@ -5,7 +5,7 @@ import blackdoor.cqbe.addressing.AddressException;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.addressing.Address.OverlayComparator;
 import blackdoor.cqbe.addressing.L3Address;
-import blackdoor.cqbe.node.server.Server;
+import blackdoor.cqbe.node.server.NodeServer;
 import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.cqbe.settings.Config;
 import blackdoor.cqbe.storage.StorageController;
@@ -28,7 +28,7 @@ public enum Node {
 	INSTANCE;
 
 	private static Node singleton;
-	private Server server;
+	private NodeServer server;
 	private Updater updater;
 	private Config config;
 	private AddressTable addressTable;
@@ -78,14 +78,15 @@ public enum Node {
 	}
 
 	public static Address getOverlayAddress() {
-		OverlayComparator c = (OverlayComparator) getInstance().addressTable.comparator();
+		OverlayComparator c = (OverlayComparator) getInstance().addressTable
+				.comparator();
 
 		return new Address(c.getReferenceAddress());
 
 	}
 
 	private void startServer(int port) throws ServerException {
-		server = new Server(port);
+		server = new NodeServer(port);
 		serverThread = new Thread(server);
 		serverThread.start();
 	}
@@ -100,16 +101,17 @@ public enum Node {
 	 * Configure Address Table based on ip and port
 	 * 
 	 * @param port
-	 *        the port to use
+	 *            the port to use
 	 * @param local
-	 *        is whether or not you want to use local ip or WAN ip
+	 *            is whether or not you want to use local ip or WAN ip
 	 */
 	private void configureAddressing(int port) throws NodeException {
 		InetAddress address;
 		try {
 
 			URL whatismyip = new URL("http://checkip.amazonaws.com");
-			BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					whatismyip.openStream()));
 			address = InetAddress.getByName(in.readLine());
 
 			me = new L3Address(address, port);
@@ -138,7 +140,8 @@ public enum Node {
 	/**
 	 * Prints a brief status of node
 	 */
-	public void statusCheck() {}
+	public void statusCheck() {
+	}
 
 	/**
 	 * Lists the current status of the node's storage including space used, etc.
@@ -173,7 +176,7 @@ public enum Node {
 		 * Sets the port of the node to be built, passed in from DART.Join
 		 * 
 		 * @param port
-		 *        - The port given to be set
+		 *            - The port given to be set
 		 */
 		public void setPort(int port) {
 			this.port = port;
@@ -185,7 +188,7 @@ public enum Node {
 		 * Passed from DART.Join
 		 * 
 		 * @param directory
-		 *        - Directory to be used by created node
+		 *            - Directory to be used by created node
 		 */
 		public void setStorageDir(String storageDir) {
 			this.storageDir = storageDir;
@@ -196,7 +199,7 @@ public enum Node {
 		 * Sets the settings file Passed from DART.Join
 		 * 
 		 * @param directory
-		 *        - Directory to be used by created node
+		 *            - Directory to be used by created node
 		 */
 		public void setSettings(String filename) {
 			config.loadSettings(new File(filename));
@@ -210,7 +213,7 @@ public enum Node {
 		 * Sets whether the node spawned will be a Daemon or not
 		 * 
 		 * @param status
-		 *        - If yes, daemon
+		 *            - If yes, daemon
 		 */
 		public void setDaemon(Boolean status) {
 			daemon = status;
@@ -220,7 +223,7 @@ public enum Node {
 		 * Sets whether or not the node spawned will be the first in the network
 		 * 
 		 * @param status
-		 *        - If yes, Adam node.
+		 *            - If yes, Adam node.
 		 */
 		public void setAdam(Boolean status) {
 			adam = status;
@@ -245,7 +248,8 @@ public enum Node {
 		 * 
 		 * @throws Exception
 		 */
-		public Node buildNode() throws NodeException, ServerException, IOException {
+		public Node buildNode() throws NodeException, ServerException,
+				IOException {
 			config.saveSessionToFile();
 			if (daemon) {
 				config.put("save_file", "dmSettings.txt");
@@ -270,31 +274,34 @@ public enum Node {
 			Node.singleton = Node.INSTANCE;// node = new Node();
 			Node node = Node.INSTANCE;
 			node.configureAddressing(port);
-			node.storageController =
-					new StorageController(new File(this.storageDir).toPath(), node.addressTable);
+			node.storageController = new StorageController(new File(
+					this.storageDir).toPath(), node.addressTable);
 			if (!adam && bootstrapNode != null) {
 				node.addressTable.add(bootstrapNode);
 			}
 			node.config = config;
 			Node.singleton = node;
-			node.startServer(port);
-			node.startUpdater();
 
-			String headcount_address =
-					(String) Config.getReadOnly("headcount_address", "default.config");
-			int headcount_port = (int) Config.getReadOnly("headcount_port", "default.config");
-			boolean headcount_flag =
-					Boolean.parseBoolean((String) Config.getReadOnly("headcount_flag",
-							"default.config"));
+			String headcount_address = (String) Config.getReadOnly(
+					"headcount_address", "default.config");
+			int headcount_port = (int) Config.getReadOnly("headcount_port",
+					"default.config");
+			boolean headcount_flag = Boolean.parseBoolean((String) Config
+					.getReadOnly("headcount_flag", "default.config"));
 
 			Socket hbServer = new Socket(headcount_address, headcount_port);
-			Channel heartbeat = new Channel("heartbeat", hbServer.getOutputStream());
+			Channel heartbeat = new Channel("heartbeat",
+					hbServer.getOutputStream());
 			// new PrintStream("log" + File.separator +
-			// Misc.getHexBytes(Node.getAddress().getOverlayAddress(), "_") + ".heartbeat"));
+			// Misc.getHexBytes(Node.getAddress().getOverlayAddress(), "_") +
+			// ".heartbeat"));
 			heartbeat.enable();
 			heartbeat.printAsJson(true);
 			heartbeat.setNeverLog(true);
 			DBP.addChannel(heartbeat);
+
+			node.startServer(port);
+			node.startUpdater();
 
 			return Node.getInstance();
 		}

@@ -315,7 +315,7 @@ public class RPCHandler {
 		System.out.println("Shutting down node.");
 		long mark = System.nanoTime();
 		Node.shutdown();
-		while (System.nanoTime() - mark < Server.TIMEOUT * 1000000000);
+		while (System.nanoTime() - mark < NodeServer.TIMEOUT * 1000000000);
 		System.exit(0);
 	}
 

@@ -16,7 +16,7 @@ import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.L3Address;
 import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.node.server.RPCHandler;
-import blackdoor.cqbe.node.server.Server;
+import blackdoor.cqbe.node.server.NodeServer;
 import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.cqbe.rpc.Rpc.Method;
