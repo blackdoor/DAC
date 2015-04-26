@@ -35,6 +35,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static blackdoor.util.DBP.*;
 
 /**
  * Responsibility - Handles routing through the overlay network, resolution of overlay addresses,
@@ -126,7 +129,7 @@ public class Router {
 			sourceIP = source.getLayer3Address();
 			sourcePort = source.getPort();
 		} catch (ExceptionInInitializerError e) {
-			DBP.printwarningln("Could not get an instance of node for primitive lookup, using localhost:0 as source for RPC");
+			printwarningln("Could not get an instance of node for primitive lookup, using localhost:0 as source for RPC");
 			sourceIP = InetAddress.getLoopbackAddress();
 		}
 		return new L3Address(sourceIP, sourcePort);
@@ -156,7 +159,7 @@ public class Router {
 			ResultRpcResponse response = call(remoteNode, request);
 			return response.getResult();
 		} catch (RPCException e) {
-			DBP.printerrorln(e);
+			printerrorln(e);
 		}
 		return null;
 	}
@@ -208,23 +211,48 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public byte[] get(Address destination) throws RPCException, IOException {
+	public byte[] get(final Address destination) throws RPCException {
 		AddressTable neighbors = iterativeLookup(destination);
-		HashMap<byte[], Integer> counts = new HashMap<byte[], Integer>();
-		for (L3Address neighbor : neighbors.values()) {
-			byte[] value = getValue(neighbor, destination);
-			if (counts.containsKey(value)) {
-				counts.put(value, counts.get(value) + 1);
-			} else {
-				counts.put(value, 1);
-			}
+		final ConcurrentHashMap<byte[], Integer> counts = new ConcurrentHashMap<>();
+        List<Thread> threads = new LinkedList<>();
+
+		for (final L3Address neighbor : neighbors.values()) {
+            Thread t = new Thread(){
+                @Override
+                public void run() {
+                    byte[] value = new byte[0];
+                    try {
+                        value = getValue(neighbor, destination);
+                    } catch (RPCException | IOException e) {
+                        printException(e);
+                    }
+                    if (counts.containsKey(value)) {
+                        counts.put(value, counts.get(value) + 1);
+                    } else {
+                        counts.put(value, 1);
+                    }
+                }
+            };
+            t.start();
+			threads.add(t);
 		}
+        for(Thread t : threads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                printException(e);
+            }
+        }
+
 		byte[] max = new byte[0];
 		counts.put(max, -1);
 		for (byte[] value : counts.keySet()) {
 			if (counts.get(value) > counts.get(max))
 				max = value;
 		}
+        if(Arrays.equals(max, new byte[0])){
+            throw new RPCException(JSONRPCError.INTERNAL_ERROR);
+        }
 		return max;
 	}
 
@@ -244,7 +272,7 @@ public class Router {
 			ResultRpcResponse response = call(remoteNode, put);
 			return (response.isSuccessful() && response.getResult().getType() == ResultType.ACK);
 		} catch (RPCException e) {
-			DBP.printerrorln(e);
+			printerrorln(e);
 			return false;
 		}
 	}
@@ -269,21 +297,40 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public int put(Address destination, byte[] value) throws IOException, RPCException  {
-		int ret = 0;
-		RpcResponse response;
-		Rpc request = getPut(destination, value);
-		AddressTable neighbors = iterativeLookup(destination);
-		for (L3Address address : neighbors.values()) {
-			try{
-				response = call(address, request);
-				ret += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1 : 0;
-			}catch (RPCException e) {
-				DBP.printException(e);
-		}
-		}
-		return ret;
-	}
+	public int put(Address destination, byte[] value) throws RPCException {
+        final int[] ret = {0};
+
+        final Rpc request = getPut(destination, value);
+        AddressTable neighbors = iterativeLookup(destination);
+        List<Thread> threads = new LinkedList<>();
+        for (final L3Address address : neighbors.values()) {
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        RpcResponse response;
+                        response = call(address, request);
+                        synchronized (ret) {
+                            ret[0] += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1 : 0;
+                        }
+                    } catch (RPCException | IOException e) {
+                        printException(e);
+                    }
+                }
+
+            };
+            t.start();
+            threads.add(t);
+        }
+        for(Thread t: threads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                printException(e);
+            }
+        }
+        return ret[0];
+    }
 
 	/**
 	 * Performs a primitive lookup RPC for destination on remoteNode
@@ -398,7 +445,7 @@ public class Router {
 						Thread.sleep(10);
 						continue;
 					} catch (InterruptedException e) {
-						DBP.printException(e);
+						printException(e);
 						continue;
 					}
 				}else{
@@ -410,7 +457,7 @@ public class Router {
 				AddressTable response;
 				visited.add(address);
 				
-				DBP.printdebugln("iterative lookup D=" + Misc.getHammingDistance(address.getOverlayAddress(), destination.getOverlayAddress()) + " " + address);
+				printdebugln("iterative lookup D=" + Misc.getHammingDistance(address.getOverlayAddress(), destination.getOverlayAddress()) + " " + address);
 				
 				try {
 					response = primitiveLookup(address, destination);
@@ -429,7 +476,7 @@ public class Router {
 										
 				} catch (IOException | RPCException e1) {
 					//DBP.printException(e1);
-					DBP.printwarningln(address + " did not respond during iterative lookup.");
+					printwarningln(address + " did not respond during iterative lookup.");
 				}
 				
 				

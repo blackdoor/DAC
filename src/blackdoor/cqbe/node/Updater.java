@@ -3,15 +3,10 @@ package blackdoor.cqbe.node;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import blackdoor.cqbe.addressing.Address;
@@ -97,29 +92,139 @@ public class Updater implements Runnable {
 		io.write(Node.getAddress().toJSONString());
 		io.close();
 	}
+
+    private void updateAT() throws InterruptedException {
+        Set<L3Address> every1ISee = Collections.newSetFromMap(new ConcurrentHashMap<L3Address, Boolean>());
+        Router r = new Router(Node.getAddressTable());
+        BlockingQueue<L3Address> q = new LinkedBlockingQueue<L3Address>();
+        every1ISee.addAll(Node.getAddressTable().values());
+        every1ISee.addAll(r.iterativeLookup(Node.getOverlayAddress()).values());
+        q.addAll(every1ISee);
+        ArrayList<Thread> pool = new ArrayList<Thread>();
+
+        for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
+            Thread t = new Thread(new AddressUpdateThread(q, every1ISee, true, this));
+            pool.add(t);
+            t.start();
+        }
+
+        for(Thread t : pool){
+            t.join();
+        }
+
+        pool.clear();
+        q.clear();
+        q.addAll(every1ISee);
+        pool = new ArrayList<Thread>();
+
+        for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
+            Thread t = new Thread(new AddressUpdateThread(q, every1ISee, false, this));
+            pool.add(t);
+            t.start();
+        }
+
+        for(Thread t : pool){
+            t.join();
+        }
+    }
+
+    private void updateStorage(){
+        int numThreads = PARALLELISM * Runtime.getRuntime().availableProcessors();
+        Map<Address, L3Address> keys = new ConcurrentHashMap<>();
+        List<Thread> threads = new LinkedList<>();
+        int i = 0;
+        L3Address[] table = new L3Address[1];
+        table = Node.getAddressTable().values().toArray(table);
+        for(int t = 0; t < numThreads; t++){
+            Set<L3Address> neighbors = new HashSet<>();
+            for(int j = 0; j < (Node.getAddressTable().size()/numThreads) + 1 && i < table.length; j++){
+                neighbors.add(table[i++]);
+            }
+            Thread thread = new Thread(new StorageUpdateThread(keys, neighbors));
+            thread.start();
+            threads.add(thread);
+        }
+        for(Thread t : threads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                DBP.printException(e);
+            }
+        }
+
+        threads.clear();
+        for(Map.Entry<Address, L3Address> entry : keys.entrySet()){
+            final Map.Entry<Address, L3Address> e = entry;
+            if(!Node.getStorageController().containsKey(entry.getKey())) {
+                Thread t = new Thread() {
+                    public void run() {
+                        try {
+                            CASFileAddress val = new CASFileAddress(Node.getStorageController().getDomain(), Router.getValue(e.getValue(), e.getKey()));
+                            Node.getStorageController().put(val);
+                        } catch (IOException |RPCException e1) {
+                            DBP.printException(e1);
+                        }
+                    }
+                };
+                threads.add(t);
+                t.start();
+            }
+        }
+        for(Thread t : threads){
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                DBP.printException(e);
+            }
+        }
+
+        //update storage controller
+        Node.getStorageController().garbageCollectReferences();
+        try {
+            Node.getStorageController().deleteThirdBucket();
+        } catch (IOException e) {
+            // TODO probably shouldn't be throwing this, should change in StorageController
+            DBP.printerrorln("trouble deleting 3rd bucket");//e.printStackTrace();
+        }
+    }
+
+    private class StorageUpdateThread implements Runnable{
+        Map<Address, L3Address> keys;
+        Set<L3Address> neighbors;
+
+        public StorageUpdateThread(Map<Address, L3Address> keys, Set<L3Address> neighbors){
+            this.keys = keys;
+            this.neighbors = neighbors;
+        }
+
+        @Override
+        public void run() {
+
+            for(L3Address neighbor : neighbors){
+                try {
+                    Set<Address> result = Router.getIndex(neighbor, 1);
+                    for(Address a : result){
+                        keys.put(a, neighbor);
+                    }
+                } catch (RPCException e) {
+                    DBP.printException(e);
+                    if(e.getRPCError().equals(JSONRPCError.INVALID_RESULT))
+                        strike(neighbor);
+                } catch (IOException e) {
+                    DBP.printerrorln("IO error updating storage from " + neighbor);
+                    DBP.printerror(e);
+                }
+            }
+
+        }
+    }
 	
 	protected void update() throws InterruptedException{
 		DBP.printdebugln(Node.getAddressTable());
 		//DBP.printdemoln(Node.getAddressTable().size());
 		//find new neighbors
-	
-		Set<L3Address> every1ISee = Collections.newSetFromMap(new ConcurrentHashMap<L3Address, Boolean>());
-		Router r = new Router(Node.getAddressTable());
-		BlockingQueue<L3Address> q = new LinkedBlockingQueue<L3Address>();
-		every1ISee.addAll(Node.getAddressTable().values());
-		every1ISee.addAll(r.iterativeLookup(Node.getOverlayAddress()).values());
-		q.addAll(every1ISee);
-		ArrayList<Thread> pool = new ArrayList<Thread>();
-		
-		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
-			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, true, this));
-			pool.add(t);
-			t.start();
-		}
-		
-		for(Thread t : pool){
-			t.join();
-		}
+
+        updateAT();
 		
 		/*
 		 * serial code below replaced by parallel code above
@@ -138,20 +243,7 @@ public class Updater implements Runnable {
 		every1ISee.addAll(temp);
 		temp = null;
 		*/
-		pool.clear();
-		q.clear();
-		q.addAll(every1ISee);
-		pool = new ArrayList<Thread>();
-		
-		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
-			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, false, this));
-			pool.add(t);
-			t.start();
-		}
-		
-		for(Thread t : pool){
-			t.join();
-		}
+
 		
 		/* serial code below replaced by parallel code above
 		for(L3Address node : every1ISee){
@@ -170,6 +262,8 @@ public class Updater implements Runnable {
 			}
 		}
 		*/
+
+        /*
 		boolean strike = false;
 		//poll for new storage values
 		for(L3Address neighbor : Node.getAddressTable()){
@@ -201,6 +295,9 @@ public class Updater implements Runnable {
 			//if(strike)
 				//
 		}
+        */
+
+        updateStorage();
 		
 		//update storage controller
 		Node.getStorageController().garbageCollectReferences();
