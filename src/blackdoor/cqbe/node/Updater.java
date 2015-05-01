@@ -105,7 +105,7 @@ public class Updater implements Runnable {
 	
 		Set<L3Address> every1ISee = Collections.newSetFromMap(new ConcurrentHashMap<L3Address, Boolean>());
 		Router r = new Router(Node.getAddressTable());
-		BlockingQueue<L3Address> q = new LinkedBlockingQueue<L3Address>();
+		BlockingQueue<L3Address> q = new LinkedBlockingQueue<>();
 		every1ISee.addAll(Node.getAddressTable().values());
 		every1ISee.addAll(r.iterativeLookup(Node.getOverlayAddress()).values());
 		q.addAll(every1ISee);
@@ -141,7 +141,7 @@ public class Updater implements Runnable {
 		pool.clear();
 		q.clear();
 		q.addAll(every1ISee);
-		pool = new ArrayList<Thread>();
+		pool = new ArrayList<>();
 		
 		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM ; i++){
 			Thread t = new Thread(new AddressUpdateThread(q, every1ISee, false, this));
@@ -210,11 +210,15 @@ public class Updater implements Runnable {
 			// TODO probably shouldn't be throwing this, should change in StorageController
 			DBP.printerrorln("trouble deleting 3rd bucket");//e.printStackTrace();
 		}
-		
+
+        /*
 		Map<String, Map> hb = new HashMap<>();
 		hb.put("table", Node.getAddressTable());
 		hb.put("storage", Node.getStorageController());
 		DBP.println("heartbeat", Node.getAddressTable(), "\n" ,Node.getStorageController());
+		*/
+		
+		System.gc();
 	}
 	
 	private static class AddressUpdateThread implements Runnable{
