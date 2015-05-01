@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import blackdoor.cqbe.node.Node;
+import blackdoor.cqbe.node.server.Server;
 import blackdoor.cqbe.rpc.AckResponse;
 import blackdoor.cqbe.rpc.ErrorRpcResponse;
 import blackdoor.cqbe.rpc.GetRpc;
@@ -309,7 +310,8 @@ public class Router {
 		requestBuilder.setSource(source);
 		requestObject = requestBuilder.buildLookupObject();
 		Socket sock = new Socket();
-		sock.connect(new InetSocketAddress(remoteNode.getLayer3Address(), remoteNode.getPort()), TIMEOUT * 1000);
+		sock.setSoTimeout(1 * 1000);
+		sock.connect(new InetSocketAddress(remoteNode.getLayer3Address(), remoteNode.getPort()), (int)(.9 * 1000));
 		io = new SocketIOWrapper(sock);
 		io.write(requestObject.toJSONString());
 		responseObject = ResultRpcResponse.fromJson(io.read());
@@ -327,20 +329,29 @@ public class Router {
 	public AddressTable iterativeLookup(Address destination, int α, int n){
 		return iterativeLookup(destination, α, n, AddressTable.DEFAULT_MAX_SIZE);
 	}
-	
+
+    /**
+     *
+     * @param destination
+     * @param α the number of nearest addresses to keep on each lookup call
+     *          AKA the "width" of the search
+     * @param n the number of addresses to return
+     * @param Ω the size of the queue to use in the search
+     * @return
+     */
 	public AddressTable iterativeLookup(Address destination, int α, int n, int Ω){
 		
 		AddressTable rt = new AddressTable(destination);
 		AddressTable q = new AddressTable(destination);
 		Set<Address> visited = Collections.synchronizedSet(new HashSet<Address>());
-		List<Thread> pool = new LinkedList<Thread>();
+		List<Thread> pool = new LinkedList<>();
 
 		q.setMaxSize(Ω);
 		rt.setMaxSize(n);
 		
 		q.addAll(this.bootstrapTable.values());
-		
-		for(int i = 0; i < Runtime.getRuntime().availableProcessors() * PARALLELISM; i++){
+		DBP.printdebugln((int)(.85 * α) + " parallel lookup threads");
+		for(int i = 0; i < .85 * α; i++){
 			Thread t = new Thread(new IterativeLookupThread(destination, α, n, rt, q, visited));
 			pool.add(t);
 			t.start();
@@ -411,9 +422,12 @@ public class Router {
 				visited.add(address);
 				
 				DBP.printdebugln("iterative lookup D=" + Misc.getHammingDistance(address.getOverlayAddress(), destination.getOverlayAddress()) + " " + address);
-				
+
+                long start = System.nanoTime();
 				try {
+
 					response = primitiveLookup(address, destination);
+
 					rt.add(address);
 					response.values().removeAll(visited);
 					
@@ -431,7 +445,8 @@ public class Router {
 					//DBP.printException(e1);
 					DBP.printwarningln(address + " did not respond during iterative lookup.");
 				}
-				
+                long stop = System.nanoTime();
+                DBP.printdebugln((stop-start)/1000000000.0 + " elapsed");
 				
 			}
 			
@@ -478,6 +493,7 @@ public class Router {
 		RpcResponse result;
 		Socket sock = new Socket();
 		sock.connect(new InetSocketAddress(destination.getLayer3Address(), destination.getPort()), TIMEOUT * 1000);
+		sock.setSoTimeout(TIMEOUT * 1000);
 		SocketIOWrapper io = new SocketIOWrapper(sock);
 		io.write(RPC.toJSONString());
 		result = RpcResponse.fromJson(io.read());

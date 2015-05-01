@@ -14,6 +14,8 @@ import blackdoor.util.DBP.Channel;
 import blackdoor.util.Misc;
 import blackdoor.cqbe.node.NodeException.*;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -253,7 +255,9 @@ public enum Node {
 			if (daemon) {
 				config.put("save_file", "dmSettings.txt");
 				config.saveSessionToFile();
-				List<String> commands = new ArrayList<String>();
+                RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+				List<String> commands = new ArrayList<>();
+                commands.addAll(runtimeMxBean.getInputArguments());
 				commands.add("java");
 				commands.add("-jar");
 				commands.add("dh256.jar");
@@ -283,13 +287,14 @@ public enum Node {
 			Node.singleton = node;
 			node.startServer(port);
 			node.startUpdater();
-			
+
+            /*
 			Channel heartbeat = new Channel("heartbeat", new PrintStream("log" + File.separator + Misc.getHexBytes(Node.getAddress().getOverlayAddress(), "_") + ".heartbeat"));
 			heartbeat.disable();
 			//heartbeat.printAsJson(true);
 			heartbeat.setNeverLog(true);
 			DBP.addChannel(heartbeat);	
-			
+			*/
 			return Node.getInstance();
 		}
 

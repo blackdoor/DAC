@@ -18,6 +18,8 @@ public class AcceptedRPC implements Runnable {
 
 	public AcceptedRPC(Socket socket) throws IOException {
 		this.socket = socket;
+		socket.setSoTimeout(Server.TIMEOUT * 1000);
+		
 		io = new SocketIOWrapper(socket);
 		io.setMaxReadSize(712000000);
 	}

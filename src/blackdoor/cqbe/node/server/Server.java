@@ -3,6 +3,7 @@ package blackdoor.cqbe.node.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import blackdoor.cqbe.addressing.Address;
 import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.node.Node;
 import blackdoor.cqbe.node.Updater;
@@ -10,6 +11,7 @@ import blackdoor.cqbe.node.server.ServerException.*;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +59,9 @@ public class Server implements Runnable {
 	 */
 	public Server(int port) throws ServerException {
 		this.port = port;
-		blockingQueue = new ArrayBlockingQueue<Runnable>(QUEUE_SIZE);
+		int cpus = Runtime.getRuntime().availableProcessors();
+		int size = QUEUE_SIZE * Math.max(cpus * SERVER_PARALLELISM,AddressTable.DEFAULT_MAX_SIZE * cpus);
+		blockingQueue = new LinkedBlockingQueue<>(size);
 		pool = getPool();
 		openServerSocket();
 	}
@@ -143,8 +147,8 @@ public class Server implements Runnable {
 	private ThreadPoolExecutor getPool() {
 		int cpus = Runtime.getRuntime().availableProcessors();
 		DBP.printdevln("Server Detects " + cpus + " cores.");
-		int core = Updater.PARALLELISM * cpus;
-		int max = Math.max(cpus * SERVER_PARALLELISM, Updater.PARALLELISM * AddressTable.DEFAULT_MAX_SIZE * cpus);
+		int core = Math.min(SERVER_PARALLELISM * cpus, AddressTable.DEFAULT_MAX_SIZE);
+		int max = Math.max(cpus * SERVER_PARALLELISM, AddressTable.DEFAULT_MAX_SIZE * cpus);
 		TimeUnit time = TimeUnit.SECONDS;
 		DBP.printdevln("Starting with " +core+ "<=threads<="+max);
 		ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, TIMEOUT,
