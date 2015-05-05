@@ -15,9 +15,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * Makes session settings available to the node classes.
+ * <p>
+ * Initialize Configuration with the default settings file. Use loadSettings()
+ * to load other settings, that will overwrite with the user's custom session
+ * settings.
  * 
-	
-
  * @author Cj Buresch
  * @version v0.1.2 - Feb 22, 2015
  */
@@ -25,16 +28,6 @@ public class Config extends ConcurrentHashMap<String, Object> {
 
 	private Object writeLock = new Object();
 
-	/**
-	 * Makes session settings available to the node classes.
-	 * <p>
-	 * Initialize Configuration with the default settings file. Use
-	 * loadSettings() to load other settings, that will overwrite with the
-	 * user's custom session settings.
-	 * 
-	 * @param defaultsettings
-	 * @throws ConfigurationException
-	 */
 	public Config(File defaultsettings) throws ConfigurationException {
 		super();
 		loadSettings(defaultsettings);
@@ -93,8 +86,9 @@ public class Config extends ConcurrentHashMap<String, Object> {
 	 * <p>
 	 * Session settings will be saved, provided that the file location to be
 	 * saved is in the settings and is not null. Otherwise, will throw an
-	 * exception. Ideally this should be uimport blackdoor.cqbe.settings.Config.ConfigReadOnly;sed when the node is shutdown, or
-	 * crashes for whatever reason.
+	 * exception. Ideally this should be import
+	 * blackdoor.cqbe.settings.Config.ConfigReadOnly when the node is shutdown,
+	 * or crashes for whatever reason.
 	 * 
 	 * @throws ConfigurationException
 	 */
@@ -105,7 +99,6 @@ public class Config extends ConcurrentHashMap<String, Object> {
 				tmp.put(e.getKey(), e.getValue());
 			}
 			try {
-				//TODO timestamp savefile or something
 				write(new File((String) this.get("save_file")), tmp);
 			} catch (NullPointerException e) {
 				throw new SettingSaveException();
@@ -128,59 +121,59 @@ public class Config extends ConcurrentHashMap<String, Object> {
 		return key.toLowerCase().replace(' ', '_');
 	}
 
+	/**
+	 * Returns a single setting from a setting file.
+	 * <p>
+	 * In the event that things go wrong, it will throwJSONObject a
+	 * configuration exception.
+	 * 
+	 * @param filename
+	 * @param setting
+	 * @return
+	 * @throws ConfigurationEJSONObjectxception
+	 */
+	public static Object getReadOnly(String setting, String filename)
+			throws ConfigurationException {
 
-		/**
-		 * Returns a single setting from a setting file.
-		 * <p>
-		 * In the event that things go wrong, it will throwJSONObject a
-		 * configuration exception.
-		 * 
-		 * @param filename
-		 * @param setting
-		 * @return
-		 * @throws ConfigurationEJSONObjectxception
-		 */
-		public static Object getReadOnly(String setting, String filename)
-				throws ConfigurationException {
-		
-			return getReadOnly(setting,new File(filename));
-		}
-		/**
-		 * Returns a single setting from a setting file.
-		 * <p>
-		 * In the event that things go wrong, it will throw a
-		 * configuration exception.
-		 * 
-		 * @param filename
-		 * @param setting
-		 * @return
-		 * @throws ConfigurationEJSONObjectxception
-		 */
-		public static Object getReadOnly(String setting, File filename)
-				throws ConfigurationException {
-		
-			JSONObject jo = read(filename);
-			
-			if (jo.has(standardizeKey(setting)))
-				return jo.get(standardizeKey(setting));
-			else
-				throw new SettingNotFoundException();
-		}
+		return getReadOnly(setting, new File(filename));
+	}
 
-		private static JSONObject read(File file) {
-			String content = null;
-			JSONObject jo = null;
-			try {
-				byte[] chars;
-				chars = Files.readAllBytes(file.toPath());
-				content = new String(chars);
-				jo = new JSONObject(content);
-			} catch (IOException e) {
-				throw new ConfigFileNotFoundException();
-			} catch (JSONException e) {
-				throw new ConfigFileFormatException();
-			}
-			return jo;
+	/**
+	 * Returns a single setting from a setting file.
+	 * <p>
+	 * In the event that things go wrong, it will throw a configuration
+	 * exception.
+	 * 
+	 * @param filename
+	 * @param setting
+	 * @return
+	 * @throws ConfigurationEJSONObjectxception
+	 */
+	public static Object getReadOnly(String setting, File filename)
+			throws ConfigurationException {
+
+		JSONObject jo = read(filename);
+
+		if (jo.has(standardizeKey(setting)))
+			return jo.get(standardizeKey(setting));
+		else
+			throw new SettingNotFoundException();
+	}
+
+	private static JSONObject read(File file) {
+		String content = null;
+		JSONObject jo = null;
+		try {
+			byte[] chars;
+			chars = Files.readAllBytes(file.toPath());
+			content = new String(chars);
+			jo = new JSONObject(content);
+		} catch (IOException e) {
+			throw new ConfigFileNotFoundException();
+		} catch (JSONException e) {
+			throw new ConfigFileFormatException();
 		}
-	
+		return jo;
+	}
+
 }

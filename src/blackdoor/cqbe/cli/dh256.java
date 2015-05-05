@@ -28,66 +28,83 @@ import blackdoor.cqbe.node.NodeException;
 import blackdoor.cqbe.node.server.ServerException;
 import blackdoor.util.DBP.Channel;
 
+/**
+ * Command Line interface for DH256.
+ * <p>
+ * 
+ * @author Yuryi Kravtsov <br>
+ *         Nathaniel Fischer <br>
+ *         Cyril Van Dyke <br>
+ *         Cj Buresch <br>
+ * 
+ * @version v1.0.0 - May 4, 2015
+ *
+ */
 public class dh256 {
-	
-	public static void configureLogs(String logsettings) throws IOException{
-		JSONObject settings = new JSONObject(new String(Files.readAllBytes(new File(logsettings).toPath())));
-		for(String channel : settings.keySet()){
-			try{
-			DBP.getChannel(channel).setEnabled(settings.getJSONObject(channel).getBoolean("enabled"));
-			}catch(Exception e){
-				
+
+	public static void configureLogs(String logsettings) throws IOException {
+		JSONObject settings = new JSONObject(new String(
+				Files.readAllBytes(new File(logsettings).toPath())));
+		for (String channel : settings.keySet()) {
+			try {
+				DBP.getChannel(channel).setEnabled(
+						settings.getJSONObject(channel).getBoolean("enabled"));
+			} catch (Exception e) {
+
 			}
 		}
-		if(settings.has("logAll")){
-			if(settings.getBoolean("logAll"))
+		if (settings.has("logAll")) {
+			if (settings.getBoolean("logAll"))
 				DBP.LOG_ALL = true;
-			else DBP.LOG_ALL = false;
+			else
+				DBP.LOG_ALL = false;
 		}
 	}
 
 	/**
-	 * This is the main function that is called whenever the user ineracts with
-	 * dart via cli
-	 *
+	 * This is the main function that is called whenever the user interacts with
+	 * dh256 via cli
+	 * <p>
+	 * 
 	 * @param args
-	 *        command line args
-	 * @throws IOException 
+	 *            command line args
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		configureLogs("logConfig.js");
-		//DBP.DEMO = false;
-		//DBP.enableChannel(DBP.DefaultChannelNames.DEV.name());//DBP.DEV = true;
-		//DBP.enableChannel("LOG");
-		//DBP.LOG_ALL = true;
-			
+		// DBP.DEMO = false;
+		// DBP.enableChannel(DBP.DefaultChannelNames.DEV.name());//DBP.DEV =
+		// true;
+		// DBP.enableChannel("LOG");
+		// DBP.LOG_ALL = true;
 
 		CommandLineParser clp = new CommandLineParser();
 		clp.setExecutableName("dh256");
 		clp.setUsageHint("\tmandatory options for long options are also"
-				+ "mandatory for short option variants.\n" + "The subcommands for dh256 are:\n"
-				+ "\t join \n" + " \t insert \n " + "\t retrieve \n" + "\t shutdown \n");
+				+ "mandatory for short option variants.\n"
+				+ "The subcommands for dh256 are:\n" + "\t join \n"
+				+ " \t insert \n " + "\t retrieve \n" + "\t shutdown \n");
 		if (args.length > 0) {
 			String[] args2 = Arrays.copyOfRange(args, 1, args.length);
 			switch (args[0]) {
-				case "insert":
-					dh256.insert(args2);
-					break;
-				case "retrieve":
-					dh256.retrieve(args2);
-					break;
-				case "shutdown":
-					dh256.shutdown(args2);
-					break;
-				case "join":
-					dh256.join(args2);
-					break;
-				case "version":
-					System.out.println("dh256 v0.1");
-					break;
-				default:
-					System.out.println(clp.getHelpText());
-					break;
+			case "insert":
+				dh256.insert(args2);
+				break;
+			case "retrieve":
+				dh256.retrieve(args2);
+				break;
+			case "shutdown":
+				dh256.shutdown(args2);
+				break;
+			case "join":
+				dh256.join(args2);
+				break;
+			case "version":
+				System.out.println("dh256 v1.0.0");
+				break;
+			default:
+				System.out.println(clp.getHelpText());
+				break;
 			}
 		} else {
 			System.out.println(clp.getHelpText());
@@ -96,10 +113,11 @@ public class dh256 {
 	}
 
 	/**
-	 * join and setup the dart network
-	 *
+	 * Join the network.
+	 * <p>
+	 * 
 	 * @param args
-	 *        list of arguments
+	 *            list of arguments
 	 */
 	public static void join(String[] args) {
 		CommandLineParser clp = new CommandLineParser();
@@ -121,15 +139,26 @@ public class dh256 {
 					.setHelpText(
 							"Specifies the port that you would like your "
 									+ "node to use when joining the network."));
-			clp.addArgument(new Argument().setLongOption("adam").setOption("a")
+			clp.addArgument(new Argument()
+					.setLongOption("adam")
+					.setOption("a")
 					.setMultipleAllowed(false)
-					.setHelpText("Joins the network as the first node in the network."));
-			clp.addArgument(new Argument().setLongOption("dir").setOption("d")
-					.setMultipleAllowed(false).setTakesValue(true)
-					.setHelpText("Sets a location for a running node's storage."));
-			clp.addArgument(new Argument().setLongOption("log").setOption("l")
-					.setMultipleAllowed(false).setTakesValue(true)
-					.setHelpText("Sets a location to save a running node's log."));
+					.setHelpText(
+							"Joins the network as the first node in the network."));
+			clp.addArgument(new Argument()
+					.setLongOption("dir")
+					.setOption("d")
+					.setMultipleAllowed(false)
+					.setTakesValue(true)
+					.setHelpText(
+							"Sets a location for a running node's storage."));
+			clp.addArgument(new Argument()
+					.setLongOption("log")
+					.setOption("l")
+					.setMultipleAllowed(false)
+					.setTakesValue(true)
+					.setHelpText(
+							"Sets a location to save a running node's log."));
 			clp.addArgument(new Argument()
 					.setLongOption("settings")
 					.setOption("s")
@@ -144,11 +173,16 @@ public class dh256 {
 					.setMultipleAllowed(false)
 					.setTakesValue(true)
 					.setHelpText(
-							"Starts a node using the saved data " + "and settings of a previous."));
-			clp.addArgument(new Argument().setLongOption("daemon").setOption("dm")
+							"Starts a node using the saved data "
+									+ "and settings of a previous."));
+			clp.addArgument(new Argument()
+					.setLongOption("daemon")
+					.setOption("dm")
 					.setMultipleAllowed(false)
 					.setHelpText("Forks the node's operation to the backround."));
-			clp.addArgument(new Argument().setLongOption("check").setOption("c")
+			clp.addArgument(new Argument()
+					.setLongOption("check")
+					.setOption("c")
 					.setMultipleAllowed(false)
 					.setHelpText("Checks the input without running the action."));
 			Map<String, Argument> out = clp.parseArgs(args);
@@ -167,7 +201,8 @@ public class dh256 {
 						node.setSettings(settings);
 				}
 				if (out.containsKey("port")) {
-					int port = Integer.parseInt(out.get("port").getValues().get(0));
+					int port = Integer.parseInt(out.get("port").getValues()
+							.get(0));
 					node.setPort(port);
 				}
 				if (out.containsKey("adam")) {
@@ -190,10 +225,11 @@ public class dh256 {
 					if (bootstrap.contains(":")) {
 						String[] bootstrapSplit = bootstrap.split(":");
 						node.setBootstrapNode(new L3Address(InetAddress
-								.getByName(bootstrapSplit[0]), Integer.parseInt(bootstrapSplit[1])));
+								.getByName(bootstrapSplit[0]), Integer
+								.parseInt(bootstrapSplit[1])));
 					} else
-						throw new InvalidFormatException("Bootstrap ' " + bootstrap
-								+ " ' is formatted incorrectly. ");
+						throw new InvalidFormatException("Bootstrap ' "
+								+ bootstrap + " ' is formatted incorrectly. ");
 
 				}
 				if (!out.containsKey("check"))
@@ -220,9 +256,10 @@ public class dh256 {
 
 	/**
 	 * Insert file(s) into the network
+	 * <p>
 	 *
 	 * @param args
-	 *        list of arguments
+	 *            list of arguments
 	 */
 	public static void insert(String[] args) {
 		CommandLineParser clp = new CommandLineParser();
@@ -230,13 +267,15 @@ public class dh256 {
 		try {
 			clp.addArgument(new Argument().setLongOption("file").setParam(true)
 					.setMultipleAllowed(false).setRequiredArg(true));
-			clp.addArgument(new Argument().setLongOption("bootstrap").setOption("b")
-					.setMultipleAllowed(false).setTakesValue(true)
-					.setHelpText("the bootstrap node."));
+			clp.addArgument(new Argument().setLongOption("bootstrap")
+					.setOption("b").setMultipleAllowed(false)
+					.setTakesValue(true).setHelpText("the bootstrap node."));
 			clp.addArgument(new Argument().setLongOption("help").setOption("h")
 					.setMultipleAllowed(false).setTakesValue(false)
 					.setHelpText("Display help menue."));
-			clp.addArgument(new Argument().setLongOption("check").setOption("c")
+			clp.addArgument(new Argument()
+					.setLongOption("check")
+					.setOption("c")
 					.setMultipleAllowed(false)
 					.setHelpText("Checks the input without running the action."));
 			Map<String, Argument> out = clp.parseArgs(args);
@@ -245,7 +284,8 @@ public class dh256 {
 			} else {
 				File file = new File(out.get("file").getValues().get(0));
 				if (!existsAndReadable(file)) {
-					System.out.println("specified file does not exist or we lack read permissions");
+					System.out
+							.println("specified file does not exist or we lack read permissions");
 					return;
 				}
 				if (!out.containsKey("check")) {
@@ -254,16 +294,18 @@ public class dh256 {
 					CASFileAddress fileAddress = new CASFileAddress(file);
 					byte[] fileBytes = Files.readAllBytes(file.toPath());
 					if (out.containsKey("bootstrap")) {
-						String bootstrap = out.get("bootstrap").getValues().get(0);
-						router = Router.fromBootstrapNode(getAddressfromArgument(bootstrap));
+						String bootstrap = out.get("bootstrap").getValues()
+								.get(0);
+						router = Router
+								.fromBootstrapNode(getAddressfromArgument(bootstrap));
 					} else {
 						router = Router.fromDefaultLocalNode();
 					}
 					int numberStored = router.put(fileAddress, fileBytes);
 					if (numberStored > 0)
 						System.out.println("file with address <"
-								+ fileAddress.overlayAddressToString() + "> stored by"
-								+ numberStored + " nodes");
+								+ fileAddress.overlayAddressToString()
+								+ "> stored by" + numberStored + " nodes");
 					else
 						System.out.println("the file was not added");
 				}
@@ -286,28 +328,40 @@ public class dh256 {
 	}
 
 	/**
-	 * Finds a specific certificate in the network
-	 *
+	 * Finds a specific file in the network and returns it to the user.
+	 * <p>
+	 * 
 	 * @param args
-	 *        list of arguments
+	 *            list of arguments
 	 */
 	public static void retrieve(String[] args) {
 		CommandLineParser clp = new CommandLineParser();
 		clp.setExecutableName("dh256 retrieve");
 		try {
-			clp.addArgument(new Argument().setLongOption("fileOAddress").setParam(true)
-					.setMultipleAllowed(false).setRequiredArg(true)
+			clp.addArgument(new Argument().setLongOption("fileOAddress")
+					.setParam(true).setMultipleAllowed(false)
+					.setRequiredArg(true)
 					.setHelpText("Address of the file you want to retrive."));
-			clp.addArgument(new Argument().setLongOption("dir").setOption("d")
-					.setMultipleAllowed(false).setRequiredArg(true)
-					.setHelpText("location for the retrieved file to be stored."));
-			clp.addArgument(new Argument().setLongOption("bootstrap").setOption("b")
-					.setMultipleAllowed(false).setTakesValue(true)
-					.setHelpText("the bootstrap node. Format: <IP Address>:<Port>"));
+			clp.addArgument(new Argument()
+					.setLongOption("dir")
+					.setOption("d")
+					.setMultipleAllowed(false)
+					.setRequiredArg(true)
+					.setHelpText(
+							"location for the retrieved file to be stored."));
+			clp.addArgument(new Argument()
+					.setLongOption("bootstrap")
+					.setOption("b")
+					.setMultipleAllowed(false)
+					.setTakesValue(true)
+					.setHelpText(
+							"the bootstrap node. Format: <IP Address>:<Port>"));
 			clp.addArgument(new Argument().setLongOption("help").setOption("h")
 					.setMultipleAllowed(false).setTakesValue(false)
 					.setHelpText("Display help menu."));
-			clp.addArgument(new Argument().setLongOption("check").setOption("c")
+			clp.addArgument(new Argument()
+					.setLongOption("check")
+					.setOption("c")
 					.setMultipleAllowed(false)
 					.setHelpText("Checks the input without running the action."));
 			Map<String, Argument> parsedArgs = clp.parseArgs(args);
@@ -318,15 +372,19 @@ public class dh256 {
 				Router router;
 				if (parsedArgs.containsKey("bootstrap")) {
 
-					String bootstrap = parsedArgs.get("bootstrap").getValues().get(0);
-					router = Router.fromBootstrapNode(getAddressfromArgument(bootstrap));
+					String bootstrap = parsedArgs.get("bootstrap").getValues()
+							.get(0);
+					router = Router
+							.fromBootstrapNode(getAddressfromArgument(bootstrap));
 				} else {
 					router = Router.fromDefaultLocalNode();
 				}
-				Address a = new Address(parsedArgs.get("fileoaddress").getValues().get(0));
+				Address a = new Address(parsedArgs.get("fileoaddress")
+						.getValues().get(0));
 				if (!parsedArgs.containsKey("check")) {
 					byte[] response = router.get(a);
-					File fileDir = new File(parsedArgs.get("dir").getValues().get(0));
+					File fileDir = new File(parsedArgs.get("dir").getValues()
+							.get(0));
 					new CASFileAddress(fileDir, response);
 					if (existsAndReadable(fileDir))
 						System.out.println("the file was retrived to the "
@@ -334,7 +392,8 @@ public class dh256 {
 				}
 			} else {
 
-				throw new InvalidFormatException("Missing required fileOAddress argument.");
+				throw new InvalidFormatException(
+						"Missing required fileOAddress argument.");
 			}
 
 		} catch (DuplicateOptionException e) {
@@ -355,38 +414,43 @@ public class dh256 {
 		}
 	}
 
-	private static L3Address getAddressfromArgument(String bootstrap) throws NumberFormatException,
-			UnknownHostException, InvalidFormatException {
+	private static L3Address getAddressfromArgument(String bootstrap)
+			throws NumberFormatException, UnknownHostException,
+			InvalidFormatException {
 		if (!bootstrap.contains(":")) {
 			throw new InvalidFormatException("Bootstrap ' " + bootstrap
 					+ " ' is formatted incorrectly. ");
 		}
 		String[] bootstrapSplit = bootstrap.split(":");
-		L3Address a =
-				new L3Address(InetAddress.getByName(bootstrapSplit[0]),
-						Integer.parseInt(bootstrapSplit[1]));
+		L3Address a = new L3Address(InetAddress.getByName(bootstrapSplit[0]),
+				Integer.parseInt(bootstrapSplit[1]));
 		return a;
 	}
 
 	/**
 	 * Used to exit the network
+	 * <p>
 	 *
 	 * @param args
-	 *        list of arguments
+	 *            list of arguments
 	 */
 	public static void shutdown(String[] args) {
 		CommandLineParser clp = new CommandLineParser();
 		clp.setExecutableName("dh256 shutdown");
 		try {
 			clp.addArgument(new Argument().setLongOption("port").setOption("p")
-					.setMultipleAllowed(false).setRequiredArg(true).setTakesValue(true)
+					.setMultipleAllowed(false).setRequiredArg(true)
+					.setTakesValue(true)
 					.setHelpText("The port of the node to be shutdown"));
 			clp.addArgument(new Argument().setLongOption("help").setOption("h")
 					.setTakesValue(false).setRequiredArg(false)
 					.setHelpText("display this help text"));
-			clp.addArgument(new Argument().setLongOption("check").setOption("c")
+			clp.addArgument(new Argument()
+					.setLongOption("check")
+					.setOption("c")
 					.setMultipleAllowed(false)
-					.setHelpText("Checks the format of input without running the action."));
+					.setHelpText(
+							"Checks the format of input without running the action."));
 			Map<String, Argument> out = clp.parseArgs(args);
 			if (out.containsKey("help")) {
 				System.out.println(clp.getHelpText());

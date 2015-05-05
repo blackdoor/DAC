@@ -14,10 +14,16 @@ import blackdoor.cqbe.addressing.*;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
 /**
-* Created by nfischer3 on 1/22/15.
-*/
+ * @author Nathaniel Fischer
+ * @version v1.0.0 - May 4, 2015
+ */
 public abstract class Rpc {
-	
+
+	/**
+	 * @param rpcJson
+	 * @return
+	 * @throws RPCException
+	 */
 	public static Rpc fromJson(JSONObject rpcJson) throws RPCException {
 		Rpc rpcObject = null;
 		try {
@@ -26,8 +32,8 @@ public abstract class Rpc {
 				rpcObject = new PutRpc();
 				PutRpc rpcObjectCast = (PutRpc) rpcObject;
 				try {
-					rpcObjectCast.value = Base64.decode(rpcJson.getJSONObject("params")
-							.getString("value"));
+					rpcObjectCast.value = Base64.decode(rpcJson.getJSONObject(
+							"params").getString("value"));
 				} catch (Base64DecodingException e) {
 					throw new RPCException(JSONRPCError.INVALID_BASE64);
 				} catch (JSONException e) {
@@ -43,8 +49,7 @@ public abstract class Rpc {
 				try {
 					rpcGetObject.index = rpcJson.getJSONObject("params")
 							.getInt("index");
-				}
-				catch (JSONException e){
+				} catch (JSONException e) {
 					throw new RPCException(JSONRPCError.INVALID_PARAMS);
 				}
 				rpcObject.method = Method.GET;
@@ -69,49 +74,60 @@ public abstract class Rpc {
 
 		return rpcObject;
 	}
-	
-   public static Rpc fromJsonString(String jsonText) throws RPCException{
-	   //TODO validate string
-	   JSONObject rpcJson;
-	   try{
-		   rpcJson = new JSONObject(jsonText);
-	   }catch(JSONException e){
-		   throw new RPCException(JSONRPCError.PARSE_ERROR);
-	   }
 
-	   return fromJson(rpcJson);
+	/**
+	 * @param jsonText
+	 * @return
+	 * @throws RPCException
+	 */
+	public static Rpc fromJsonString(String jsonText) throws RPCException {
+		JSONObject rpcJson;
+		try {
+			rpcJson = new JSONObject(jsonText);
+		} catch (JSONException e) {
+			throw new RPCException(JSONRPCError.PARSE_ERROR);
+		}
 
-   }
-   
-   protected static void populateCommonFields(Rpc rpcObject, JSONObject rpcJson) throws RPCException{
-	   try{
-		   JSONObject params = rpcJson.getJSONObject("params");
-		   rpcObject.source = new L3Address(InetAddress.getByName(params.getString("sourceIP")), params.getInt("sourcePort"));
-		   rpcObject.destination = new Address(params.getString("destinationO"));
-	   }catch(UnknownHostException | AddressException addressE){
-		   throw new RPCException(JSONRPCError.INVALID_ADDRESS_FORMAT);
-	   }catch(JSONException jsE){
-		   throw new RPCException(JSONRPCError.INVALID_PARAMS);
-	   }
-	   
-	   try{
-		   rpcObject.id = rpcJson.getInt("id");
-	   }catch(JSONException e){
-		   throw new RPCException(JSONRPCError.INVALID_REQUEST);
-	   }
-   }
+		return fromJson(rpcJson);
 
-   private Method method;
-   private L3Address source;
-   private Address destination;
-   private int id;
-   
-   protected Rpc(Method method){
-	   this.method = method;
-	   id = new Random().nextInt();
-   }
-   
-   
+	}
+
+	/**
+	 * @param rpcObject
+	 * @param rpcJson
+	 * @throws RPCException
+	 */
+	protected static void populateCommonFields(Rpc rpcObject, JSONObject rpcJson)
+			throws RPCException {
+		try {
+			JSONObject params = rpcJson.getJSONObject("params");
+			rpcObject.source = new L3Address(InetAddress.getByName(params
+					.getString("sourceIP")), params.getInt("sourcePort"));
+			rpcObject.destination = new Address(
+					params.getString("destinationO"));
+		} catch (UnknownHostException | AddressException addressE) {
+			throw new RPCException(JSONRPCError.INVALID_ADDRESS_FORMAT);
+		} catch (JSONException jsE) {
+			throw new RPCException(JSONRPCError.INVALID_PARAMS);
+		}
+
+		try {
+			rpcObject.id = rpcJson.getInt("id");
+		} catch (JSONException e) {
+			throw new RPCException(JSONRPCError.INVALID_REQUEST);
+		}
+	}
+
+	private Method method;
+	private L3Address source;
+	private Address destination;
+	private int id;
+
+	protected Rpc(Method method) {
+		this.method = method;
+		id = new Random().nextInt();
+	}
+
 	/**
 	 * @param method
 	 *            the method to set
@@ -144,49 +160,71 @@ public abstract class Rpc {
 		this.id = id;
 	}
 
+	/**
+	 * @return
+	 */
 	public Method getMethod() {
 		return method;
 	}
 
+	/**
+	 * @return
+	 */
 	public L3Address getSource() {
 		return source;
 	}
 
+	/**
+	 * @return
+	 */
 	public Address getDestination() {
 		return destination;
 	}
 
+	/**
+	 * @return
+	 */
 	public int getId() {
 		return id;
 	}
 
+	/**
+	 * @return
+	 */
+	protected JSONObject getRpcOuterShell() {
+		JSONObject shell = new JSONObject();
+		shell.put("jsonrpc", "2.0");
+		shell.put("method", getMethod().toString());
+		shell.put("id", new Random().nextInt(Integer.MAX_VALUE));
+		return shell;
+	}
 
-   protected JSONObject getRpcOuterShell(){
-	   JSONObject shell = new JSONObject();
-	   shell.put("jsonrpc", "2.0");
-	   shell.put("method", getMethod().toString());
-	   shell.put("id", new Random().nextInt(Integer.MAX_VALUE));
-	   return shell;
-   }
-   
-   protected JSONObject getRpcParameterShell(){
-	   JSONObject shell = new JSONObject();
-	   //shell.put("sourceO", getSource().overlayAddressToString());
-	   shell.put("sourceIP", getSource().getLayer3Address().getHostName());
-	   shell.put("sourcePort", getSource().getPort());
-	   shell.put("destinationO", getDestination().overlayAddressToString());
-	   return shell;
-   }
-   
-   public abstract JSONObject toJSON();
-   
-   public String toJSONString(){
-	   return toJSON().toString();
-   }
+	protected JSONObject getRpcParameterShell() {
+		JSONObject shell = new JSONObject();
+		// shell.put("sourceO", getSource().overlayAddressToString());
+		shell.put("sourceIP", getSource().getLayer3Address().getHostName());
+		shell.put("sourcePort", getSource().getPort());
+		shell.put("destinationO", getDestination().overlayAddressToString());
+		return shell;
+	}
 
-   public static enum Method{
-       GET, PUT, LOOKUP, PING, SHUTDOWN
-   }
+	/**
+	 * @return
+	 */
+	public abstract JSONObject toJSON();
+
+	/**
+	 * @return
+	 */
+	public String toJSONString() {
+		return toJSON().toString();
+	}
+
+	/**
+	 * @author Nathaniel Fischer
+	 * @version v1.0.0 - May 4, 2015
+	 */
+	public static enum Method {
+		GET, PUT, LOOKUP, PING, SHUTDOWN
+	}
 }
-
-

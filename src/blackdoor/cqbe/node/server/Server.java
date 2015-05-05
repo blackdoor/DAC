@@ -22,9 +22,24 @@ import blackdoor.util.DBP;
 /**
  * Node server that accepts and handles RPCs.
  * <p>
+ * A Node server must be constructed with a port otherwise it will use the
+ * default port that is specified in the configuration file "default.config". If
+ * there is a problem with the configuration file, or when initializing the
+ * server socket, a server exception will be thrown.
+ * <p>
+ * In the event that a problem has occurred with setting up a node's server it
+ * is recommended that the error is printed to log or to the user and the
+ * program's execution is terminated.
+ * <p>
+ * The static variables "SERVER_PARALLESIM" , "TIMEOUT" and "QUEUE_SIZE" are
+ * used to tune the performance of the threadpool.
+ * <p>
+ * To use this server elsewhere simply construct a server object with a valid
+ * port number or ensure that the default.config file is available and properly
+ * formated.
  * 
  * @author Cj Buresch
- * @version v0.1.1 - Feb 22, 2015
+ * @version v1.0.0 - May 5, 2015
  */
 public class Server implements Runnable {
 
@@ -36,11 +51,15 @@ public class Server implements Runnable {
 	private Thread runningThread = null;
 	private static final int SERVER_PARALLELISM;
 	public static final int TIMEOUT;
-	static{
-		TIMEOUT =  (int) Config.getReadOnly("node_timeout_in_seconds","default.config");
-		SERVER_PARALLELISM = (int) Config.getReadOnly("server_parallelism","default.config");
+	static {
+		TIMEOUT = (int) Config.getReadOnly("node_timeout_in_seconds",
+				"default.config");
+		SERVER_PARALLELISM = (int) Config.getReadOnly("server_parallelism",
+				"default.config");
 	}
-	private final int QUEUE_SIZE = (int) Config.getReadOnly("max_server_queue_size","default.config");
+
+	private final int QUEUE_SIZE = (int) Config.getReadOnly(
+			"max_server_queue_size", "default.config");
 
 	/**
 	 * Initialize with default port.
@@ -60,7 +79,9 @@ public class Server implements Runnable {
 	public Server(int port) throws ServerException {
 		this.port = port;
 		int cpus = Runtime.getRuntime().availableProcessors();
-		int size = QUEUE_SIZE * Math.max(cpus * SERVER_PARALLELISM,AddressTable.DEFAULT_MAX_SIZE * cpus);
+		int size = QUEUE_SIZE
+				* Math.max(cpus * SERVER_PARALLELISM,
+						AddressTable.DEFAULT_MAX_SIZE * cpus);
 		blockingQueue = new LinkedBlockingQueue<>(size);
 		pool = getPool();
 		openServerSocket();
@@ -69,7 +90,8 @@ public class Server implements Runnable {
 	/**
 	 * Starts the node server.
 	 * <p>
-	 * 
+	 * This starts a infinite loop for a server listening on a port. To end this
+	 * loop call the stop() method.
 	 */
 	@Override
 	public void run() {
@@ -90,15 +112,21 @@ public class Server implements Runnable {
 	/**
 	 * Stops the running node server.
 	 * <p>
-	 * 
+	 * This method tries to safely handle each request without causing serious
+	 * issues in execution by shutting down. It will stop accepting requests to
+	 * the pool, and then shut the socket. If there are still requests being
+	 * handled it will wait a certain "timeout" period before shutting down.
+	 * Turns out that handling a threadpool shutdown is a little difficult.
 	 */
 	public synchronized void stop() {
 		running = false;
-		pool.shutdown(); // Disable new tasks from being submitted
+		// Disable new tasks from being submitted
+		pool.shutdown();
 		try {
 			// Wait a while for existing tasks to terminate
 			if (!pool.awaitTermination(TIMEOUT, TimeUnit.SECONDS))
-				pool.shutdownNow(); // Cancel currently executing tasks
+				// Cancel currently executing tasks
+				pool.shutdownNow();
 			if (!serverSocket.isClosed())
 				this.serverSocket.close();
 		} catch (IOException e) {
@@ -111,24 +139,30 @@ public class Server implements Runnable {
 			pool.shutdownNow();
 			// Preserve interrupt status
 			Thread.currentThread().interrupt();
-		}finally{
+		} finally {
 			pool.shutdownNow();
 		}
 	}
 
 	/**
-	 * Returns the boolean status of the node server.
+	 * Returns the boolean status of the server.
 	 * <p>
 	 * 
-	 * @return
+	 * @return boolean
 	 */
 	public synchronized boolean isRunning() {
 		return this.running;
 	}
 
 	/**
- * 
- */
+	 * Opens a Server Socket on the port passed to the constructor.
+	 * <p>
+	 * If the server cannot be opened then a ServerExcetiion will be thrown
+	 * back. Wherever this exception is caught should print the error to log or
+	 * user and then exit execution.
+	 * 
+	 * @throws ServerException
+	 */
 	private void openServerSocket() throws ServerException {
 		try {
 			this.serverSocket = new ServerSocket(this.port);
@@ -147,10 +181,12 @@ public class Server implements Runnable {
 	private ThreadPoolExecutor getPool() {
 		int cpus = Runtime.getRuntime().availableProcessors();
 		DBP.printdevln("Server Detects " + cpus + " cores.");
-		int core = Math.min(SERVER_PARALLELISM * cpus, AddressTable.DEFAULT_MAX_SIZE);
-		int max = Math.max(cpus * SERVER_PARALLELISM, AddressTable.DEFAULT_MAX_SIZE * cpus);
+		int core = Math.min(SERVER_PARALLELISM * cpus,
+				AddressTable.DEFAULT_MAX_SIZE);
+		int max = Math.max(cpus * SERVER_PARALLELISM,
+				AddressTable.DEFAULT_MAX_SIZE * cpus);
 		TimeUnit time = TimeUnit.SECONDS;
-		DBP.printdevln("Starting with " +core+ "<=threads<="+max);
+		DBP.printdevln("Starting with " + core + "<=threads<=" + max);
 		ThreadPoolExecutor tmp = new ThreadPoolExecutor(core, max, TIMEOUT,
 				time, blockingQueue);
 		return tmp;

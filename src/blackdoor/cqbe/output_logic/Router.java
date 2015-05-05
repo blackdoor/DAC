@@ -38,52 +38,60 @@ import org.json.JSONObject;
 import java.util.*;
 
 /**
- * Responsibility - Handles routing through the overlay network, resolution of overlay addresses,
- * sending RPCs and resolving replies
+ * Responsibility: Handles routing through the overlay network, resolution of
+ * overlay addresses, sending RPCs and resolving replies
+ * <p>
  * 
- * @author nfischer3
+ * @author Nathaniel Fischer
+ * @version v1.0.0 - May 4, 2015
  *
  */
 public class Router {
-	
-	public static int PARALLELISM = (int) Config.getReadOnly("node_update_parallelism","default.config");
+
+	public static int PARALLELISM = (int) Config.getReadOnly(
+			"node_update_parallelism", "default.config");
 	public static int TIMEOUT = 2;
-	
+
 	private AddressTable bootstrapTable;
 
 	/**
-	 * Create a new router, will look for a node on localhost:defaultport to use as bootstrapping
-	 * node
-	 * TODO decide default port, probably in settings
+	 * Create a new router, will look for a node on localhost:defaultport to use
+	 * as bootstrapping node
+	 * <p>
 	 * 
 	 * @throws IOException
-	 *         if the router is unable to connect to the node on localhost
+	 *             if the router is unable to connect to the node on localhost
 	 * @throws RPCException
 	 */
-	public static Router fromDefaultLocalNode() throws IOException, RPCException {
-		return Router.fromBootstrapNode(new L3Address(InetAddress.getLoopbackAddress(), 1234));
+	public static Router fromDefaultLocalNode() throws IOException,
+			RPCException {
+		return Router.fromBootstrapNode(new L3Address(InetAddress
+				.getLoopbackAddress(), 1234));
 	}
 
 	/**
 	 * Create a new router with an address table to use for routing.
+	 * <p>
 	 * 
 	 * @param bootstrapTable
-	 *        Any address table containing valid nodes in the network.
+	 *            Any address table containing valid nodes in the network.
 	 */
 	public Router(AddressTable bootstrapTable) {
 		this.bootstrapTable = bootstrapTable;
 	}
 
 	/**
-	 * Create a new router that will contact bootstrapNode for an address table to use for routing.
+	 * Create a new router that will contact bootstrapNode for an address table
+	 * to use for routing.
+	 * <p>
 	 * 
 	 * @param bootstrapNode
 	 * @throws IOException
-	 *         if router could not connect to bootstrapNode
+	 *             if router could not connect to bootstrapNode
 	 * @throws RPCException
 	 */
-	public static Router fromBootstrapNode(L3Address bootstrapNode) throws IOException,
-			RPCException {
+	public static Router fromBootstrapNode(L3Address bootstrapNode)
+			throws IOException, RPCException {
 		// RPCBuilder lookupRequestBuilder = new RPCBuilder();
 		AddressTable table;
 		L3Address me;
@@ -98,6 +106,7 @@ public class Router {
 	}
 
 	/**
+	 * <p>
 	 * 
 	 * @param remoteNode
 	 * @param destination
@@ -111,8 +120,10 @@ public class Router {
 		try {
 			requestBuilder.setDestinationO(remoteNode);
 			requestBuilder.setSource(source);
-			PingRpc ping = requestBuilder.buildPingObject();;
-			ResultRpcResponse response = (ResultRpcResponse) call(remoteNode, ping);
+			PingRpc ping = requestBuilder.buildPingObject();
+			;
+			ResultRpcResponse response = (ResultRpcResponse) call(remoteNode,
+					ping);
 			return (response.isSuccessful());
 		} catch (IOException e) {
 			return false;
@@ -134,8 +145,9 @@ public class Router {
 	}
 
 	/**
-	 * Sends a get request to remoteNode either for the value of destination or the keys stored by
-	 * remoteNode in their index bucket.
+	 * Sends a get request to remoteNode either for the value of destination or
+	 * the keys stored by remoteNode in their index bucket.
+	 * <p>
 	 * 
 	 * @param remoteNode
 	 * @param destination
@@ -144,8 +156,8 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public static JSONRPCResult primitiveGet(L3Address remoteNode, Address destination, int index)
-			throws RPCException, IOException {
+	public static JSONRPCResult primitiveGet(L3Address remoteNode,
+			Address destination, int index) throws RPCException, IOException {
 		Rpc requestObject;
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
@@ -163,6 +175,7 @@ public class Router {
 	}
 
 	/**
+	 * <p>
 	 * 
 	 * @param remoteNode
 	 * @param destination
@@ -171,8 +184,8 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public static Set<Address> getIndex(L3Address remoteNode, int index) throws RPCException,
-			IOException {
+	public static Set<Address> getIndex(L3Address remoteNode, int index)
+			throws RPCException, IOException {
 		JSONRPCResult response = null;
 		response = primitiveGet(remoteNode, Address.getNullAddress(), index);
 		if (response instanceof IndexResult) {
@@ -183,16 +196,17 @@ public class Router {
 	}
 
 	/**
+	 * <p>
 	 * 
 	 * @param remoteNode
 	 * @param destination
-	 * @return the value for destination, or null if remoteNode does not have a value for
-	 *         destination
+	 * @return the value for destination, or null if remoteNode does not have a
+	 *         value for destination
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public static byte[] getValue(L3Address remoteNode, Address destination) throws RPCException,
-			IOException {
+	public static byte[] getValue(L3Address remoteNode, Address destination)
+			throws RPCException, IOException {
 		JSONRPCResult response = primitiveGet(remoteNode, destination, 0);
 		if (response instanceof ValueResult) {
 			return ((ValueResult) response).getValue();
@@ -201,8 +215,9 @@ public class Router {
 	}
 
 	/**
-	 * Retrieves the value for destination (which is a key).
-	 * This method sends get requests to multiple nodes and returns the most popular value.
+	 * Retrieves the value for destination (which is a key). This method sends
+	 * get requests to multiple nodes and returns the most popular value.
+	 * <p>
 	 * 
 	 * @param destination
 	 * @return
@@ -229,11 +244,18 @@ public class Router {
 		return max;
 	}
 
-	// TODO use some OOD to associate destination and value. destination might have value in it like
-	// an L3Address, or destination can be a Class object that is a subtype of Address, and use that
-	// class to build an Oaddr from value.
-	public static boolean primitivePut(L3Address remoteNode, Address destination, byte[] value)
-			throws IOException, RPCException {
+	/**
+	 * <p>
+	 * 
+	 * @param remoteNode
+	 * @param destination
+	 * @param value
+	 * @return
+	 * @throws IOException
+	 * @throws RPCException
+	 */
+	public static boolean primitivePut(L3Address remoteNode,
+			Address destination, byte[] value) throws IOException, RPCException {
 
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
@@ -250,8 +272,8 @@ public class Router {
 		}
 	}
 
-
-	private static Rpc getPut(Address destination, byte[] value) throws RPCException {
+	private static Rpc getPut(Address destination, byte[] value)
+			throws RPCException {
 		L3Address source = getSource();
 		RPCBuilder requestBuilder = new RPCBuilder();
 		requestBuilder.setDestinationO(destination);
@@ -261,8 +283,9 @@ public class Router {
 	}
 
 	/**
-	 * call put on all nodes near destination. returns the number of nodes that acknowledged storage
-	 * of value.
+	 * call put on all nodes near destination. returns the number of nodes that
+	 * acknowledged storage of value.
+	 * <p>
 	 * 
 	 * @param destination
 	 * @param value
@@ -270,35 +293,39 @@ public class Router {
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public int put(Address destination, byte[] value) throws IOException, RPCException  {
+	public int put(Address destination, byte[] value) throws IOException,
+			RPCException {
 		int ret = 0;
 		RpcResponse response;
 		Rpc request = getPut(destination, value);
 		AddressTable neighbors = iterativeLookup(destination);
 		for (L3Address address : neighbors.values()) {
-			try{
+			try {
 				response = call(address, request);
-				ret += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1 : 0;
-			}catch (RPCException e) {
+				ret += ((ResultRpcResponse) response).getResult() instanceof AckResponse ? 1
+						: 0;
+			} catch (RPCException e) {
 				DBP.printException(e);
-		}
+			}
 		}
 		return ret;
 	}
 
 	/**
 	 * Performs a primitive lookup RPC for destination on remoteNode
+	 * <p>
 	 * 
 	 * @param remoteNode
-	 *        the node to which the RPC will be sent
+	 *            the node to which the RPC will be sent
 	 * @param destination
-	 *        the address for which remote the remote node will return nearby neighbors
-	 * @return an address table with the nodes nearest to destination that the remote node is aware
-	 *         of
+	 *            the address for which remote the remote node will return
+	 *            nearby neighbors
+	 * @return an address table with the nodes nearest to destination that the
+	 *         remote node is aware of
 	 * @throws RPCException
 	 */
-	public static AddressTable primitiveLookup(L3Address remoteNode, Address destination)
-			throws IOException, RPCException {
+	public static AddressTable primitiveLookup(L3Address remoteNode,
+			Address destination) throws IOException, RPCException {
 		AddressTable ret = null;
 		Rpc requestObject;
 		RpcResponse responseObject = null;
@@ -311,13 +338,15 @@ public class Router {
 		requestObject = requestBuilder.buildLookupObject();
 		Socket sock = new Socket();
 		sock.setSoTimeout(1 * 1000);
-		sock.connect(new InetSocketAddress(remoteNode.getLayer3Address(), remoteNode.getPort()), (int)(.9 * 1000));
+		sock.connect(new InetSocketAddress(remoteNode.getLayer3Address(),
+				remoteNode.getPort()), (int) (.9 * 1000));
 		io = new SocketIOWrapper(sock);
 		io.write(requestObject.toJSONString());
 		responseObject = ResultRpcResponse.fromJson(io.read());
 		// handle if response is an error.
 		if (responseObject instanceof ErrorRpcResponse) {
-			throw new RPCException(((ErrorRpcResponse) responseObject).getError());
+			throw new RPCException(
+					((ErrorRpcResponse) responseObject).getError());
 		}
 		ResultRpcResponse r = (ResultRpcResponse) responseObject;
 		ret = (AddressTable) r.getResult().getValue();
@@ -325,44 +354,56 @@ public class Router {
 		ret.add(remoteNode);
 		return ret;
 	}
-	
-	public AddressTable iterativeLookup(Address destination, int α, int n){
+
+	/**
+	 * @param destination
+	 * @param α
+	 * @param n
+	 * @return
+	 */
+	public AddressTable iterativeLookup(Address destination, int α, int n) {
 		return iterativeLookup(destination, α, n, AddressTable.DEFAULT_MAX_SIZE);
 	}
 
-    /**
-     *
-     * @param destination
-     * @param α the number of nearest addresses to keep on each lookup call
-     *          AKA the "width" of the search
-     * @param n the number of addresses to return
-     * @param Ω the size of the queue to use in the search
-     * @return
-     */
-	public AddressTable iterativeLookup(Address destination, int α, int n, int Ω){
-		
+	/**
+	 * <p>
+	 * 
+	 * @param destination
+	 * @param α
+	 *            the number of nearest addresses to keep on each lookup call
+	 *            AKA the "width" of the search
+	 * @param n
+	 *            the number of addresses to return
+	 * @param Ω
+	 *            the size of the queue to use in the search
+	 * @return
+	 */
+	public AddressTable iterativeLookup(Address destination, int α, int n, int Ω) {
+
 		AddressTable rt = new AddressTable(destination);
 		AddressTable q = new AddressTable(destination);
-		Set<Address> visited = Collections.synchronizedSet(new HashSet<Address>());
+		Set<Address> visited = Collections
+				.synchronizedSet(new HashSet<Address>());
 		List<Thread> pool = new LinkedList<>();
 
 		q.setMaxSize(Ω);
 		rt.setMaxSize(n);
-		
+
 		q.addAll(this.bootstrapTable.values());
-		DBP.printdebugln((int)(.85 * α) + " parallel lookup threads");
-		for(int i = 0; i < .85 * α; i++){
-			Thread t = new Thread(new IterativeLookupThread(destination, α, n, rt, q, visited));
+		DBP.printdebugln((int) (.85 * α) + " parallel lookup threads");
+		for (int i = 0; i < .85 * α; i++) {
+			Thread t = new Thread(new IterativeLookupThread(destination, α, n,
+					rt, q, visited));
 			pool.add(t);
 			t.start();
 		}
-		
-		for(boolean interrupted = true; interrupted;){
+
+		for (boolean interrupted = true; interrupted;) {
 			interrupted = false;
 			try {
-				for(Thread t : pool){
-					
-						t.join();	
+				for (Thread t : pool) {
+
+					t.join();
 				}
 			} catch (InterruptedException e) {
 				interrupted = true;
@@ -371,18 +412,18 @@ public class Router {
 		rt.trim();
 		return rt;
 	}
-	
-	private class IterativeLookupThread implements Runnable{
-		
+
+	private class IterativeLookupThread implements Runnable {
+
 		AddressTable rt;
 		AddressTable q;
 		Set<Address> visited;
 		Address destination;
-		int α; 
+		int α;
 		int n;
-		
-		public IterativeLookupThread(Address destination, int α, int n, AddressTable rt, AddressTable q,
-				Set<Address> visited) {
+
+		public IterativeLookupThread(Address destination, int α, int n,
+				AddressTable rt, AddressTable q, Set<Address> visited) {
 			super();
 			this.rt = rt;
 			this.q = q;
@@ -391,19 +432,19 @@ public class Router {
 			this.α = α;
 			this.n = n;
 		}
-		
-		L3Address pollio(AddressTable q){
+
+		L3Address pollio(AddressTable q) {
 			Entry<byte[], L3Address> e = q.pollFirstEntry();
-			return e == null ? null : e.getValue() ;
+			return e == null ? null : e.getValue();
 		}
 
 		@Override
 		public void run() {
 			boolean empty = false;
-			
-			for(L3Address address = pollio(q); address != null || !empty; address = pollio(q)){
-				
-				if(address == null){
+
+			for (L3Address address = pollio(q); address != null || !empty; address = pollio(q)) {
+
+				if (address == null) {
 					empty = true;
 					try {
 						Thread.sleep(10);
@@ -412,64 +453,73 @@ public class Router {
 						DBP.printException(e);
 						continue;
 					}
-				}else{
+				} else {
 					empty = false;
-					if(visited.contains(address))
+					if (visited.contains(address))
 						continue;
 				}
-				
+
 				AddressTable response;
 				visited.add(address);
-				
-				DBP.printdebugln("iterative lookup D=" + Misc.getHammingDistance(address.getOverlayAddress(), destination.getOverlayAddress()) + " " + address);
 
-                long start = System.nanoTime();
+				DBP.printdebugln("iterative lookup D="
+						+ Misc.getHammingDistance(address.getOverlayAddress(),
+								destination.getOverlayAddress()) + " "
+						+ address);
+
+				long start = System.nanoTime();
 				try {
 
 					response = primitiveLookup(address, destination);
 
 					rt.add(address);
 					response.values().removeAll(visited);
-					
-					if(rt.size() >= n){
+
+					if (rt.size() >= n) {
 						AddressTable tmp = new AddressTable(destination);
 						tmp.setMaxSize(α);
-						tmp.addAll(response.headMap(rt.lastKey(), true).values());
+						tmp.addAll(response.headMap(rt.lastKey(), true)
+								.values());
 						response = tmp;
 					}
 					q.addAll(response.values());
-					if(rt.size() >= n)
+					if (rt.size() >= n)
 						q.values().removeAll(q.tailMap(rt.lastKey()).values());
-										
+
 				} catch (IOException | RPCException e1) {
-					//DBP.printException(e1);
-					DBP.printwarningln(address + " did not respond during iterative lookup.");
+					// DBP.printException(e1);
+					DBP.printwarningln(address
+							+ " did not respond during iterative lookup.");
 				}
-                long stop = System.nanoTime();
-                DBP.printdebugln((stop-start)/1000000000.0 + " elapsed");
-				
+				long stop = System.nanoTime();
+				DBP.printdebugln((stop - start) / 1000000000.0 + " elapsed");
+
 			}
-			
+
 		}
-		
+
 	}
-	
+
 	/**
-	 * Resolve the network layer addresses and ports of neighbors to destination by routing through
-	 * the network.
+	 * Resolve the network layer addresses and ports of neighbors to destination
+	 * by routing through the network.
+	 * <p>
 	 * 
 	 * @param destination
-	 *        an overlay address for which nearby layer 3 addresses should be resolved.
+	 *            an overlay address for which nearby layer 3 addresses should
+	 *            be resolved.
 	 * @return an AddressTable filled with the nearest neighbors of destination.
 	 */
-	public AddressTable iterativeLookup(Address destination){//TODO rename this
-		return iterativeLookup(destination, AddressTable.DEFAULT_MAX_SIZE, AddressTable.DEFAULT_MAX_SIZE);
+	public AddressTable iterativeLookup(Address destination) {
+		return iterativeLookup(destination, AddressTable.DEFAULT_MAX_SIZE,
+				AddressTable.DEFAULT_MAX_SIZE);
 
 	}
 
 	/**
 	 * Route RPC to its destination, but also try to make call on each node
 	 * along the way.
+	 * <p>
 	 * 
 	 * @param RPC
 	 * @return the consensus reply to RPC.
@@ -481,18 +531,19 @@ public class Router {
 
 	/**
 	 * Send a RPC to destination and return the reply
+	 * <p>
 	 * 
 	 * @param destination
-	 * @return the reply from destination.
-	 *         TODO make make the return match the docs, or make the docs match the actual return
+	 * @return the reply from destination. 
 	 * @throws RPCException
 	 * @throws IOException
 	 */
-	public static ResultRpcResponse call(L3Address destination, Rpc RPC) throws RPCException,
-			IOException {
+	public static ResultRpcResponse call(L3Address destination, Rpc RPC)
+			throws RPCException, IOException {
 		RpcResponse result;
 		Socket sock = new Socket();
-		sock.connect(new InetSocketAddress(destination.getLayer3Address(), destination.getPort()), TIMEOUT * 1000);
+		sock.connect(new InetSocketAddress(destination.getLayer3Address(),
+				destination.getPort()), TIMEOUT * 1000);
 		sock.setSoTimeout(TIMEOUT * 1000);
 		SocketIOWrapper io = new SocketIOWrapper(sock);
 		io.write(RPC.toJSONString());
@@ -504,9 +555,20 @@ public class Router {
 		return (ResultRpcResponse) result;
 	}
 
+	/**
+	 * Shuts down a node on a given port.
+	 * <p>
+	 * Sends the command to the running node, and handles the resulting
+	 * challenge to avoid the potential spoof attack of a non-locally issued
+	 * shutdown command.
+	 * <p>
+	 * 
+	 * @param port
+	 * @throws IOException
+	 */
 	public static void shutDown(int port) throws IOException {
-		SocketIOWrapper io =
-				new SocketIOWrapper(new Socket(InetAddress.getLoopbackAddress(), port));
+		SocketIOWrapper io = new SocketIOWrapper(new Socket(
+				InetAddress.getLoopbackAddress(), port));
 		io.write(ShutdownRpc.getShutdownRPC().toJSONString());
 		io.write(Integer.parseInt(io.read()));
 	}

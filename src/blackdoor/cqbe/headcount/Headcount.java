@@ -50,7 +50,6 @@ public class Headcount {
 				try {
 					Thread.sleep(interval);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
@@ -72,7 +71,6 @@ public class Headcount {
 					System.out.println("wrote to file");
 					System.out.println(out);
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}

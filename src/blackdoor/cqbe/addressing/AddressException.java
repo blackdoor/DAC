@@ -1,25 +1,22 @@
 package blackdoor.cqbe.addressing;
 
 /**
+ * Custom Exceptions to help express errors in Address related functions of a
+ * node.
+ * <p>
  * 
  * @author Cj Buresch
- * @version v0.0.1 - Nov 5, 2014
+ * @version v1.0.0 - May 4, 2015
  */
 public class AddressException extends Exception {
 
-	public AddressException(){}
+	public AddressException() {
+	}
 
-	public AddressException(String e){
+	public AddressException(String e) {
 		super(e);
 	}
 
-	/**
-	 * Missing Layer 3 Address.
-	 * <p>
-	 * 
-	 * @author Cj Buresch
-	 * @version v0.0.1 - Nov 5, 2014
-	 */
 	public static class MissingLayer3Exception extends AddressException {
 
 	}

@@ -16,17 +16,29 @@ import blackdoor.cqbe.addressing.AddressTable;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.util.DBP;
 
+/**
+ * 
+ * @author Nathaniel Fischer
+ * @version v1.0.0 - May 4, 2015
+ */
 public interface GETResponse {
 	public Object getResult();
-	
-	public static class GETResponseFactory{
-		public static GETResponse multipleReturnTypeDerp(JSONObject responseObject) throws RPCException{
-			if(!RPCValidator.isValidoopResponse(responseObject))
+
+	/**
+	 * 
+	 * @author Nathaniel Fischer
+	 * @version v1.0.0 - May 4, 2015
+	 */
+	public static class GETResponseFactory {
+		public static GETResponse multipleReturnTypeDerp(
+				JSONObject responseObject) throws RPCException {
+			if (!RPCValidator.isValidoopResponse(responseObject))
 				throw new RPCException(JSONRPCError.NODE_SHAT);
 			String b64Value;
 			JSONArray indexOrLookup;
 			b64Value = responseObject.optString("result", null);
-			if(b64Value != null && b64Value.charAt(0) != '['){ //response contained a value!
+			if (b64Value != null && b64Value.charAt(0) != '[') {
+				// response contained a value!
 				GETValueResponse response = new GETValueResponse();
 				try {
 					response.result = Base64.decode(b64Value);
@@ -36,17 +48,19 @@ public interface GETResponse {
 					throw new RPCException(x);
 				}
 				return response;
-			}else{ // response contained an index or an address table
+			} else { // response contained an index or an address table
 				indexOrLookup = responseObject.optJSONArray("result");
-				if(indexOrLookup != null){
+				if (indexOrLookup != null) {
 					JSONObject index = indexOrLookup.optJSONObject(0);
-					if(index == null){ // response contained an index
+					if (index == null) { // response contained an index
 						GETIndexResponse response = new GETIndexResponse();
-						ArrayList<Address> result = new ArrayList<>(indexOrLookup.length());
-						for(int i = 0; i < indexOrLookup.length(); i++){
+						ArrayList<Address> result = new ArrayList<>(
+								indexOrLookup.length());
+						for (int i = 0; i < indexOrLookup.length(); i++) {
 							try {
 								DBP.printdebugln(indexOrLookup);
-								result.add(new Address(indexOrLookup.getString(i)));
+								result.add(new Address(indexOrLookup
+										.getString(i)));
 							} catch (JSONException e) {
 								DBP.printException(e);
 							} catch (AddressException e) {
@@ -57,37 +71,59 @@ public interface GETResponse {
 						}
 						response.result = result;
 						return response;
-					}else{//response contained an address table
-						try{
-							AddressTable result = AddressTable.fromJSONArray(indexOrLookup);
+					} else {// response contained an address table
+						try {
+							AddressTable result = AddressTable
+									.fromJSONArray(indexOrLookup);
 							GETLookupResponse response = new GETLookupResponse();
 							response.result = result;
 							return response;
-						}catch (JSONException e){
+						} catch (JSONException e) {
 							throw new RPCException(JSONRPCError.INVALID_RESULT);
 						}
 					}
-				}else throw new RPCException(JSONRPCError.INVALID_RESULT);
+				} else
+					throw new RPCException(JSONRPCError.INVALID_RESULT);
 			}
 		}
 	}
-	
-	public static class GETIndexResponse implements GETResponse{
+
+	/**
+	 * 
+	 * @author Nathaniel Fischer
+	 * @version v1.0.0 - May 4, 2015
+	 */
+	public static class GETIndexResponse implements GETResponse {
 		private List<Address> result;
+
 		@Override
 		public List<Address> getResult() {
 			return result;
 		}
 	}
-	public static class GETValueResponse implements GETResponse{
+
+	/**
+	 * 
+	 * @author Nathaniel Fischer
+	 * @version v1.0.0 - May 4, 2015
+	 */
+	public static class GETValueResponse implements GETResponse {
 		private byte[] result;
+
 		@Override
 		public byte[] getResult() {
 			return result;
 		}
 	}
-	public static class GETLookupResponse implements GETResponse{
+
+	/**
+	 * 
+	 * @author Nathaniel Fischer
+	 * @version v1.0.0 - May 4, 2015
+	 */
+	public static class GETLookupResponse implements GETResponse {
 		private AddressTable result;
+
 		@Override
 		public AddressTable getResult() {
 			return result;

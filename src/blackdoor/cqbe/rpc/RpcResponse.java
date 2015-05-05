@@ -11,12 +11,21 @@ import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 import blackdoor.util.DBP;
 
+/**
+ * @author Nathaniel Fischer
+ * @version v1.0.0 - May 4, 2015
+ */
 public abstract class RpcResponse implements Serializable {
-	
-	public static RpcResponse fromJson(JSONObject response) throws RPCException{
+
+	/**
+	 * @param response
+	 * @return
+	 * @throws RPCException
+	 */
+	public static RpcResponse fromJson(JSONObject response) throws RPCException {
 		try {
 			// check version
-			if (!response.getString("jsonrpc").equals("2.0")){
+			if (!response.getString("jsonrpc").equals("2.0")) {
 				throw new RPCException(JSONRPCError.INVALID_RESPONSE);
 			}
 			if (response.has("result"))
@@ -29,15 +38,20 @@ public abstract class RpcResponse implements Serializable {
 		}
 		return null;
 	}
-	
-	public static RpcResponse fromJson(String response) throws RPCException{
-		try{
+
+	/**
+	 * @param response
+	 * @return
+	 * @throws RPCException
+	 */
+	public static RpcResponse fromJson(String response) throws RPCException {
+		try {
 			return fromJson(new JSONObject(response));
-		}catch(JSONException e){
+		} catch (JSONException e) {
 			throw new RPCException(JSONRPCError.PARSE_ERROR);
 		}
 	}
-	
+
 	private Integer id;
 	private boolean successful;
 
@@ -55,7 +69,8 @@ public abstract class RpcResponse implements Serializable {
 	}
 
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
 	 */
 	protected void setId(Integer id) {
 		this.id = id;
@@ -69,22 +84,32 @@ public abstract class RpcResponse implements Serializable {
 	}
 
 	/**
-	 * @param successful the successful to set
+	 * @param successful
+	 *            the successful to set
 	 */
 	protected void setSuccessful(boolean successful) {
 		this.successful = successful;
 	}
-	
-	protected JSONObject getRpcOuterShell(){
-		   JSONObject shell = new JSONObject();
-		   shell.put("jsonrpc", "2.0");
-		   shell.put("id", getId() == -1 ? JSONObject.NULL : getId());
-		   return shell;
+
+	/**
+	 * @return
+	 */
+	protected JSONObject getRpcOuterShell() {
+		JSONObject shell = new JSONObject();
+		shell.put("jsonrpc", "2.0");
+		shell.put("id", getId() == -1 ? JSONObject.NULL : getId());
+		return shell;
 	}
-	
+
+	/**
+	 * @return
+	 */
 	public abstract JSONObject toJSON();
-	   
-	public String toJSONString(){
+
+	/**
+	 * @return
+	 */
+	public String toJSONString() {
 		return toJSON().toString();
 	}
 
