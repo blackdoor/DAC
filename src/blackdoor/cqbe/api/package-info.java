@@ -1,8 +1,5 @@
+
 /**
- * 
- */
-/**
- * @author nfischer3
- *
+ * Coming Soon
  */
 package blackdoor.cqbe.api;

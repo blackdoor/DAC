@@ -1,27 +1,35 @@
 package blackdoor.cqbe.addressing;
 
 import java.io.File;
-import java.io.IOException;
-
-import blackdoor.crypto.Hash;
 
 /**
- * Created by nfischer3 on 11/19/14.
+ * <p>
+ * 
+ * @author Nathan Fischer
+ * @version v1.0.0 - May 4, 2015
  */
 public abstract class FileAddress extends Address {
-    protected File f;
+	protected File f;
 
-   // public static FileAddress(File f) throws IOException;
-    
-    protected void setFile(File f){
-    	this.f = f;
-    }
+	// public static FileAddress(File f) throws IOException;
 
-    public File getFile(){
-        return f;
-    }
+	protected void setFile(File f) {
+		this.f = f;
+	}
 
-	/* (non-Javadoc)
+	/**
+	 * Returns the file object referenced by this address.
+	 * <p>
+	 * 
+	 * @return
+	 */
+	public File getFile() {
+		return f;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -29,18 +37,25 @@ public abstract class FileAddress extends Address {
 		return super.hashCode();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
 		return super.equals(obj);
 	}
-    
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see blackdoor.cqbe.addressing.Address#toString()
+	 */
 	@Override
 	public String toString() {
-			return "FileAddress [f=" + f + ", overlayAddressToString()="
-					+ overlayAddressToString() + "]";
+		return "FileAddress [f=" + f + ", overlayAddressToString()="
+				+ overlayAddressToString() + "]";
 	}
-    
+
 }

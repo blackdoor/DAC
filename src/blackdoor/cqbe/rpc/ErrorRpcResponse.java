@@ -4,65 +4,116 @@ import org.json.JSONObject;
 
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
+/**
+ * An RPC tha contains all of the relevant information to report an error in
+ * handling a request.
+ * <p>
+ * Lots of handy constructors to aid whatever kind of error might of occurred!
+ * <p>
+ * 
+ * @author Nathaniel Fischer
+ * @version v1.0.0 - May 4, 2015
+ */
 public class ErrorRpcResponse extends RpcResponse {
-	
-	public static ErrorRpcResponse fromJson(JSONObject response){
+
+	/**
+	 * Create an ErrorRPCResponse from a properly formatted JSONObject
+	 * 
+	 * @param response
+	 * @return
+	 */
+	public static ErrorRpcResponse fromJson(JSONObject response) {
 		JSONRPCError err;
 		Object errorData;
 		int id;
 		JSONObject error = response.getJSONObject("error");
 		err = JSONRPCError.fromJSON(error);
-		if(error.has("data")){
+		if (error.has("data")) {
 			errorData = error.get("data");
-		}else{
+		} else {
 			errorData = null;
 		}
-		if(response.has("id")){
+		if (response.has("id")) {
 			id = response.optInt("response", -1);
-		}else{
+		} else {
 			id = -1;
 		}
 		return new ErrorRpcResponse(id, err, errorData);
 	}
-	
+
 	private Object errorData;
 	private RPCException.JSONRPCError error;
-	
-	public ErrorRpcResponse(int id, RPCException.JSONRPCError error, Object data){
+
+	/**
+	 * @param id
+	 * @param error
+	 * @param data
+	 */
+	public ErrorRpcResponse(int id, RPCException.JSONRPCError error, Object data) {
 		super(id, false);
 		this.error = error;
 		this.errorData = data;
 	}
-	
-	public ErrorRpcResponse(Rpc request, RPCException.JSONRPCError error, Object data){
+
+	/**
+	 * 
+	 * @param request
+	 * @param error
+	 * @param data
+	 */
+	public ErrorRpcResponse(Rpc request, RPCException.JSONRPCError error,
+			Object data) {
 		this(request.getId(), error, data);
 	}
-	
-	public ErrorRpcResponse(Rpc request, RPCException.JSONRPCError error){
+
+	/**
+	 * @param request
+	 * @param error
+	 */
+	public ErrorRpcResponse(Rpc request, RPCException.JSONRPCError error) {
 		this(request.getId(), error, null);
 	}
-	
-	public ErrorRpcResponse(RPCException.JSONRPCError error, Object data){
+
+	/**
+	 * @param error
+	 * @param data
+	 */
+	public ErrorRpcResponse(RPCException.JSONRPCError error, Object data) {
 		this(-1, error, data);
 	}
-	
-	public ErrorRpcResponse(RPCException.JSONRPCError error){
+
+	/**
+	 * @param error
+	 */
+	public ErrorRpcResponse(RPCException.JSONRPCError error) {
 		this(-1, error, null);
 	}
-	
-	protected void setError(JSONRPCError error){
+
+	/**
+	 * @param error
+	 */
+	protected void setError(JSONRPCError error) {
 		this.error = error;
 	}
-	
-	public RPCException.JSONRPCError getError(){
+
+	/**
+	 * @return
+	 */
+	public RPCException.JSONRPCError getError() {
 		return error;
 	}
-	
-	protected void setErrorData(Object data){
+
+	/**
+	 * @param data
+	 */
+	protected void setErrorData(Object data) {
 		this.errorData = data;
 	}
-	
-	public Object getErrorData(){
+
+	/**
+	 * @return
+	 */
+	public Object getErrorData() {
 		return errorData;
 	}
 
@@ -70,15 +121,15 @@ public class ErrorRpcResponse extends RpcResponse {
 	public JSONObject toJSON() {
 		JSONObject response = new JSONObject();
 		response.put("jsonrpc", "2.0");
-		if(getId() == -1){
+		if (getId() == -1) {
 			response.put("id", JSONObject.NULL);
-		}else {
+		} else {
 			response.put("id", getId());
 		}
 		JSONObject errorObject = new JSONObject();
 		errorObject.put("code", error.getCode());
 		errorObject.put("message", error.getMessage());
-		if(errorData != null)
+		if (errorData != null)
 			errorObject.put("data", errorData);
 		response.put("error", errorObject);
 		return response;

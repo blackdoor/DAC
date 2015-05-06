@@ -12,6 +12,8 @@ import blackdoor.cqbe.node.server.RPCHandler;
 import blackdoor.cqbe.rpc.RPCException.JSONRPCError;
 
 /**
+ * Older RPC stuff. Has been moved to RPCHandler
+ * <p>
  * 
  * @author Cyril Van Dyke
  * @version 0.0.4 12/03/2014

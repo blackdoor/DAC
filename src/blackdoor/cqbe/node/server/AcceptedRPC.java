@@ -8,25 +8,31 @@ import blackdoor.net.SocketIOWrapper;
 import blackdoor.util.DBP;
 
 /**
+ * Handles a connection to a node's server socket to handle a RPC.
+ *<p>
  * 
  * @author Cj Buresch
- * @version v0.0.2 - Nov 17, 2014
+ * @version v1.0.0 - May 5, 2015
  */
 public class AcceptedRPC implements Runnable {
-	private Socket socket = null;
 	private SocketIOWrapper io;
 
+	/**
+	 * Creates an Object to handle an Accepted RPC at the server socket.
+	 * <p>
+	 * 
+	 * @param socket
+	 * @throws IOException
+	 */
 	public AcceptedRPC(Socket socket) throws IOException {
-		this.socket = socket;
 		socket.setSoTimeout(Server.TIMEOUT * 1000);
-		
 		io = new SocketIOWrapper(socket);
 		io.setMaxReadSize(712000000);
 	}
 
 	/**
- * 
- */
+	 * 
+	 */
 	@Override
 	public void run() {
 		RPCHandler rv = new RPCHandler(io);
@@ -42,8 +48,11 @@ public class AcceptedRPC implements Runnable {
 	}
 
 	/**
+	 * Reads the RPC request response to the sender.
+	 * <p>
 	 * 
-	 * @return
+	 * @return request RPC string If there were errors with reading from the
+	 *         stream, this
 	 */
 	private String read() {
 		String input;
@@ -58,8 +67,13 @@ public class AcceptedRPC implements Runnable {
 	}
 
 	/**
+	 * Writes the RPC request response to the sender.
+	 * <p>
 	 * 
 	 * @param result
+	 *            If result is null there must have been errors with shutting
+	 *            down or in handling another request. Ideally this would not be
+	 *            error and would instead have other error data to send back.
 	 */
 	private void write(RpcResponse result) {
 		try {

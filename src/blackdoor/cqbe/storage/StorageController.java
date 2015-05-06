@@ -18,18 +18,24 @@ import blackdoor.cqbe.addressing.FileAddress;
 import blackdoor.util.DBP;
 
 /**
- * StorageController provides indexing and bucketing of files in the file system. 
- * StorageControllers have domains, controllers should only control files which are in within domain(i.e. the domain is a folder and controlled files are in the folder or one of its subfolders)
+ * StorageController provides indexing and bucketing of files in the file
+ * system. StorageControllers have domains, controllers should only control
+ * files which are in within domain(i.e. the domain is a folder and controlled
+ * files are in the folder or one of its subfolders)
+ * <p>
+ * Presence of a file in the storage controller does not guarantee its existence
+ * in the file system. Presence of a file in the file system does not guarantee
+ * its existence in the storage controller.
+ * <p>
  * 
- * Presence of a file in the storage controller does not guarantee its existence in the file system.
- * Presence of a file in the file system does not guarantee its existence in the storage controller.
- * @author nfischer3
+ * @author Nathaniel Fischer
+ * @version v1.0.0 - May 4, 2015
  *
  */
 public class StorageController implements Map<Address, FileAddress> {
-	
+
 	private static final int BUCKETS = 3;
-	
+
 	private BucketSchlager buckets;
 	private volatile Address lowest;
 	private volatile Address highest;
@@ -39,8 +45,11 @@ public class StorageController implements Map<Address, FileAddress> {
 
 	/**
 	 * 
-	 * @param domain the folder under which files will be tracked. It is invalid to try to add files to this storage controller which are not in domain or a subfolder of domain.
-	 * @param reference 
+	 * @param domain
+	 *            the folder under which files will be tracked. It is invalid to
+	 *            try to add files to this storage controller which are not in
+	 *            domain or a subfolder of domain.
+	 * @param reference
 	 */
 	public StorageController(Path domain, Address reference) {
 		buckets = new BucketSchlager(reference);
@@ -52,84 +61,95 @@ public class StorageController implements Map<Address, FileAddress> {
 	}
 
 	/**
-	 * Creates a storage controller which has it's buckets auto mapped based on the content of table.
+	 * Creates a storage controller which has it's buckets auto mapped based on
+	 * the content of table.
+	 * 
 	 * @param domain
 	 * @param table
 	 */
-	public StorageController(Path domain, AddressTable table){
+	public StorageController(Path domain, AddressTable table) {
 		buckets = new BucketSchlager(table.getReferenceAddress());
 		this.domain = domain;
 		addressTable = table;
 	}
-	
+
 	/**
-	 * remove all entries in the storage controller that represent files that do not exist in the file system.
+	 * remove all entries in the storage controller that represent files that do
+	 * not exist in the file system.
 	 */
-	public void garbageCollectReferences(){
-		for(FileAddress fa : this.values()){
-			if(!fa.getFile().exists()){
+	public void garbageCollectReferences() {
+		for (FileAddress fa : this.values()) {
+			if (!fa.getFile().exists()) {
 				this.remove(fa);
 			}
 		}
 	}
-	
+
 	/**
-	 * delete all the files in the third bucket from the file system and remove them from the storage controller.
+	 * delete all the files in the third bucket from the file system and remove
+	 * them from the storage controller.
+	 * 
 	 * @throws IOException
 	 */
-	public void deleteThirdBucket() throws IOException{
-		try{
-			for(Address a : getBucket(3)){
+	public void deleteThirdBucket() throws IOException {
+		try {
+			for (Address a : getBucket(3)) {
 				delete(a);
 			}
-		}catch(NullPointerException e){
-			
+		} catch (NullPointerException e) {
+
 		}
 	}
-	
+
 	/**
-	 * USE WITH GREAT CAUTION
-	 * remove all files inside the domain of this storage controller that are not tracked by the storage controller.
-	 * @throws OperationNotSupportedException 
+	 * USE WITH GREAT CAUTION remove all files inside the domain of this storage
+	 * controller that are not tracked by the storage controller.
+	 * 
+	 * @throws OperationNotSupportedException
 	 */
-	public void garbageCollectFiles() throws OperationNotSupportedException{
+	public void garbageCollectFiles() throws OperationNotSupportedException {
 		throw new OperationNotSupportedException("not yet implemented");
 	}
-	
-	public Path getDomain(){
+
+	public Path getDomain() {
 		return domain;
 	}
-	
-	public Address getReferenceAddress(){
-		return isAutoRemappingEnabled() ? addressTable.getReferenceAddress() : reference;
+
+	public Address getReferenceAddress() {
+		return isAutoRemappingEnabled() ? addressTable.getReferenceAddress()
+				: reference;
 	}
 
-	public Address getLowest(){
-		return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable.firstEntry().getValue() : lowest;
+	public Address getLowest() {
+		return isAutoRemappingEnabled() && !addressTable.isEmpty() ? addressTable
+				.firstEntry().getValue() : lowest;
 	}
 
-	public Address getHighest(){
-		if(this.addressTable.size() < (this.addressTable.getMaxSize()*.9))
-			return isAutoRemappingEnabled() ? this.getReferenceAddress().getComplement(): highest;
+	public Address getHighest() {
+		if (this.addressTable.size() < (this.addressTable.getMaxSize() * .9))
+			return isAutoRemappingEnabled() ? this.getReferenceAddress()
+					.getComplement() : highest;
 		else
-			return isAutoRemappingEnabled() ? addressTable.lastEntry().getValue() : highest;
+			return isAutoRemappingEnabled() ? addressTable.lastEntry()
+					.getValue() : highest;
 	}
-	
-	public synchronized void remap(Address nearest, Address farthest){
-		if(isAutoRemappingEnabled())
-			throw new AutoAddressingException("Cannot manually remap, auto remapping is enabled.");
+
+	public synchronized void remap(Address nearest, Address farthest) {
+		if (isAutoRemappingEnabled())
+			throw new AutoAddressingException(
+					"Cannot manually remap, auto remapping is enabled.");
 		highest = farthest;
 		lowest = nearest;
-		
+
 	}
 
-	public boolean isAutoRemappingEnabled(){
+	public boolean isAutoRemappingEnabled() {
 		return addressTable != null;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public NavigableSet<Address> getBucket(int i){
-		switch(i){
+	public NavigableSet<Address> getBucket(int i) {
+		switch (i) {
 		case 1:
 			return buckets.buckets.headSet(getLowest());
 		case 2:
@@ -140,7 +160,7 @@ public class StorageController implements Map<Address, FileAddress> {
 			throw new RuntimeException(i + " is not a valid bucket number");
 		}
 	}
-	
+
 	@Override
 	public int size() {
 		return buckets.size();
@@ -171,30 +191,34 @@ public class StorageController implements Map<Address, FileAddress> {
 	public FileAddress put(Address key, FileAddress value) {
 		return put(value);
 	}
-	
-	public FileAddress put(FileAddress value){
-		if(!value.getFile().toPath().startsWith(domain)){
-			throw new IndexOutOfBoundsException(value.getFile() + " is not in the domain of this storage controller (" + domain +")");
+
+	public FileAddress put(FileAddress value) {
+		if (!value.getFile().toPath().startsWith(domain)) {
+			throw new IndexOutOfBoundsException(value.getFile()
+					+ " is not in the domain of this storage controller ("
+					+ domain + ")");
 		}
-		if(!containsKey(value))
+		if (!containsKey(value))
 			DBP.printdevln("adding " + value + " to storage controller");
 		return buckets.put(value);
 	}
-	
+
 	/**
-	 * delete the file associated with key from the file system and remove it from the storage controller.
+	 * delete the file associated with key from the file system and remove it
+	 * from the storage controller.
+	 * 
 	 * @param key
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public FileAddress delete(Object key) throws IOException{
+	public FileAddress delete(Object key) throws IOException {
 		FileAddress fa = buckets.get(key);
-		if(fa != null){
+		if (fa != null) {
 			Files.delete(fa.getFile().toPath());
 		}
 		return this.remove(key);
 	}
-	
+
 	@Override
 	public FileAddress remove(Object key) {
 		DBP.printdevln("removing " + key + " from storage controller");
@@ -203,9 +227,11 @@ public class StorageController implements Map<Address, FileAddress> {
 
 	@Override
 	public void putAll(Map<? extends Address, ? extends FileAddress> m) {
-		for(FileAddress fa : m.values()){
-			if(!fa.getFile().toPath().startsWith(domain)){
-				throw new IndexOutOfBoundsException(fa.getFile() + " is not in the domain of this storage controller (" + domain +")");
+		for (FileAddress fa : m.values()) {
+			if (!fa.getFile().toPath().startsWith(domain)) {
+				throw new IndexOutOfBoundsException(fa.getFile()
+						+ " is not in the domain of this storage controller ("
+						+ domain + ")");
 			}
 		}
 		buckets.putAll(m);
@@ -230,40 +256,40 @@ public class StorageController implements Map<Address, FileAddress> {
 	public Set<java.util.Map.Entry<Address, FileAddress>> entrySet() {
 		return buckets.entrySet();
 	}
-	
 
-	
-	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "StorageController [lowest=" + getLowest()
-				+ ", highest=" + getHighest() + ", reference=" + getReferenceAddress()
-				+ ", domain=" + domain + ", buckets=" + buckets+"]";
+		return "StorageController [lowest=" + getLowest() + ", highest="
+				+ getHighest() + ", reference=" + getReferenceAddress()
+				+ ", domain=" + domain + ", buckets=" + buckets + "]";
 	}
 
-
-
-
 	/**
-	 * Combines a concurrent set and map to give the best efficiency in operations and to ensure eventual consistency between the map and set.
+	 * Combines a concurrent set and map to give the best efficiency in
+	 * operations and to ensure eventual consistency between the map and set.
+	 * <p>
 	 * 
-	 * @author nfischer3
+	 * @author Nathaniel Fischer
+	 * @version v1.0.0 - May 4, 2015
 	 *
 	 */
-	private static class BucketSchlager implements Map<Address, FileAddress>{
-		
+	private static class BucketSchlager implements Map<Address, FileAddress> {
+
 		public ConcurrentHashMap<Address, FileAddress> items;
 		public ConcurrentSkipListSet<Address> buckets;
 		private Object writeLock = new Object();
 		private Address refrence;
-		
-		public BucketSchlager(Address refrence){
+
+		public BucketSchlager(Address refrence) {
 			items = new ConcurrentHashMap<>();
 			this.refrence = refrence;
-			buckets = new ConcurrentSkipListSet<Address>(refrence.getComparator());
+			buckets = new ConcurrentSkipListSet<Address>(
+					refrence.getComparator());
 		}
 
 		@Override
@@ -273,7 +299,7 @@ public class StorageController implements Map<Address, FileAddress> {
 
 		@Override
 		public boolean isEmpty() {
-			if(items.isEmpty()^buckets.isEmpty()){
+			if (items.isEmpty() ^ buckets.isEmpty()) {
 				DBP.printerrorln("bucketSchlager maps have different isEmpty definitions");
 			}
 			return items.isEmpty() && items.isEmpty();
@@ -297,30 +323,33 @@ public class StorageController implements Map<Address, FileAddress> {
 		@Override
 		@Deprecated
 		public FileAddress put(Address _, FileAddress value) {
-			synchronized(writeLock){
-				if(items.contains(value)){
+			synchronized (writeLock) {
+				if (items.contains(value)) {
 					return items.get(value);
-				}else{
+				} else {
 					items.put(value, value);
 					buckets.add(value);
 					return null;
 				}
 			}
 		}
-		
+
 		/**
-		 * this method breaks the map contract. this map does not support overwriting keys. attempting to put a value that already exists will return the existing value, but will not change the mapping.
-		 * first remove values before adding new ones with the same key
+		 * this method breaks the map contract. this map does not support
+		 * overwriting keys. attempting to put a value that already exists will
+		 * return the existing value, but will not change the mapping. first
+		 * remove values before adding new ones with the same key
+		 * 
 		 * @param value
 		 * @return null if value was added
 		 */
-		public FileAddress put(FileAddress value){
+		public FileAddress put(FileAddress value) {
 			return put(null, value);
 		}
 
 		@Override
 		public FileAddress remove(Object key) {
-			synchronized(writeLock){
+			synchronized (writeLock) {
 				buckets.remove(key);
 				return items.remove(key);
 			}
@@ -329,16 +358,16 @@ public class StorageController implements Map<Address, FileAddress> {
 		@Override
 		@Deprecated
 		public void putAll(Map<? extends Address, ? extends FileAddress> m) {
-			synchronized(writeLock){
+			synchronized (writeLock) {
 				items.putAll(m);
 				buckets.addAll(m.values());
 			}
 		}
-		
-		public void putAll(Set<? extends FileAddress> s){
-			synchronized(writeLock){
+
+		public void putAll(Set<? extends FileAddress> s) {
+			synchronized (writeLock) {
 				buckets.addAll(s);
-				for(FileAddress a : s){
+				for (FileAddress a : s) {
 					items.put(a, a);
 				}
 			}
@@ -346,7 +375,7 @@ public class StorageController implements Map<Address, FileAddress> {
 
 		@Override
 		public void clear() {
-			synchronized(writeLock){
+			synchronized (writeLock) {
 				buckets.clear();
 				items.clear();
 			}
@@ -367,24 +396,24 @@ public class StorageController implements Map<Address, FileAddress> {
 			return items.entrySet();
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString() {
 			String ret = "Buckets [\n";
-			for(FileAddress fa : items.values()){
-				ret += fa+ "\n";
+			for (FileAddress fa : items.values()) {
+				ret += fa + "\n";
 			}
 			return ret + "]";
 		}
-		
-		
-		
+
 	}
 
-	private static class AutoAddressingException extends RuntimeException{
-		public AutoAddressingException(String s){
+	private static class AutoAddressingException extends RuntimeException {
+		public AutoAddressingException(String s) {
 			super(s);
 		}
 
